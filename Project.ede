@@ -1,0 +1,9 @@
+;; Object wcmd
+;; EDE project file.
+(ede-proj-project "wcmd"
+  :name "wcmd"
+  :version "1.0.1"
+  :file "Project.ede"
+  :targets 'nil
+  :makefile-type 'Makefile.am
+  )
