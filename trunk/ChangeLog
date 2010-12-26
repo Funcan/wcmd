@@ -1,0 +1,16 @@
+2010-12-26  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Update: move most part from FileSelector into MainFrame.
+
+2010-12-23  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Updated: Added hotkey: Ctrl + H, to toggled hidden files.
+
+2010-12-21  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Fixed: Select the previous item after the selected one was deleted.
+
+2010-11-29  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Fixed: F4 does not work properly after a basic change.
+
