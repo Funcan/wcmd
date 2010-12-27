@@ -109,6 +109,10 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->ShowHidden();
                 return true;
             }
+            case 82: { // Ctrl + R: Reload current directory.
+                frame->update_fs();
+                return true;
+                }
             case 87: {
                 exit(1);
                 break;
