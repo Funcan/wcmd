@@ -1,3 +1,8 @@
+2010-12-27  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Update: Seprate FSDispane from single mainframe.cpp;
+	* Update: Update FuncHelper.
+
 2010-12-26  Yang, Ying-chao  <yangyingchao@gmail.com>
 
 	* Update: move most part from FileSelector into MainFrame.
