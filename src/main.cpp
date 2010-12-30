@@ -146,6 +146,10 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->get_sp()->deselect_same_ext();
                 return true;
             }
+            case 315:{
+                frame->get_sp()->goto_parent_dir();
+                return true;
+            }
             default:
                 fprintf(stderr, "ERROR: Key: %d not implemente!\n", keycode);
                 break;
