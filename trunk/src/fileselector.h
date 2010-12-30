@@ -37,6 +37,7 @@ public:
     int    edit_file(bool create=false);
     int    open_terminal();
     int    view_file();
+    void  goto_parent_dir();
     void   goto_dir();
     int    wrap_open(string &path, bool create);
     const string get_cwd();

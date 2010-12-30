@@ -499,11 +499,19 @@ void FSDisplayPane::OnKeydown(wxListEvent &evt)
     PDEBUG ("called: KeyCode: %d\n", keycode);
     switch (keycode) {
     case 8: { // Backspace.
-        wxString msg = quick_search->GetValue();
-        if (msg.Len() != 0 && msg.Len() != 1)
-            quick_search->SetValue(msg.Remove(msg.Len()-1));
-        else
-            quick_search->Show(false);
+        if (quick_search->IsShown()) { // In quick search, delete one chr.
+            wxString msg = quick_search->GetValue();
+            if (msg.Len() != 0 && msg.Len() != 1)
+                quick_search->SetValue(msg.Remove(msg.Len()-1));
+            else
+                quick_search->Show(false);
+        }
+        else { // Not in quick search, back into previous directory.
+            string tmp(cwd);
+            cwd = old_path;
+            old_path = tmp;
+            update_list(-1);
+        }
         break;
     }
     case 32: { // SPACE, Mark item as selected.
@@ -846,6 +854,9 @@ void FSDisplayPane:: focus_first()
     lst->SetItemState(cur_idx,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+    wxPoint point;
+    lst->GetItemPosition(cur_idx, point);
+    lst->ScrollList(0, point.y);
 }
 
 void FSDisplayPane:: focus_last()
@@ -856,6 +867,9 @@ void FSDisplayPane:: focus_last()
     lst->SetItemState(cur_idx,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+    wxPoint point;
+    lst->GetItemPosition(cur_idx, point);
+    lst->ScrollList(0, point.y);
 }
 void FSDisplayPane:: focus_prev()
 {
@@ -911,6 +925,12 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
     evt.Skip();
 }
 
+void  FSDisplayPane:: goto_parent_dir()
+{
+    old_path = cwd;
+    cwd = string(dirname(strdup(cwd.c_str())));
+    update_list(-1);
+}
 
 void  FSDisplayPane:: goto_dir()
 {
