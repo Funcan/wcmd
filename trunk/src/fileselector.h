@@ -54,6 +54,7 @@ public:
     int    get_selected_files(vector<string> &list);
     void   select_same_ext();
     void   deselect_same_ext();
+    void  focus_list();
 private:
     void delete_single_file(string &path);
     void OnColumbDrag(wxListEvent &evt);

@@ -932,6 +932,11 @@ void  FSDisplayPane:: goto_parent_dir()
     update_list(-1);
 }
 
+void  FSDisplayPane::focus_list()
+{
+    lst->SetFocus();
+}
+
 void  FSDisplayPane:: goto_dir()
 {
     PDEBUG ("called.\n");
