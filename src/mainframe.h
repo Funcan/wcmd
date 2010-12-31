@@ -68,6 +68,7 @@ private:
     wxMenuBar *menuBar;
     FileSelector *fs;
     wxMenuItem *menu_item_view_hidden;
+    wxMenuItem *menuitem;
     DECLARE_EVENT_TABLE()
 };
 

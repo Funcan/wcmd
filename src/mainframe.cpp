@@ -97,11 +97,15 @@ void MainFrame::create_menubar()
     menuBar->Append(menu, _("&Edit") );
 
     bookmarks = new wxMenu;
-    wxMenuItem *menuitem = new wxMenuItem(bookmarks, ID_BookmarkAdd,
-                                          _("Add Current Directory."));
+    menuitem = new wxMenuItem(bookmarks, ID_BookmarkAdd,
+                                          _("Add Current Directory"));
     menuitem->SetBitmap(wxBitmap(bookmark_add));
     bookmarks->Append(menuitem);
-    bookmarks->Append(ID_BookmarkEdit, _("Edit Bookmarks."));
+
+    menuitem = new wxMenuItem(bookmarks, ID_BookmarkEdit,
+                              _("Edit Bookmarks"));
+    menuitem->SetBitmap(wxBitmap(bookmark_mgt));
+    bookmarks->Append(menuitem);
     bookmarks->AppendSeparator();
     if (config.get_bookmarks(bookmark_list)) {
         int i;
@@ -130,7 +134,10 @@ void MainFrame::BookmarAdd()
 
 void MainFrame::Append_Bookmark(int id, string item)
 {
-    bookmarks->Append(id, wxString(item.c_str(), wxConvUTF8));
+    menuitem = new wxMenuItem(bookmarks, id,
+                              wxString(item.c_str(), wxConvUTF8));
+    menuitem->SetBitmap(wxBitmap(folder));
+    bookmarks->Append(menuitem);
     Connect(id, wxEVT_COMMAND_MENU_SELECTED,
             wxCommandEventHandler( MainFrame::OnBookmarkClicked));
     menuBar->Refresh();
@@ -269,6 +276,7 @@ void MainFrame::open_in_other()
     string path = get_sp()->get_selected_item();
     get_sp_o()->set_cwd(path);
     get_sp_o()->update_list(-1);
+    get_sp_o()->focus_list();
 }
 
 FSDisplayPane *MainFrame::get_sp()
