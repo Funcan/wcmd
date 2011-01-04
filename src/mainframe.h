@@ -43,6 +43,7 @@ public:
     void compare_items();
     void OnThreadCompletion(wxCommandEvent& event);
     void OnPositionChanged(wxSplitterEvent& event);
+    void show_file_info();
 
 private:
     FSDisplayPane *sp1;

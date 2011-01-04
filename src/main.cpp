@@ -109,6 +109,10 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->ShowHidden();
                 return true;
             }
+            case 73: {
+                frame->show_file_info();
+                return true;
+            }
             case 82: { // Ctrl + R: Reload current directory.
                 frame->update_fs();
                 return true;
@@ -175,6 +179,18 @@ int MyApp::FilterEvent(wxEvent& event)
             }
             case WXK_F8: { //F8
                 frame->get_sp()->delete_file();
+                return true;
+            }
+            case 27: { // ESC
+                frame->get_sp()->toggle_search();
+                return true;
+            }
+            case 315: { // Up arrow.
+                frame->get_sp()->focus_prev();
+                return true;
+            }
+            case 317: { // Down arrow.
+                frame->get_sp()->focus_next();
                 return true;
             }
             default:
