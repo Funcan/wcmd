@@ -409,6 +409,13 @@ int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
     return ret;
 }
 
+void MainFrame::show_file_info()
+{
+    string path = get_sp()->get_selected_item();
+    InfoViewer *info = new InfoViewer(this, path);
+    info->Show();
+}
+
 DEFINE_EVENT_TYPE(wxEVT_MY_EVENT)
 
 

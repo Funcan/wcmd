@@ -54,14 +54,15 @@ public:
     int    get_selected_files(vector<string> &list);
     void   select_same_ext();
     void   deselect_same_ext();
+    void OnTip(wxMouseEvent &evt);
     void  focus_list();
+    void toggle_search();
 private:
     void delete_single_file(string &path);
     void OnColumbDrag(wxListEvent &evt);
     void OnItemSelected(wxListEvent &evt);
     void OnKeydown(wxListEvent &evt);
     void OnMySort(wxListEvent &evt);
-    void OnSetFocus(wxFocusEvent &evt);
     void OnTextChanged(wxCommandEvent &evt);
     void OnTextEnter(wxCommandEvent &evt);
     void item_activated(wxListEvent &evt);
@@ -79,6 +80,8 @@ private:
     string          old_path;
     vector<item *>  file_list;
     vector<item *>  selected_list;
+    vector<item *>  filtered_list;
+    vector<item *>  tmp_list;
     vector<int>     sel_idx;
     wxFont          font;
     wxColour        fg_hi_col;

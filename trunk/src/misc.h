@@ -103,10 +103,14 @@ public:
     virtual ~TextViewer() {PDEBUG ("called!\n"); };
 private:
     wxTextCtrl *txt;
-    // MyImagePanel *img;
-    // string fpath;
-    // int type;
-    // DECLARE_EVENT_TABLE()
+};
+
+class InfoViewer: public wxFrame {
+public:
+    InfoViewer(wxWindow *parent, string path);
+    virtual ~InfoViewer() {PDEBUG ("called!\n"); };
+private:
+    wxTextCtrl *txt;
 };
 
 #endif /* _MISC_H_ */
