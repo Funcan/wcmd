@@ -205,9 +205,7 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
         file_list[i]->orig_id = idx;
         if (file_list[i]->type == t_file){
             lst->InsertItem(idx, 1);
-            lst->SetItem(idx, 2,
-                         wxString(get_extname(file_list[i]->name).c_str(),
-                                  wxConvUTF8));
+            lst->SetItem(idx, 2, wxString(file_list[i]->ext, wxConvUTF8));
         }
         else
             lst->InsertItem(idx, 0);
@@ -275,7 +273,7 @@ void FSDisplayPane::select_same_ext()
         return;
     }
     selected_list.clear();
-    string ext_name = get_extname(file_list[cur_idx - 1]->name);
+    string ext_name(file_list[cur_idx - 1]->ext);
     for (int idx = 0; idx < file_list.size(); idx++) {
         if (strstr(file_list[idx]->name, ext_name.c_str())) {
             selected_list.push_back(file_list[idx]);
@@ -292,7 +290,7 @@ void FSDisplayPane::deselect_same_ext()
     if (cur_idx == 0) {
         return;
     }
-    string ext_name = get_extname(file_list[cur_idx - 1]->name);
+    string ext_name(file_list[cur_idx - 1]->ext);
     for (int idx = selected_list.size() - 1; idx > 0; idx--) {
         if (strstr(selected_list[idx]->name, ext_name.c_str())) {
             lst->SetItemState(selected_list[idx]->orig_id, 0,
@@ -929,6 +927,7 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
         break;
     }
     case 2: { // Ext Name
+        resort_based_ext(file_list);
         update_list(cur_idx, false);
         break;
     }

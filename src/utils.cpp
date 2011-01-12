@@ -4,6 +4,7 @@ using namespace std;
 
 static bool time_sort=true;
 static bool size_sort=true;
+static bool ext_sort=true;
 
 typedef struct _magic_filetype {
     filetype ftype;
@@ -164,6 +165,42 @@ int sort_name(item *item1, item *item2)
     return strlen(item1->name)<strlen(item2->name)?1:0;
 }
 
+int sort_ext(item *item1, item *item2)
+{
+    char *p1 = item1->ext;
+    char *p2 = item2->ext;
+    while (*p1 && *p2) {
+        if (*p1 == *p2){
+            p1++;
+            p2++;
+            continue;
+        }
+        else if (*p1 < *p2)
+            return 1;
+        else
+            return 0;
+    }
+    return strlen(item1->name)<strlen(item2->name)?1:0;
+}
+
+int sort_ext2(item *item1, item *item2)
+{
+    char *p1 = item1->ext;
+    char *p2 = item2->ext;
+    while (*p1 && *p2) {
+        if (*p1 == *p2){
+            p1++;
+            p2++;
+            continue;
+        }
+        else if (*p1 < *p2)
+            return 0;
+        else
+            return 1;
+    }
+    return strlen(item1->name)<strlen(item2->name)?1:0;
+}
+
 int sort_time(item *item1, item *item2)
 {
     return item1->ctime < item2->ctime?1:0;
@@ -204,6 +241,16 @@ void resort_size_based(vector<item *> &file_list)
     return;
 }
 
+void resort_based_ext(vector<item *> &file_list)
+{
+    ext_sort = !ext_sort;
+    if (ext_sort == true)
+        stable_sort(file_list.begin(), file_list.end(), sort_ext);
+    else
+        stable_sort(file_list.begin(), file_list.end(), sort_ext2);
+    return;
+}
+
 int get_filelist(string path, vector<item *> &file_list, string &reason,
                  bool show_hiden)
 {
@@ -231,6 +278,7 @@ int get_filelist(string path, vector<item *> &file_list, string &reason,
         fn = new item;
         fn = (item *)calloc(1, size);
         fn->name = strdup(dp->d_name);
+        fn->ext = strdup(get_extname(fn->name).c_str());
         fn->size = stats.st_size;
         fn->mode = stats.st_mode;
         fn->ctime = stats.st_ctime;
