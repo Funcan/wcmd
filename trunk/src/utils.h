@@ -44,6 +44,7 @@ typedef enum _filetype{
 
 typedef struct _item {
     char *name;
+    char *ext;
     int size;
     mode_t mode;
     time_t ctime;
@@ -71,6 +72,7 @@ bool    name_is_valid(string &name);
 void    format_time(const time_t *mytime, char *tmp);
 string  get_extname(const char *name);
 void    resort_time_based(vector<item *> &file_list);
+void    resort_based_ext(vector<item *> &file_list);
 void    resort_size_based(vector<item *> &file_list);
 void    reverse_list(vector<item *> &file_list);
 int 	get_filelist(string path, vector<item *> &file_list, string &reason,
