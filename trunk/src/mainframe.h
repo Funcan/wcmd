@@ -65,7 +65,7 @@ private:
     void OnCopy(wxCommandEvent & event);
     void OpenTerminal(wxCommandEvent & event);
     vector<string> bookmark_list;
-    wxMenu *bookmarks;
+    wxMenu *bookmark_menu;
     wxMenuBar *menuBar;
     FileSelector *fs;
     wxMenuItem *menu_item_view_hidden;

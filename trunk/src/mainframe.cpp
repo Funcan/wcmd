@@ -96,24 +96,24 @@ void MainFrame::create_menubar()
     menu->Append(ID_Option, _("&Otions"));
     menuBar->Append(menu, _("&Edit") );
 
-    bookmarks = new wxMenu;
-    menuitem = new wxMenuItem(bookmarks, ID_BookmarkAdd,
+    bookmark_menu = new wxMenu;
+    menuitem = new wxMenuItem(bookmark_menu, ID_BookmarkAdd,
                                           _("Add Current Directory"));
     menuitem->SetBitmap(wxBitmap(bookmark_add));
-    bookmarks->Append(menuitem);
+    bookmark_menu->Append(menuitem);
 
-    menuitem = new wxMenuItem(bookmarks, ID_BookmarkEdit,
+    menuitem = new wxMenuItem(bookmark_menu, ID_BookmarkEdit,
                               _("Edit Bookmarks"));
     menuitem->SetBitmap(wxBitmap(bookmark_mgt));
-    bookmarks->Append(menuitem);
-    bookmarks->AppendSeparator();
-    if (config.get_bookmarks(bookmark_list)) {
+    bookmark_menu->Append(menuitem);
+    bookmark_menu->AppendSeparator();
+    if (! bookmarks.empty()) {
         int i;
-        for (i = 0; i < bookmark_list.size(); i++) {
-            Append_Bookmark(ID_BookmarkAdd + i + 1, bookmark_list[i]);
+        for (i = 0; i < bookmarks.size(); i++) {
+            Append_Bookmark(ID_BookmarkAdd + i + 1, bookmarks[i]);
         }
     }
-    menuBar->Append(bookmarks, _("Bookmarks"));
+    menuBar->Append(bookmark_menu, _("Bookmarks"));
 
     // Help
     menu = new wxMenu;
@@ -126,18 +126,17 @@ void MainFrame::BookmarAdd()
 {
     Freeze();
     string path = get_sp()->get_cwd();
-    bookmark_list.push_back(path);
-    Append_Bookmark(bookmark_list.size() + ID_BookmarkAdd + 1, path);
-    config.set_bookmarks(bookmark_list);
+    bookmarks.push_back(path);
+    Append_Bookmark(bookmarks.size() + ID_BookmarkAdd + 1, path);
     Thaw();
 }
 
 void MainFrame::Append_Bookmark(int id, string item)
 {
-    menuitem = new wxMenuItem(bookmarks, id,
+    menuitem = new wxMenuItem(bookmark_menu, id,
                               wxString(item.c_str(), wxConvUTF8));
     menuitem->SetBitmap(wxBitmap(folder));
-    bookmarks->Append(menuitem);
+    bookmark_menu->Append(menuitem);
     Connect(id, wxEVT_COMMAND_MENU_SELECTED,
             wxCommandEventHandler( MainFrame::OnBookmarkClicked));
     menuBar->Refresh();
@@ -146,7 +145,7 @@ void MainFrame::Append_Bookmark(int id, string item)
 void MainFrame::OnBookmarkClicked(wxCommandEvent &evt)
 {
     int idx =  evt.GetId() - ID_BookmarkAdd - 1;
-    get_sp()->set_cwd(bookmark_list[idx]);
+    get_sp()->set_cwd(bookmarks[idx]);
     get_sp()->update_list(-1);
     Thaw();
 }
@@ -240,7 +239,24 @@ void MainFrame::OnBookmarkAdd(wxCommandEvent &evt)
 
 void MainFrame::OnBookmarkEdit(wxCommandEvent &evt)
 {
+    BookmarkManage *mgt = new BookmarkManage(this);
+    int ret;
+    ret = mgt->ShowModal();
+    delete(mgt);
+    if (ret == ID_BookmarkRedraw) {
+        OnBookmarkEdit(evt);
+    }
+    else {
+        int i;
+        wxMenuItemList list = bookmark_menu->GetMenuItems();
+        if (!list.empty()) // Remove old menu items.
+            for (i = 0; i < list.size(); i++)
+                bookmark_menu->Remove((wxMenuItem *)list[i]);
 
+        if (! bookmarks.empty()) // Add new menu items.
+            for (i = 0; i < bookmarks.size(); i++)
+                Append_Bookmark(ID_BookmarkAdd + i + 1, bookmarks[i]);
+    }
 }
 
 

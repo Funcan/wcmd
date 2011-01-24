@@ -46,6 +46,7 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
+
 class PrefDialog:public SimpleDialog {
 public:
     PrefDialog(wxWindow *parent, wxString title);
@@ -57,6 +58,27 @@ public:
 private:
     wxTextCtrl *txt;
     DECLARE_EVENT_TABLE()
+};
+
+class BookmarkManage: public SimpleDialog {
+public:
+    BookmarkManage(wxWindow *parent, wxString title=_("Bookmark Management"));
+    virtual ~BookmarkManage() {};
+    virtual void draw();
+    virtual void OnOK(wxCommandEvent &evt);
+    virtual void OnCancel(wxCommandEvent &evt);
+
+private:
+    void OnAdd(wxCommandEvent &evt);
+    void OnDel(wxCommandEvent &evt);
+    void post_draw();
+    void redraw();
+    vector<wxCheckBox *> check_list;
+    vector<wxStaticText *> label_list;
+    vector<wxButton *> btn_list;
+    vector<wxBoxSizer *> box_list;
+    DECLARE_EVENT_TABLE()
+
 };
 
 class TextEntry:public wxPanel {
