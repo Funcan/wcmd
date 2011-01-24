@@ -1,9 +1,38 @@
 #include "wxconfig.h"
 
+const string  gtk_prefix("file://");
+const int PRE_LEN = gtk_prefix.length();
+vector<string> bookmarks;
+
 Config::Config()
 {
     string home = getenv("HOME");
+    config_path = home + "/.config/wcmd/config";
+    bookmark_path = home + "/.gtk-bookmarks";
 
+    build_config_list(home);
+    vector<config_entry>::iterator iter;
+    int ret;
+    if ((ret = checkpath(config_path)) == -1) {
+        fprintf(stderr, "ERROR: failed to check path!\n");
+    }
+    else {
+        read_configs();
+        read_bookmarks();
+    }
+
+    PDEBUG ("Leave\n");
+}
+
+
+Config::~Config()
+{
+    PDEBUG ("Bye bye!\n");
+    dump2file();
+}
+
+void Config::build_config_list(string &home)
+{
     config_entry auto_last_path_l = {
         "auto_last_path_l", home, TYPE_STR
     };
@@ -63,55 +92,6 @@ Config::Config()
         "diff_tool", "meld", TYPE_STR
     };
     entry_list.push_back(diff_tool);
-
-    config_entry bookmarks = {
-        "auto_bookmarks", "", TYPE_STR
-    };
-    entry_list.push_back(bookmarks);
-
-    int ret;
-    string path = home + "/.config/wcmd/config";
-    vector<config_entry>::iterator iter;
-    if ((ret = checkpath(path)) == -1) {
-        fprintf(stderr, "ERROR: failed to check path!\n");
-    }
-    else {
-        ifstream fin;
-        fin.open(path.c_str());
-        if (!fin) {
-            PDEBUG ("Failed to open file: %s\n", path.c_str());
-        }
-        else {
-            string str, key, val;
-            while (getline(fin, str) != NULL) {
-                if ((ret = splitstr(str, key, val)) != 0) {
-                    fprintf(stderr, "ERROR: Failed to parse string\n");
-                    continue;
-                }
-                for (iter=entry_list.begin();iter<entry_list.end();iter++){
-                    if (key == (*iter).desc) {
-                        (*iter).value = val;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-#ifdef DEBUG
-    for (iter=entry_list.begin();iter<entry_list.end();iter++){
-        PDEBUG ("Name: %s, value: %s\n", (*iter).desc.c_str(),
-                (*iter).value.c_str());
-    }
-#endif
-    PDEBUG ("Leave\n");
-}
-
-
-Config::~Config()
-{
-    PDEBUG ("Bye bye!\n");
-    dump2file();
 }
 
 string Config::get_config(const string key)
@@ -139,6 +119,12 @@ void Config::set_config(const string key, const string val)
 
 void Config::dump2file()
 {
+    dump_config();
+    dump_bookmarks();
+}
+
+void Config::dump_config()
+{
     PDEBUG ("Called;\n");
 
     ofstream fout;
@@ -159,6 +145,79 @@ void Config::dump2file()
         fout << tmp << endl;
     }
     fout.close();
+    PDEBUG ("Leave\n");
+}
+
+void Config::dump_bookmarks()
+{
+    PDEBUG ("called.\n");
+    ofstream fout;
+    string path = string(getenv("HOME"));
+    path += "/.gtk-bookmarks";
+    fout.open(path.c_str());
+    if(fout == NULL){
+        fprintf(stderr, "ERROR: Failed to open config file!\n");
+        exit(0);
+    }
+
+    vector<string>::iterator iter;
+    for (iter = bookmarks.begin(); iter < bookmarks.end(); iter++) {
+        PDEBUG ("bookmark: = %s\n", (*iter).c_str());
+        fout << gtk_prefix + *iter << endl;
+    }
+
+    fout.close();
+    PDEBUG ("exit\n");
+}
+
+/**
+ * @name read_configs - Reads configurations, fill them into enter_list.
+ * @return void
+ */
+void Config::read_configs()
+{
+    ifstream fin;
+    fin.open(config_path.c_str());
+    if (!fin) {
+        PDEBUG ("Failed to open file: %s\n", config_path.c_str());
+    }
+    else {
+        int ret;
+        string str, key, val;
+        vector<config_entry>::iterator iter;
+        while (getline(fin, str) != NULL) {
+            if ((ret = splitstr(str, key, val)) != 0) {
+                fprintf(stderr, "ERROR: Failed to parse string\n");
+                continue;
+            }
+            for (iter=entry_list.begin();iter<entry_list.end();iter++){
+                if (key == (*iter).desc) {
+                    (*iter).value = val;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @name read_bookmarks - Read bookmarks, fill them into bookmarks.
+ * @return void
+ */
+void Config::read_bookmarks()
+{
+    ifstream fin;
+    fin.open(bookmark_path.c_str());
+    if (!fin) {
+        PDEBUG ("Failed to open file: %s\n", bookmark_path.c_str());
+    }
+    else {
+        string str, key, val;
+        while (getline(fin, str) != NULL) {
+            PDEBUG ("Bookmark: %s\n", str.c_str());
+            bookmarks.push_back(str.substr(PRE_LEN, str.length() - PRE_LEN));
+        }
+    }
 }
 
 int Config::checkpath(const string &path)
@@ -197,21 +256,5 @@ void Config::strip(string &str)
     }
     str.erase(0, i);
 }
-
-int Config::get_bookmarks(vector<string> &items)
-{
-    return strsplit(get_config("auto_bookmarks"), string("|"), items);
-}
-
-void Config::set_bookmarks(const vector<string> &items)
-{
-    string path;
-    for (int i = 0; i < items.size(); i++) {
-        path += "|" + items[i];
-    }
-    set_config("auto_bookmarks", path);
-    dump2file(); // Write config file immediately after bookmark added.
-}
-
 
 Config config;

@@ -31,6 +31,12 @@ enum{
 
     ID_BookmarkEdit = 9999,
     ID_BookmarkAdd = 10000,
+
+    ID_BookmarkManage = 20000,
+
+    ID_BookmarkManageAdd = 20100,
+    ID_BookmarkManageDel,
+    ID_BookmarkRedraw = 20200,
 };
 
 enum {

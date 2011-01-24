@@ -124,6 +124,120 @@ EVT_BUTTON(wxID_OK, PrefDialog::OnOK)
 EVT_BUTTON(wxID_CANCEL, PrefDialog::OnCancel)
 END_EVENT_TABLE()
 
+
+// Bookmark management
+BookmarkManage::BookmarkManage(wxWindow *parent, wxString title):\
+SimpleDialog(parent, title)
+{
+    SetMinSize(wxSize(400, 300));
+    draw();
+    post_draw();
+    Fit();
+}
+
+void BookmarkManage::draw()
+{
+    wxStaticText *label;
+    wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *hbox;
+    wxCheckBox *check;
+    vector<string>::iterator iter;
+    int idx = 0;
+    wxString str;
+    for (; idx < bookmarks.size(); idx++) {
+        str.Printf(wxT("%002d. "), idx + 1);
+        hbox = new wxBoxSizer(wxHORIZONTAL);
+        check = new wxCheckBox((wxWindow *)this,
+                               (wxWindowID)ID_BookmarkManage+idx, str);
+        hbox->Add(check, 0, wxEXPAND|wxLEFT|wxRIGHT, 5);
+        check_list.push_back(check);
+        label = new wxStaticText(this, -1, wxString(bookmarks[idx].c_str(),
+                                                    wxConvUTF8));
+        hbox->Add(label, 0, wxEXPAND|wxLEFT|wxRIGHT, 5);
+        vbox->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT, 5);
+    }
+    sizer->Add(vbox, 1, wxEXPAND|wxALL, 5);
+}
+
+void BookmarkManage::post_draw()
+{
+    wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+    wxButton *btn = new wxButton(this, ID_BookmarkManageAdd, _("Add"));
+    hbox->Add(btn, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
+
+    btn = new wxButton(this, ID_BookmarkManageDel, _("Delete"));
+    hbox->Add(btn, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
+
+    btn = new wxButton(this, wxID_CANCEL, _("Cancel"));
+    hbox->Add(btn, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
+
+    btn = new wxButton(this, wxID_OK, _("OK"));
+    hbox->Add(btn, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
+
+    sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
+}
+
+
+void BookmarkManage::OnAdd(wxCommandEvent &evt)
+{
+    wxDirDialog *dlg = new wxDirDialog((wxWindow *)this,  _("Add a bookmark"),
+                                       wxString(getenv("HOME"), wxConvUTF8),
+                                       wxDD_DIR_MUST_EXIST);
+    int ret = dlg->ShowModal();
+    if (ret == wxID_OK) {
+        wxString path = dlg->GetPath();
+        string val = string(path.mb_str());
+
+        int idx1;
+        for (idx1 = 0; idx1 < bookmarks.size(); idx1++) {
+            if (bookmarks[idx1] == val) {
+                wxMessageDialog *ddlg = \
+                    new wxMessageDialog(this, _("Bookmark existed!"),
+                                        _("Error"), wxOK);
+                ddlg->ShowModal();
+                delete(ddlg);
+                return ;
+            }
+        }
+        bookmarks.push_back(val);
+        config.dump2file();
+        EndModal(ID_BookmarkRedraw);
+    }
+}
+
+void BookmarkManage::OnDel(wxCommandEvent &evt)
+{
+    PDEBUG ("called\n");
+    int idx = 0;
+    for (idx = check_list.size() - 1; idx >= 0; idx--) {
+        if (check_list[idx]->GetValue()) {
+            bookmarks.erase(bookmarks.begin() + idx);
+        }
+    }
+    config.dump2file();
+    EndModal(ID_BookmarkRedraw);
+}
+
+void BookmarkManage::OnOK(wxCommandEvent &evt)
+{
+    config.dump2file();
+    EndModal(wxID_OK);
+}
+
+
+void BookmarkManage::OnCancel(wxCommandEvent &evt)
+{
+    EndModal(wxID_CANCEL);
+}
+
+BEGIN_EVENT_TABLE(BookmarkManage, wxDialog)
+EVT_BUTTON(wxID_OK, BookmarkManage::OnOK)
+EVT_BUTTON(wxID_CANCEL, BookmarkManage::OnCancel)
+EVT_BUTTON(ID_BookmarkManageAdd, BookmarkManage::OnAdd)
+EVT_BUTTON(ID_BookmarkManageDel, BookmarkManage::OnDel)
+END_EVENT_TABLE()
+
+
 TextEntry::TextEntry(wxWindow *parent, string key):\
 wxPanel(parent, -1)
 {
