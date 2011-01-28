@@ -98,7 +98,6 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
 
     point = GetPosition();
     height = (GetParent()->GetParent())->GetSize().GetHeight();
-    PDEBUG ("Height: %d\n", height);
     point += wxPoint(0, height-140);
     quick_search = new wxTextCtrl(this, id+2, _(""), point, wxDefaultSize,
                                   wxTE_PROCESS_ENTER);
@@ -120,8 +119,6 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
 
     wxString msg;
     if (reload_dir) {
-        PDEBUG ("reload dir!\n");
-
         clean_resource();
         if (dirp != NULL){
             dirp_old = dirp;
@@ -169,9 +166,6 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
         else
             flag = true;
 
-        PDEBUG ("Show Hidden files?: %d\n", flag);
-
-
         string reason;
         int ret = get_filelist(".", file_list, reason, flag);
         if (ret != 0) {
@@ -186,7 +180,6 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
         }
     }
 
-    PDEBUG ("Begin fill\n");
     Freeze();
     cwd_info->SetLabel(wxString(cwd.c_str(), wxConvUTF8));
     lst->DeleteAllItems();
@@ -219,7 +212,6 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
         msg.Printf(wxT("%lo"), file_list[i]->mode & 0x1ff);
         lst->SetItem(idx, 5, msg);
     }
-    PDEBUG ("After fill.\n");
 
     if (selected_item < 0)
         selected_item = cur_idx;
@@ -286,7 +278,6 @@ void FSDisplayPane::select_same_ext()
 
 void FSDisplayPane::deselect_same_ext()
 {
-    PDEBUG ("called");
     if (cur_idx == 0) {
         return;
     }
@@ -298,7 +289,6 @@ void FSDisplayPane::deselect_same_ext()
             selected_list.erase(selected_list.begin()+idx);
         }
     }
-    PDEBUG ("leave\n");
 }
 
 const string FSDisplayPane::get_cwd()
@@ -308,7 +298,6 @@ const string FSDisplayPane::get_cwd()
 
 void FSDisplayPane::OnItemSelected(wxListEvent &evt)
 {
-    PDEBUG ("Selected item: %ld\n", evt.GetData() );
     cur_idx = evt.GetData();
     active_id = GetId();
     evt.Skip();
@@ -317,10 +306,17 @@ void FSDisplayPane::OnItemSelected(wxListEvent &evt)
 void FSDisplayPane::item_activated(wxListEvent &evt)
 {
     int idx = evt.GetData();
-    PDEBUG ("Item actived: %d\n", idx);
     quick_search->Clear();
     quick_search->Show(false);
+    activate_item(idx);
+    evt.Skip();
+}
 
+/**
+ * Active item specified by idx.
+ */
+void FSDisplayPane::activate_item(int idx)
+{
     int selected_item = 0;
 
     // The first item should be processed sepratedly, cause dir ".." is not
@@ -355,7 +351,6 @@ void FSDisplayPane::item_activated(wxListEvent &evt)
             PDEBUG ("Failed to open file: %s\n", path.c_str());
         }
     }
-    evt.Skip();
 }
 
 /**
@@ -502,7 +497,6 @@ void FSDisplayPane::toggle_search()
 void FSDisplayPane::OnKeydown(wxListEvent &evt)
 {
     int keycode = evt.GetKeyCode();
-    PDEBUG ("called: KeyCode: %d\n", keycode);
     switch (keycode) {
     case 8: { // Backspace.
         if (quick_search->IsShown()) { // In quick search, delete one chr.
@@ -815,6 +809,8 @@ void FSDisplayPane::OnTextEnter(wxCommandEvent &evt)
     filtered_list.clear();
     tmp_list.clear();
     lst->SetFocus();
+    if (cur_idx != 0)
+        activate_item(cur_idx);
 }
 
 void FSDisplayPane::OnColumbDrag(wxListEvent &evt)

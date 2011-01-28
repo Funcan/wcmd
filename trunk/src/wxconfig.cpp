@@ -215,7 +215,11 @@ void Config::read_bookmarks()
         string str, key, val;
         while (getline(fin, str) != NULL) {
             PDEBUG ("Bookmark: %s\n", str.c_str());
-            bookmarks.push_back(str.substr(PRE_LEN, str.length() - PRE_LEN));
+            str = str.substr(PRE_LEN, str.length() - PRE_LEN);
+            if (is_dir_exist(str))
+                bookmarks.push_back(str);
+            else
+                PDEBUG ("Dir: %s not existed!\n", str.c_str());
         }
     }
 }

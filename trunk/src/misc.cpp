@@ -1,17 +1,5 @@
 #include "misc.h"
 
-#ifdef DEBUG
-#define PDEBUG(fmt, args...)                                            \
-    printf("%ld: %s(%d)-%s:\t",time(NULL), __FILE__,__LINE__,__FUNCTION__); \
-    printf("\033[31m"fmt"\033[0m", ##args);
-#else
-#define PDEBUG(fmt, args...)  ;
-#endif
-
-#define oops(ch, args...)                                               \
-    {fprintf(stderr,ch,##args);perror("Reason from system call: ");return -1;}
-
-
 SimpleDialog:: SimpleDialog(wxWindow *parent, wxString name) :    \
     wxDialog(parent, -1, name)
 {

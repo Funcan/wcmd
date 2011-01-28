@@ -68,7 +68,7 @@ private:
     void item_activated(wxListEvent &evt);
     void toggle_color(int idx, bool hicolor);
     void clean_resource();
-
+    void activate_item(int idx);
     vector<item *>::iterator iter;
     wxListCtrl     *lst;
     int             item_count;
