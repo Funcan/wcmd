@@ -297,8 +297,6 @@ void MainFrame::open_in_other()
 
 FSDisplayPane *MainFrame::get_sp()
 {
-    PDEBUG ("called.\n");
-
     if (active_id == ID_Sp1)
         return sp1;
     else

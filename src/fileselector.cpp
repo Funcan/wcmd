@@ -447,6 +447,7 @@ void FSDisplayPane::rename_file()
         ddlg = \
             new wxMessageDialog(this, msg, _("Error"),
                                 wxOK);
+        ddlg->SetFocus();
         ddlg->ShowModal();
         return;
     }
