@@ -2,13 +2,6 @@
 #include "mainframe.h"
 #include "utils.h"
 
-/**
- * TODO:
- * 	1. Add bookmarks support.
- *  2. While quick search is enabled, when the down arrow was pressed, should
- *     focus on the next item which sertisfied the condition.
- */
-
 class MyApp: public wxApp
 {
     virtual bool OnInit();
@@ -19,10 +12,13 @@ private:
 };
 
 
+const char *APP_NAME = "wcmd";
+
 IMPLEMENT_APP(MyApp)
 
 bool MyApp::OnInit()
 {
+    openlog(APP_NAME, LOG_CONS, LOG_DAEMON);
     PDEBUG ("Begin\n");
     if (argc > 3) {
         fprintf(stderr, "ERROR: two arguments at most!"
@@ -61,7 +57,6 @@ int MyApp::FilterEvent(wxEvent& event)
     if ( event.GetEventType()==wxEVT_KEY_DOWN) {
         wxKeyEvent evt = (wxKeyEvent&)event;
         int keycode = evt.GetKeyCode();
-        PDEBUG ("keycode: %d\n", keycode);
 
         if (evt.ControlDown()) {
             switch (keycode) {

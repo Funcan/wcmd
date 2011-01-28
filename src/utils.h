@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <string.h>
+#include <syslog.h>
 
 
 using namespace std;
@@ -53,9 +54,9 @@ typedef struct _item {
 } item;
 
 #ifdef DEBUG
-#define PDEBUG(fmt, args...)                                            \
-    printf("%ld: %s(%d)-%s:\t",time(NULL), __FILE__,__LINE__,__FUNCTION__); \
-    printf("\033[31m"fmt"\033[0m", ##args);
+#define PDEBUG(fmt, args...)                                \
+    syslog(LOG_INFO, "%s(%d)-%s:\t",__FILE__,__LINE__,__FUNCTION__); \
+    syslog(LOG_INFO, "\033[31m"fmt"\033[0m", ##args);
 #else
 #define PDEBUG(fmt, args...)  ;
 #endif
