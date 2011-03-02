@@ -430,6 +430,7 @@ void MainFrame::show_file_info()
     info->Show();
 }
 
+
 DEFINE_EVENT_TYPE(wxEVT_MY_EVENT)
 
 

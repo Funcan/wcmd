@@ -1,8 +1,102 @@
 #include "fileselector.h"
 
+#define LST_STYLE                                                       \
+    wxLC_REPORT | wxBORDER_NONE | wxLC_EDIT_LABELS | wxLC_SORT_ASCENDING
+
+MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
+    wxListCtrl(parent, id, wxDefaultPosition, wxDefaultSize, LST_STYLE)
+{
+    wxImageList *imageList = new wxImageList(22, 22);
+    imageList->Add(wxIcon(folder, wxBITMAP_TYPE_XPM));
+    imageList->Add(wxIcon(generic, wxBITMAP_TYPE_XPM));
+    imageList->Add(wxIcon(image, wxBITMAP_TYPE_XPM));
+    this->AssignImageList(imageList, wxIMAGE_LIST_SMALL);
+
+    this->InsertColumn(0, _(""));
+    this->InsertColumn(1, _("        File Name"));
+    this->InsertColumn(2, _("Ext Name"));
+    this->InsertColumn(3, _("Size"));
+    this->InsertColumn(4, _("Last Modify"));
+    this->InsertColumn(5, _("Mode"));
+
+    this->SetColumnWidth(0, 25);
+    this->SetColumnWidth(1, 210);
+    this->SetColumnWidth(2, 72);
+    this->SetColumnWidth(3, 68);
+    this->SetColumnWidth(4, 118);
+    this->SetColumnWidth(5, 64);
+}
+
+MyListCtrl::~MyListCtrl()
+{
+}
+
+void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
+{
+    FSDisplayPane *fs = (FSDisplayPane *)GetParent();
+    int id = evt.GetId();
+	switch(id) {
+    case ID_PopupMenu_Create_File:{
+        fs->edit_file(true);
+        break;
+    }
+    case ID_PopupMenu_Create_Dir:{
+        fs->create_dir();
+        break;
+    }
+    case ID_PopupMenu_Sort_Name:
+    case ID_PopupMenu_Sort_Ext:
+    case ID_PopupMenu_Sort_Time:
+    case ID_PopupMenu_Sort_Size: {
+        fs->real_sort(id - ID_PopupMenu_Sort_Start);
+        break;
+    }
+    }
+}
+
+
+void MyListCtrl::process_right_click(wxMouseEvent &evt)
+{
+    PDEBUG ("called!\n");
+
+	wxMenu *menu, *submenu;
+    wxMenuItem *item;
+    menu = new wxMenu();
+
+    int flags = wxLIST_HITTEST_ABOVE;
+    long item_id = this->HitTest(evt.GetPosition(), flags, NULL);
+    if ((item_id == wxNOT_FOUND)) { // Right click in blank area.
+        item = new wxMenuItem(menu, -1, _("Create:"));
+        submenu = new wxMenu();
+        submenu->Append(ID_PopupMenu_Create_File, _("File"));
+        submenu->Append(ID_PopupMenu_Create_Dir, _("Directory"));
+        submenu->Connect(wxEVT_COMMAND_MENU_SELECTED,
+                         (wxObjectEventFunction)&MyListCtrl::OnPopupClick, NULL,
+                         this);
+        item->SetSubMenu(submenu);
+        menu->Append(item);
+
+        item = new wxMenuItem(menu, -1, _("Sort by:"));
+        submenu = new wxMenu();
+        submenu->Append(ID_PopupMenu_Sort_Name, _("Name"));
+        submenu->Append(ID_PopupMenu_Sort_Name, _("Extension name"));
+        submenu->Append(ID_PopupMenu_Sort_Name, _("Size"));
+        submenu->Append(ID_PopupMenu_Sort_Name, _("Time"));
+        submenu->Connect(wxEVT_COMMAND_MENU_SELECTED,
+                         (wxObjectEventFunction)&MyListCtrl::OnPopupClick, NULL,
+                         this);
+        item->SetSubMenu(submenu);
+        menu->Append(item);
+    }
+
+	PopupMenu(menu);
+}
+
+BEGIN_EVENT_TABLE(MyListCtrl, wxListCtrl)
+EVT_RIGHT_DOWN(MyListCtrl::process_right_click)
+END_EVENT_TABLE()
 
 wxWindowID active_id;
-
 
 FileSelector:: FileSelector(wxWindow *parent, char **args): \
     wxSplitterWindow(parent, -1, wxDefaultPosition)
@@ -68,28 +162,7 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
 
     sizer->Add(cwd_info, 0, wxEXPAND|wxBOTTOM, 2);
 
-    lst = new wxListCtrl(this, id+1, wxDefaultPosition,
-                         wxDefaultSize, style );
-    wxImageList *imageList = new wxImageList(22, 22);
-    imageList->Add(wxIcon(folder, wxBITMAP_TYPE_XPM));
-    imageList->Add(wxIcon(generic, wxBITMAP_TYPE_XPM));
-    imageList->Add(wxIcon(image, wxBITMAP_TYPE_XPM));
-    lst->AssignImageList(imageList, wxIMAGE_LIST_SMALL);
-
-    lst->InsertColumn(0, _(""));
-    lst->InsertColumn(1, _("        File Name"));
-    lst->InsertColumn(2, _("Ext Name"));
-    lst->InsertColumn(3, _("Size"));
-    lst->InsertColumn(4, _("Last Modify"));
-    lst->InsertColumn(5, _("Mode"));
-
-    lst->SetColumnWidth(0, 25);
-    lst->SetColumnWidth(1, 210);
-    lst->SetColumnWidth(2, 72);
-    lst->SetColumnWidth(3, 68);
-    lst->SetColumnWidth(4, 118);
-    lst->SetColumnWidth(5, 64);
-
+    lst = new MyListCtrl(this, id+1);
     sizer->Add(lst, 1, wxEXPAND|wxALL, 0);
 
     dirinfo = new wxStaticText(this, -1, _("Directory info!"));
@@ -542,26 +615,7 @@ void FSDisplayPane::OnKeydown(wxListEvent &evt)
         break;
     }
     case WXK_F7: { // F7
-        DirnameDlg *dlg = \
-            new DirnameDlg(this, _("Enter new directory name:"));
-        int ret = dlg->ShowModal();
-        if (ret == wxID_OK) {
-            string fn = cwd + "/" + string(dlg->fn.mb_str(wxConvUTF8));
-            PDEBUG ("MKDIR: %s\n", fn.c_str());
-            if ((ret = mkdir(fn.c_str(), 0777))  ==1 ) {
-                wxString msg = _("Failed to create directory: ") + \
-                    wxString(fn.c_str(),wxConvUTF8) + \
-                    _(" Reason:") + wxString(strerror(errno), wxConvUTF8);
-                wxMessageDialog *ddlg = \
-                    new wxMessageDialog(this, msg, _("Error"),
-                                        wxOK);
-                ddlg->ShowModal();
-                delete(ddlg);
-                return ;
-            }
-            update_list(cur_idx);
-        }
-        delete(dlg);
+        create_dir();
         break;
     }
     default:
@@ -580,6 +634,30 @@ void FSDisplayPane::OnKeydown(wxListEvent &evt)
         break;
     }
     evt.Skip();
+}
+
+void FSDisplayPane::create_dir()
+{
+    DirnameDlg *dlg = \
+        new DirnameDlg(this, _("Enter new directory name:"));
+    int ret = dlg->ShowModal();
+    if (ret == wxID_OK) {
+        string fn = cwd + "/" + string(dlg->fn.mb_str(wxConvUTF8));
+        PDEBUG ("MKDIR: %s\n", fn.c_str());
+        if ((ret = mkdir(fn.c_str(), 0777))  ==1 ) {
+            wxString msg = _("Failed to create directory: ") + \
+                wxString(fn.c_str(),wxConvUTF8) + \
+                _(" Reason:") + wxString(strerror(errno), wxConvUTF8);
+            wxMessageDialog *ddlg = \
+                new wxMessageDialog(this, msg, _("Error"),
+                                    wxOK);
+            ddlg->ShowModal();
+            delete(ddlg);
+            return ;
+        }
+        update_list(cur_idx);
+    }
+    delete(dlg);
 }
 
 /**
@@ -917,23 +995,29 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
 {
     int col = evt.GetColumn();
     PDEBUG ("called, col: %d\n", col);
-    switch (col) {
-    case 1: { // Name Column
+    real_sort(col);
+    evt.Skip();
+}
+
+void FSDisplayPane::real_sort(int idx)
+{
+    switch (idx) {
+    case COL_NAME: { // Name Column
         reverse_list(file_list);
         update_list(cur_idx, false);
         break;
     }
-    case 2: { // Ext Name
+    case COL_EXT: { // Ext Name
         resort_based_ext(file_list);
         update_list(cur_idx, false);
         break;
     }
-    case 3: { // Size
+    case COL_SIZE: { // Size
         resort_size_based(file_list);
         update_list(cur_idx, false);
         break;
     }
-    case 4: { // Time
+    case COL_TIME: { // Time
         resort_time_based(file_list);
         update_list(cur_idx, false);
         break;
@@ -941,7 +1025,6 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
     default:
         break;
     }
-    evt.Skip();
 }
 
 void  FSDisplayPane:: goto_parent_dir()
@@ -984,6 +1067,15 @@ void  FSDisplayPane:: goto_dir()
     update_list(-1);
 }
 
+void FSDisplayPane::process_right_click(wxMouseEvent &evt)
+{
+    PDEBUG ("called!\n");
+
+    wxMessageDialog *dlg = \
+        new wxMessageDialog(this, _("Test"), _("Test"), wxOK);
+    dlg->ShowModal();
+}
+
 void FSDisplayPane::OnTip(wxMouseEvent &evt)
 {
     PDEBUG ("called!\n");
@@ -1004,6 +1096,7 @@ EVT_LIST_KEY_DOWN(-1, FSDisplayPane::OnKeydown)
 EVT_TEXT(-1, FSDisplayPane::OnTextChanged)
 EVT_TEXT_ENTER(-1, FSDisplayPane::OnTextEnter)
 EVT_MOTION(FSDisplayPane::OnTip)
+EVT_RIGHT_DOWN(FSDisplayPane::process_right_click)
 END_EVENT_TABLE()
 
 void *FuncHelper::Entry()

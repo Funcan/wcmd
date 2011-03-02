@@ -55,8 +55,8 @@ typedef struct _item {
 
 #ifdef DEBUG
 #define PDEBUG(fmt, args...)                                \
-    syslog(LOG_INFO, "%s(%d)-%s:\t",__FILE__,__LINE__,__FUNCTION__); \
-    syslog(LOG_INFO, "\033[31m"fmt"\033[0m", ##args);
+    printf("%s(%d)-%s:\t",__FILE__,__LINE__,__FUNCTION__);        \
+    printf("\033[31m"fmt"\033[0m", ##args);
 #else
 #define PDEBUG(fmt, args...)  ;
 #endif
