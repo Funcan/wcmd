@@ -37,6 +37,14 @@ enum{
     ID_BookmarkManageAdd = 20100,
     ID_BookmarkManageDel,
     ID_BookmarkRedraw = 20200,
+
+    ID_PopupMenu_Create_File = 20300,
+    ID_PopupMenu_Create_Dir,
+    ID_PopupMenu_Sort_Start = 20400,
+    ID_PopupMenu_Sort_Name,
+    ID_PopupMenu_Sort_Size,
+    ID_PopupMenu_Sort_Time,
+    ID_PopupMenu_Sort_Ext,
 };
 
 enum {

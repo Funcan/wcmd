@@ -27,6 +27,17 @@
 
 extern  wxWindowID active_id;
 
+class MyListCtrl: public wxListCtrl {
+
+public:
+    MyListCtrl(wxWindow *parent, wxWindowID id);
+    ~MyListCtrl();
+private:
+    void OnPopupClick(wxCommandEvent &evt);
+    void OnTip(wxMouseEvent &evt);
+    void process_right_click(wxMouseEvent &evt);
+    DECLARE_EVENT_TABLE()
+};
 
 class FSDisplayPane: public wxPanel {
 public:
@@ -54,9 +65,11 @@ public:
     int    get_selected_files(vector<string> &list);
     void   select_same_ext();
     void   deselect_same_ext();
-    void OnTip(wxMouseEvent &evt);
     void  focus_list();
     void toggle_search();
+    void OnTip(wxMouseEvent &evt);
+    void create_dir();
+    void real_sort(int idx);
 private:
     void delete_single_file(string &path);
     void OnColumbDrag(wxListEvent &evt);
@@ -69,8 +82,9 @@ private:
     void toggle_color(int idx, bool hicolor);
     void clean_resource();
     void activate_item(int idx);
+    void process_right_click(wxMouseEvent &evt);
     vector<item *>::iterator iter;
-    wxListCtrl     *lst;
+    MyListCtrl     *lst;
     int             item_count;
     DIR *dirp;
     DIR *dirp_old;
