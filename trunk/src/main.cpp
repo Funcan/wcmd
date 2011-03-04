@@ -180,14 +180,6 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->get_sp()->toggle_search();
                 return true;
             }
-            case 315: { // Up arrow.
-                frame->get_sp()->focus_prev();
-                return true;
-            }
-            case 317: { // Down arrow.
-                frame->get_sp()->focus_next();
-                return true;
-            }
             default:
                 break;
             }
