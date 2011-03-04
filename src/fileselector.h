@@ -15,6 +15,7 @@
 #include <wx/listctrl.h>
 #include <wx/splitter.h>
 #include <wx/thread.h>
+#include <wx/mimetype.h>
 #include <wx/wx.h>
 
 #include "global.h"
@@ -32,6 +33,7 @@ class MyListCtrl: public wxListCtrl {
 public:
     MyListCtrl(wxWindow *parent, wxWindowID id);
     ~MyListCtrl();
+    wxHashTable *hash;
 private:
     void OnPopupClick(wxCommandEvent &evt);
     void process_right_click(wxMouseEvent &evt);
@@ -69,6 +71,8 @@ public:
     void toggle_search();
     void create_dir();
     void real_sort(int idx);
+    void activate_item(int idx);
+
 private:
     void delete_single_file(string &path);
     void OnColumbDrag(wxListEvent &evt);
@@ -80,7 +84,6 @@ private:
     void item_activated(wxListEvent &evt);
     void toggle_color(int idx, bool hicolor);
     void clean_resource();
-    void activate_item(int idx);
     void process_right_click(wxMouseEvent &evt);
     vector<item *>::iterator iter;
     MyListCtrl     *lst;

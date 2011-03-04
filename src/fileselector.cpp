@@ -6,6 +6,9 @@
 MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     wxListCtrl(parent, id, wxDefaultPosition, wxDefaultSize, LST_STYLE)
 {
+
+    hash = new wxHashTable(wxKEY_STRING);
+
     wxImageList *imageList = new wxImageList(22, 22);
     imageList->Add(wxIcon(folder, wxBITMAP_TYPE_XPM));
     imageList->Add(wxIcon(generic, wxBITMAP_TYPE_XPM));
@@ -33,6 +36,8 @@ MyListCtrl::~MyListCtrl()
 
 void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
 {
+    PDEBUG ("called\n");
+
     FSDisplayPane *fs = (FSDisplayPane *)GetParent();
     int id = evt.GetId();
 	switch(id) {
@@ -51,10 +56,15 @@ void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
         fs->real_sort(id - ID_PopupMenu_Sort_Start);
         break;
     }
+    case ID_PopupMenu_Open:{
+        fs->activate_item(-1);
+        break;
+    }
     default:
         PDEBUG ("Not implemented!!\n");
         break;
     }
+    PDEBUG ("leave.\n");
 }
 
 
@@ -68,6 +78,7 @@ void MyListCtrl::process_right_click(wxMouseEvent &evt)
 
     int flags = wxLIST_HITTEST_ABOVE;
     long item_id = this->HitTest(evt.GetPosition(), flags, NULL);
+
     if ((item_id == wxNOT_FOUND)) { // Right click in blank area.
         item = new wxMenuItem(menu, -1, _("Create:"));
         submenu = new wxMenu();
@@ -90,6 +101,12 @@ void MyListCtrl::process_right_click(wxMouseEvent &evt)
                          this);
         item->SetSubMenu(submenu);
         menu->Append(item);
+    }
+    else { // Right click on files or directories.
+        menu->Append(ID_PopupMenu_Open, _("Open"));
+        menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
+                      (wxObjectEventFunction)&MyListCtrl::OnPopupClick, NULL,
+                      this);
     }
 
 	PopupMenu(menu);
@@ -282,13 +299,29 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
 
     int size = cur_list.size();
     char tmp[18];
+    wxFileType *ft;
+    wxString mimetype, ext_name;
+    wxString mime_plain(_("text/plain"));
+    wxIconLocation iconpath;
+
     for (int i = 0; i < size;  i++) {
+        ft = NULL;
         idx ++;
         cur_list[i]->orig_id = idx;
         // Insert Image Column & Extention Colum.
         if (cur_list[i]->type == t_file) {
             lst->InsertItem(idx, 1);
-            lst->SetItem(idx, 2, wxString(cur_list[i]->ext, wxConvUTF8));
+            ext_name = wxString(cur_list[i]->ext, wxConvUTF8);
+            lst->SetItem(idx, 2, ext_name);
+            if (ext_name.Len() != 0)
+                ft = wxTheMimeTypesManager->GetFileTypeFromExtension(ext_name);
+
+            if (ft == NULL)
+                ft = wxTheMimeTypesManager->GetFileTypeFromMimeType(mime_plain);
+
+                if (!ft->GetMimeType(&mimetype)) {
+                    PDEBUG ("failed to get mime type\n");
+                }
         }
         else
             lst->InsertItem(idx, 0);
@@ -408,7 +441,8 @@ void FSDisplayPane::item_activated(wxListEvent &evt)
 void FSDisplayPane::activate_item(int idx)
 {
     int selected_item = 0;
-
+    if (idx < 0)
+        idx = cur_idx;
     // The first item should be processed sepratedly, cause dir ".." is not
     // stored in the file_list.
     if (idx == 0) {

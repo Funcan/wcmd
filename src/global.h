@@ -45,6 +45,8 @@ enum{
     ID_PopupMenu_Sort_Size,
     ID_PopupMenu_Sort_Time,
     ID_PopupMenu_Sort_Ext,
+    ID_PopupMenu_Open = 20500,
+
 };
 
 enum {
