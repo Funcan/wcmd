@@ -34,7 +34,6 @@ public:
     ~MyListCtrl();
 private:
     void OnPopupClick(wxCommandEvent &evt);
-    void OnTip(wxMouseEvent &evt);
     void process_right_click(wxMouseEvent &evt);
     DECLARE_EVENT_TABLE()
 };
@@ -62,12 +61,12 @@ public:
     void   set_cwd(string &path);
     void   set_selected();
     void   update_list(int selected_item, bool reload_dir=true);
+    void   show_list(int selected_item, wxString filter=_(""));
     int    get_selected_files(vector<string> &list);
     void   select_same_ext();
     void   deselect_same_ext();
     void  focus_list();
     void toggle_search();
-    void OnTip(wxMouseEvent &evt);
     void create_dir();
     void real_sort(int idx);
 private:
@@ -94,9 +93,10 @@ private:
     string          old_path;
     vector<item *>  file_list;
     vector<item *>  selected_list;
-    vector<item *>  filtered_list;
     vector<item *>  tmp_list;
+    vector<item *>  cur_list;
     vector<int>     sel_idx;
+    wxString cur_target, old_target;
     wxFont          font;
     wxColour        fg_hi_col;
     wxColour        bg_hi_col;

@@ -51,6 +51,9 @@ void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
         fs->real_sort(id - ID_PopupMenu_Sort_Start);
         break;
     }
+    default:
+        PDEBUG ("Not implemented!!\n");
+        break;
     }
 }
 
@@ -252,10 +255,23 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
             return ;
         }
     }
+    cur_list.clear();
+    cur_list = file_list;
+    show_list(1);
+    PDEBUG ("leave\n");
+}
+
+void FSDisplayPane::show_list(int selected_item, wxString filter)
+{
+    wxString msg;
 
     Freeze();
-    cwd_info->SetLabel(wxString(cwd.c_str(), wxConvUTF8));
+    if (filter.Len() != 0)
+        msg = _("\t\tFILTER: ") + filter;
+    cwd_info->SetLabel(wxString(cwd.c_str(), wxConvUTF8) + msg);
     lst->DeleteAllItems();
+
+    msg.Clear();
 
     // Add parent dir ("..")
     int idx = 0;
@@ -264,45 +280,45 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
     lst->SetItem(idx, 1, _(".."));
     // lst->SetItem(idx, 2, msg);
 
-    int size = file_list.size();
+    int size = cur_list.size();
     char tmp[18];
     for (int i = 0; i < size;  i++) {
         idx ++;
-        file_list[i]->orig_id = idx;
-        if (file_list[i]->type == t_file){
+        cur_list[i]->orig_id = idx;
+        // Insert Image Column & Extention Colum.
+        if (cur_list[i]->type == t_file) {
             lst->InsertItem(idx, 1);
-            lst->SetItem(idx, 2, wxString(file_list[i]->ext, wxConvUTF8));
+            lst->SetItem(idx, 2, wxString(cur_list[i]->ext, wxConvUTF8));
         }
         else
             lst->InsertItem(idx, 0);
+
         lst->SetItemData(idx, idx);
-        lst->SetItem(idx, 1, wxString(file_list[i]->name, wxConvUTF8));
-        msg.Printf(wxT("%d"), file_list[i]->size);
+
+        lst->SetItem(idx, 1, wxString(cur_list[i]->name, wxConvUTF8));
+        msg.Printf(wxT("%d"), cur_list[i]->size);
         lst->SetItem(idx, 3, msg);
         memset (tmp, 0, 18);
-        format_time(&file_list[i]->ctime, tmp);
+        format_time(&cur_list[i]->ctime, tmp);
         lst->SetItem(idx, 4,  wxString(tmp, wxConvUTF8));
-        msg.Printf(wxT("%lo"), file_list[i]->mode & 0x1ff);
+        msg.Printf(wxT("%lo"), cur_list[i]->mode & 0x1ff);
         lst->SetItem(idx, 5, msg);
     }
 
-    if (selected_item < 0)
-        selected_item = cur_idx;
-    if (file_list.empty())
+    if (selected_item < 0) // Selecte the first one by default.
+        selected_item = 1;
+    if (cur_list.empty()) // If list is empty, select ".."
         selected_item = 0;
-    else if (selected_item > file_list.size())
-        selected_item = file_list.size();
+    else if (selected_item > cur_list.size()) // Select the last one.
+        selected_item = cur_list.size();
     lst->SetItemState(selected_item,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
     cur_idx = selected_item;
-    msg.Printf(wxT("%d files."), file_list.size());
     dirinfo->SetLabel(msg);
-
     lst->SetColumnWidth(3, -1);
     lst->SetColumnWidth(4, -1);
     lst->SetColumnWidth(5, -2);
-
     item_count = idx + 1;
     Thaw();
     PDEBUG ("leave\n");
@@ -378,6 +394,7 @@ void FSDisplayPane::OnItemSelected(wxListEvent &evt)
 
 void FSDisplayPane::item_activated(wxListEvent &evt)
 {
+    PDEBUG ("called!\n");
     int idx = evt.GetData();
     quick_search->Clear();
     quick_search->Show(false);
@@ -394,8 +411,6 @@ void FSDisplayPane::activate_item(int idx)
 
     // The first item should be processed sepratedly, cause dir ".." is not
     // stored in the file_list.
-
-
     if (idx == 0) {
         PDEBUG ("Selected parent director!\n");
         cwd = string(dirname(strdup(cwd.c_str())));
@@ -409,22 +424,22 @@ void FSDisplayPane::activate_item(int idx)
         return;
     }
     idx--; // Strip the first item.
-    if (file_list[idx]->type == t_dir) {
-        PDEBUG ("Idx: %d, name: %s\n", idx, file_list[idx]->name);
+    if (cur_list[idx]->type == t_dir) {
+        PDEBUG ("Idx: %d, name: %s\n", idx, cur_list[idx]->name);
 
         old_path = cwd;
-        cwd = old_path + "/" + string(file_list[idx]->name);
+        cwd = old_path + "/" + string(cur_list[idx]->name);
         cwd = realpath(cwd.c_str(), NULL);
         sel_idx.push_back(idx);
         update_list(selected_item);
     }
     else {
-        string path = cwd + "/" + string(file_list[idx]->name);
+        string path = cwd + "/" + string(cur_list[idx]->name);
         if (wrap_open(path, 0) < 0) {
             PDEBUG ("Failed to open file: %s\n", path.c_str());
         }
     }
-}
+ }
 
 /**
  * @name wrap_open - Wrapped open, run a child process to open selected files.
@@ -563,7 +578,6 @@ void FSDisplayPane::toggle_search()
     quick_search->Clear();
     quick_search->Show(false);
     tmp_list.clear();
-    filtered_list.clear();
     update_list(cur_idx);
     lst->SetFocus();
 }
@@ -666,10 +680,10 @@ void FSDisplayPane::create_dir()
  */
 int FSDisplayPane::view_file()
 {
-    if (cur_idx == 0 || file_list[cur_idx-1]->type == 2) {
+    if (cur_idx == 0 || cur_list[cur_idx-1]->type == 2) {
         oops ("View File called on dir!\n");
     }
-    string path =  cwd + "/" + file_list[cur_idx-1]->name;
+    string path =  cwd + "/" + cur_list[cur_idx-1]->name;
     if (!is_file_exist(path)) {
         oops ("File %s does not exist!\n", path.c_str());
     }
@@ -682,7 +696,7 @@ int FSDisplayPane::view_file()
     }
     else {
         TextViewer *viewer = new TextViewer(GetParent(), path,
-                                            file_list[cur_idx-1]->size);
+                                            cur_list[cur_idx-1]->size);
         viewer->Show(true);
     }
     return 0;
@@ -726,7 +740,7 @@ int FSDisplayPane::edit_file(bool create)
         }
     }
     else {
-        path =  cwd + "/" + file_list[cur_idx-1]->name;
+        path =  cwd + "/" + cur_list[cur_idx-1]->name;
         if (access(path.c_str(), F_OK) == -1 && !create) {
             wxString msg = _("File does not exist!");
             wxMessageDialog *ddlg = \
@@ -839,57 +853,74 @@ void FSDisplayPane::delete_single_file(string &path)
 void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
 {
     PDEBUG ("Set %d unselected!\n", cur_idx);
+    string tmp, name;
+    int idx;
+
     lst->SetItemState(cur_idx, 0,
                       (wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED));
 
-    wxString target = quick_search->GetValue();
-    if (target.Len() == 0) {
-        PDEBUG ("Empty search target!\n");
+    if (!quick_search->IsShown()) {
+        old_target.Clear();
+        PDEBUG ("Should not search!\n");
+        goto ret;
         return;
     }
-    if (filtered_list.empty())
+
+    cur_target = quick_search->GetValue();
+    if (cur_target.Len() == 0) {
+        PDEBUG ("Empty search!\n");
+        old_target.Clear();
+        // cur_list = file_list;
+        goto ret;
+    }
+
+    // Use orignal file_list for search, if:
+    //  1. This is a new search.
+    //  2. User stroked Backspace.
+    if (cur_target.Len() < old_target.Len())
         tmp_list = file_list;
     else
-        tmp_list = filtered_list;
+        tmp_list = cur_list;
 
-    filtered_list.clear();
+    cur_list.clear();
 
-    string tmp = string(target.mb_str(wxConvUTF8));
+    tmp = string(cur_target.mb_str(wxConvUTF8));
     transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
-    string name;
-    for (int idx = 0; idx < tmp_list.size(); idx++) {
-        PDEBUG ("ID: %d, orig ID: %d\n", idx, tmp_list[idx]->orig_id);
-
+    for (idx = 0; idx < tmp_list.size(); idx++) {
         name = (tmp_list[idx])->name;
         transform(name.begin(), name.end(), name.begin(), ::tolower);
         if (name.find(tmp) != string::npos) {
-            filtered_list.push_back(tmp_list[idx]);
+            cur_list.push_back(tmp_list[idx]);
         }
     }
 
-    if (!filtered_list.empty()) {
-        lst->SetItemState(filtered_list[0]->orig_id,
-                          wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                          wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
-        wxPoint point;
-        lst->GetItemPosition(filtered_list[0]->orig_id, point);
-        cur_idx = filtered_list[0]->orig_id;
-        lst->ScrollList(0, point.y-200);
-    }
+ret:
+    if (cur_idx > cur_list.size())
+        cur_idx = 1;
+    old_target = cur_target;
+    show_list(cur_idx, cur_target);
 }
-
+/**
+ * @name OnTextEnter - When Enter pressed, close quick_search.
+ * @param evt -  evt
+ * @return void
+ */
 void FSDisplayPane::OnTextEnter(wxCommandEvent &evt)
 {
+    PDEBUG ("called!\n");
+
     quick_search->Clear();
-    quick_search->Show(false);
     lst->SetItemState(cur_idx,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
-    filtered_list.clear();
-    tmp_list.clear();
     lst->SetFocus();
-    if (cur_idx != 0)
-        activate_item(cur_idx);
+    if (quick_search->IsShown()) {
+        quick_search->Show(false);
+    }
+    else {
+        if (cur_idx != 0)
+            activate_item(cur_idx);
+    }
 }
 
 void FSDisplayPane::OnColumbDrag(wxListEvent &evt)
@@ -947,21 +978,10 @@ void FSDisplayPane:: focus_prev()
 {
     lst->SetItemState(cur_idx, 0,
                       (wxLIST_STATE_SELECTED));
-    if (quick_search->IsShown()) {
-        for (iter = filtered_list.end()-1;iter>=filtered_list.begin();iter--){
-            if (cur_idx == (*iter)->orig_id) {
-                if (iter != filtered_list.begin())
-                    cur_idx = (*--iter)->orig_id;
-                break;
-            }
-        }
-    }
-    else {
-        cur_idx--;
-        if (cur_idx < 0)
-            cur_idx = 0;
+    cur_idx--;
+    if (cur_idx < 0)
+        cur_idx = 0;
 
-    }
     lst->SetItemState(cur_idx,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
@@ -971,21 +991,10 @@ void FSDisplayPane:: focus_next()
 {
     lst->SetItemState(cur_idx, 0,
                       (wxLIST_STATE_SELECTED));
-    if (quick_search->IsShown()) {
-        for (iter = filtered_list.begin(); iter<filtered_list.end(); iter++) {
-            if (cur_idx == (*iter)->orig_id) {
-                if (++iter != filtered_list.end())
-                    cur_idx = (*iter)->orig_id;
-                break;
-            }
-        }
-    }
-    else {
-        cur_idx ++;
-        if (cur_idx == item_count)
-            cur_idx = item_count - 1;
+    cur_idx ++;
+    if (cur_idx == item_count)
+        cur_idx = item_count - 1;
 
-    }
     lst->SetItemState(cur_idx,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
                       wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
@@ -1076,16 +1085,6 @@ void FSDisplayPane::process_right_click(wxMouseEvent &evt)
     dlg->ShowModal();
 }
 
-void FSDisplayPane::OnTip(wxMouseEvent &evt)
-{
-    PDEBUG ("called!\n");
-    int flags = wxLIST_HITTEST_ABOVE;
-    long item = lst->HitTest(evt.GetPosition(), flags, NULL);
-    if ((item != wxNOT_FOUND) &&(item != 0)) {
-        lst->SetToolTip(wxString(file_list[item-1]->name, wxConvUTF8));
-    }
-}
-
 
 BEGIN_EVENT_TABLE(FSDisplayPane, wxPanel)
 EVT_LIST_COL_CLICK(-1, FSDisplayPane::OnMySort)
@@ -1095,7 +1094,6 @@ EVT_LIST_ITEM_SELECTED(-1, FSDisplayPane::OnItemSelected)
 EVT_LIST_KEY_DOWN(-1, FSDisplayPane::OnKeydown)
 EVT_TEXT(-1, FSDisplayPane::OnTextChanged)
 EVT_TEXT_ENTER(-1, FSDisplayPane::OnTextEnter)
-EVT_MOTION(FSDisplayPane::OnTip)
 EVT_RIGHT_DOWN(FSDisplayPane::process_right_click)
 END_EVENT_TABLE()
 
