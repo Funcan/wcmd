@@ -196,7 +196,7 @@ top_srcdir = @top_srcdir@
 # EDE is the Emacs Development Environment.
 # http://cedet.sourceforge.net/ede.shtml
 #
-AM_CXXFLAGS = -g `wx-config --cxxflags`
+AM_CXXFLAGS = -DDEBUG -g `wx-config --cxxflags` -Wall
 top = ../
 ede_FILES = Project.ede Makefile.am
 SUBDIRS = 

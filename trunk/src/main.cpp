@@ -19,7 +19,6 @@ IMPLEMENT_APP(MyApp)
 bool MyApp::OnInit()
 {
     openlog(APP_NAME, LOG_CONS, LOG_DAEMON);
-    PDEBUG ("Begin\n");
     if (argc > 3) {
         fprintf(stderr, "ERROR: two arguments at most!"
                 "Others will be skipped.\n");
@@ -40,10 +39,11 @@ bool MyApp::OnInit()
             fprintf(stderr, "ERROR: Failed to create trash dir!\n");
     }
     frame = new MainFrame( _("wcmd"), c_args);
-    wxImage::AddHandler( new wxPNGHandler );
-    wxImage::AddHandler( new wxJPEGHandler );
-    wxImage::AddHandler( new wxGIFHandler );
-    wxImage::AddHandler( new wxXPMHandler );
+    void wxInitAllImageHandlers();
+    // wxImage::AddHandler( new wxPNGHandler );
+    // wxImage::AddHandler( new wxJPEGHandler );
+    // wxImage::AddHandler( new wxGIFHandler );
+    // wxImage::AddHandler( new wxXPMHandler );
     frame->Show(true);
     SetTopWindow(frame);
     return true;
@@ -104,7 +104,7 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->ShowHidden();
                 return true;
             }
-            case 73: {
+            case 73: { // Ctrl + i, show file info.
                 frame->show_file_info();
                 return true;
             }

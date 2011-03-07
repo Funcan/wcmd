@@ -1,12 +1,20 @@
 #include "mainframe.h"
 #include "utils.h"
 
+#include "resources/bookmark_add.xpm"
+#include "resources/bookmark_mgt.xpm"
+#include "resources/buttons/btn_copy.xpm"
+#include "resources/buttons/btn_move.xpm"
+#include "resources/buttons/btn_delete.xpm"
+#include "resources/buttons/btn_edit.xpm"
+#include "resources/buttons/btn_view.xpm"
+#include "resources/buttons/btn_terminal.xpm"
+#include "resources/mimetype/folder.xpm"
+#include "resources/wxcommandor.xpm"
 
 MainFrame::MainFrame(const wxString& title, char ** args): \
     wxFrame( NULL, -1, title, wxDefaultPosition, wxSize(1200,850))
 {
-    PDEBUG ("called.\n");
-
     // Set Size;
     int x, y;
     string tmp = config.get_config("auto_size_x");
@@ -72,6 +80,7 @@ MainFrame::~MainFrame()
     config.set_config("auto_size_y", string(tmp));
     config.set_config("auto_last_path_l", sp1->get_cwd());
     config.set_config("auto_last_path_r", sp2->get_cwd());
+    config.dump2file();
 }
 
 
@@ -108,7 +117,7 @@ void MainFrame::create_menubar()
     bookmark_menu->Append(menuitem);
     bookmark_menu->AppendSeparator();
     if (! bookmarks.empty()) {
-        int i;
+        unsigned int i;
         for (i = 0; i < bookmarks.size(); i++) {
             Append_Bookmark(ID_BookmarkAdd + i + 1, bookmarks[i]);
         }
@@ -169,7 +178,6 @@ void MainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 
 void MainFrame::OnOption (wxCommandEvent& WXUNUSED(event))
 {
-    PDEBUG ("called.\n");
     PrefDialog *pref = new PrefDialog(this, _("Preferences"));
     if (pref->ShowModal() == wxID_OK)
         update_fs();
@@ -179,37 +187,34 @@ void MainFrame::OnOption (wxCommandEvent& WXUNUSED(event))
 
 void MainFrame::OnView(wxCommandEvent & event)
 {
-    PDEBUG ("Called\n");
 }
 
 void MainFrame::OnEdit(wxCommandEvent & event)
 {
-    PDEBUG ("Called\n");
     get_sp()->edit_file();
 }
 
 void MainFrame::OnMove(wxCommandEvent & event)
 {
-    PDEBUG ("Called\n");
     copy_or_move(false);
 }
 void MainFrame::OnCopy(wxCommandEvent & event)
 {
-    PDEBUG ("Called\n");
+
     copy_or_move();
 }
 
 
 void MainFrame::OnDelete(wxCommandEvent & event)
 {
-    PDEBUG ("Called\n");
+
     get_sp()->delete_file();
     event.Skip();
 }
 
 void MainFrame::ShowHidden()
 {
-    PDEBUG ("ShowHidden? %s\n", config.get_config("show_hidden").c_str());
+
 
     if (config.get_config("show_hidden") == "false") {
         config.set_config("show_hidden", "true");
@@ -219,7 +224,7 @@ void MainFrame::ShowHidden()
         config.set_config("show_hidden", "false");
         menu_item_view_hidden -> Check(false);
     }
-    PDEBUG ("ShowHidden? %s\n", config.get_config("show_hidden").c_str());
+
 
     update_fs();
 }
@@ -247,7 +252,7 @@ void MainFrame::OnBookmarkEdit(wxCommandEvent &evt)
         OnBookmarkEdit(evt);
     }
     else {
-        int i;
+        unsigned int i;
         wxMenuItemList list = bookmark_menu->GetMenuItems();
         if (!list.empty()) // Remove old menu items.
             for (i = 0; i < list.size(); i++)
@@ -275,15 +280,13 @@ void MainFrame::compare_items()
     cmd += " \"" + sp1->get_selected_item() + "\" \"" + \
         sp2->get_selected_item()+"\"";
 
-    FuncHelper *func = new FuncHelper();
-    func->Create((wxWindow *)this, cmd);
-    func->Run();
+    wxExecute(str2wxstr(cmd));
     return;
 }
 
 void MainFrame::OnThreadCompletion(wxCommandEvent& event)
 {
-    PDEBUG ("called.\n");
+
     update_fs();
 }
 
@@ -305,13 +308,13 @@ FSDisplayPane *MainFrame::get_sp()
 
 void MainFrame::exchange_sp()
 {
-    PDEBUG ("called:\n");
+
 
     if (active_id == ID_Sp1)
         active_id = ID_Sp2;
     else
         active_id = ID_Sp1;
-    PDEBUG ("After: %d\n", active_id);
+
 }
 
 FSDisplayPane *MainFrame::get_sp_o()
@@ -324,7 +327,7 @@ FSDisplayPane *MainFrame::get_sp_o()
 
 void MainFrame::update_fs(int idx1, int idx2, wxWindowID id)
 {
-    PDEBUG ("called.\n");
+
     if (id == -1) // Get active_id first, it will be changed in "update_list"
         id = active_id;
     sp1->update_list(idx1==-1?sp1->cur_idx:idx1);
@@ -338,12 +341,12 @@ void MainFrame::update_fs(int idx1, int idx2, wxWindowID id)
         active_id = id;
         sp2->SetFocus();
     }
-    PDEBUG ("leave.\n");
+
 }
 
 void MainFrame::set_active_sp(wxWindowID id)
 {
-    PDEBUG ("active id: %d\n", id);
+
     active_id = id;
 }
 
@@ -354,7 +357,7 @@ void MainFrame::OpenTerminal(wxCommandEvent &evt)
 
 void MainFrame::copy_or_move(bool copy)
 {
-    PDEBUG ("called.\n");
+
     vector<string> src_list;
     string dest = get_sp_o()->get_cwd();
     if (get_sp()->get_selected_files(src_list) || src_list.empty()) {
@@ -368,7 +371,7 @@ void MainFrame::copy_or_move(bool copy)
     vector<string>::iterator iter;
     wxString msg;
     for (iter = src_list.begin(); iter < src_list.end(); iter++) {
-        PDEBUG ("SRC: %s\n", (*iter).c_str());
+
         dest += "/";
         copy_or_move_single(*iter, dest, copy);
     }
@@ -390,7 +393,7 @@ void MainFrame::copy_or_move(bool copy)
  */
 int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
 {
-    PDEBUG ("called.\n");
+
     int ret = 0;
     if (src.empty() || dest.empty()) {
         fprintf(stderr, "ERROR: Source or desty is empty!\n");
@@ -403,7 +406,7 @@ int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
     wxWindowID id;
     fake_dest.assign(src, pos+1, src.length()-pos);
     fake_dest = dest + "/" + fake_dest;
-    PDEBUG ("src: %s, fake: %s\n", src.c_str(), fake_dest.c_str());
+
     if (is_file_exist(fake_dest)) {
         msg += _(" already exited! Overwrite?");
         dlg = new wxMessageDialog(this, msg, _("Overwrite"), wxID_OK|wxID_CANCEL);
@@ -417,9 +420,7 @@ int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
     cmd =  "cp -aRf \"" + src + "\"  \"" +  dest +"\"";
     if (!copy)
         cmd += "&& rm -rf \"" + src + "\"";
-    FuncHelper *func = new FuncHelper();
-    func->Create((wxWindow *)this, cmd);
-    func->Run();
+    wxExecute(str2wxstr(cmd));
     return ret;
 }
 

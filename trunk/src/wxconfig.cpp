@@ -20,14 +20,11 @@ Config::Config()
         read_configs();
         read_bookmarks();
     }
-
-    PDEBUG ("Leave\n");
 }
 
 
 Config::~Config()
 {
-    PDEBUG ("Bye bye!\n");
     dump2file();
 }
 
@@ -104,6 +101,7 @@ string Config::get_config(const string key)
             return val;
         }
     }
+    return "";
 }
 
 void Config::set_config(const string key, const string val)
@@ -125,8 +123,6 @@ void Config::dump2file()
 
 void Config::dump_config()
 {
-    PDEBUG ("Called;\n");
-
     ofstream fout;
     string path = string(getenv("HOME"));
     string tmp;
@@ -140,17 +136,15 @@ void Config::dump_config()
     vector<config_entry>::iterator iter;
 
     for (iter = entry_list.begin(); iter < entry_list.end(); iter++) {
-        PDEBUG ("%s = %s\n", (*iter).desc.c_str(), (*iter).value.c_str());
+
         tmp = (*iter).desc + " = " + (*iter).value;
         fout << tmp << endl;
     }
     fout.close();
-    PDEBUG ("Leave\n");
 }
 
 void Config::dump_bookmarks()
 {
-    PDEBUG ("called.\n");
     ofstream fout;
     string path = string(getenv("HOME"));
     path += "/.gtk-bookmarks";
@@ -162,12 +156,11 @@ void Config::dump_bookmarks()
 
     vector<string>::iterator iter;
     for (iter = bookmarks.begin(); iter < bookmarks.end(); iter++) {
-        PDEBUG ("bookmark: = %s\n", (*iter).c_str());
+
         fout << gtk_prefix + *iter << endl;
     }
 
     fout.close();
-    PDEBUG ("exit\n");
 }
 
 /**
@@ -179,7 +172,7 @@ void Config::read_configs()
     ifstream fin;
     fin.open(config_path.c_str());
     if (!fin) {
-        PDEBUG ("Failed to open file: %s\n", config_path.c_str());
+
     }
     else {
         int ret;
@@ -209,17 +202,17 @@ void Config::read_bookmarks()
     ifstream fin;
     fin.open(bookmark_path.c_str());
     if (!fin) {
-        PDEBUG ("Failed to open file: %s\n", bookmark_path.c_str());
+
     }
     else {
         string str, key, val;
         while (getline(fin, str) != NULL) {
-            PDEBUG ("Bookmark: %s\n", str.c_str());
+
             str = str.substr(PRE_LEN, str.length() - PRE_LEN);
             if (is_dir_exist(str))
                 bookmarks.push_back(str);
             else
-                PDEBUG ("Dir: %s not existed!\n", str.c_str());
+                fprintf(stderr, "ERROR: invalid bookmark! %s\n", str.c_str());
         }
     }
 }
@@ -237,8 +230,8 @@ int Config::checkpath(const string &path)
 int Config::splitstr(string &str, string &key, string &val)
 {
     size_t pos = str.find("=");
-    if (pos == -1 ){
-        PDEBUG ("No '=' found!\n");
+    if (pos == string::npos ){
+
         return -1;
     }
     key.assign(str,0, pos-1);
@@ -246,7 +239,7 @@ int Config::splitstr(string &str, string &key, string &val)
     strip(key);
     strip(val);
     if (key.empty() || val.empty()) {
-        PDEBUG ("Key or val is empty!\n");
+
         return -1;
     }
     return 0;
@@ -254,7 +247,7 @@ int Config::splitstr(string &str, string &key, string &val)
 
 void Config::strip(string &str)
 {
-    int i = 0;
+    unsigned int i = 0;
     while (str[i] == ' ' && i < str.length()) {
         i++;
     }

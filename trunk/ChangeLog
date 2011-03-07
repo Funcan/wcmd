@@ -1,3 +1,8 @@
+2011-03-07  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Use wxMimeType to decide which app is to be used to open file.
+	* BTW, tomorrow is Women's Day.
+
 2011-03-04  Yang, Ying-chao  <yangyingchao@gmail.com>
 
 	* Added filter: Show filted result of quick search.
