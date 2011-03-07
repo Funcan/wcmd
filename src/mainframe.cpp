@@ -64,6 +64,8 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
     sizer->Add(fs, 1, wxEXPAND|wxALL, 5);
     this->SetSizer(sizer);
     SetIcon(wxIcon(wxcommandor, wxBITMAP_TYPE_XPM));
+    CreateStatusBar(2);
+    SetStatusText(wxT("Welcome to wxCommandor!"));
     Centre();
 }
 
@@ -280,7 +282,7 @@ void MainFrame::compare_items()
     cmd += " \"" + sp1->get_selected_item() + "\" \"" + \
         sp2->get_selected_item()+"\"";
 
-    wxExecute(str2wxstr(cmd));
+    get_sp()->do_async_execute(str2wxstr(cmd));
     return;
 }
 
@@ -419,8 +421,9 @@ int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
     string cmd;
     cmd =  "cp -aRf \"" + src + "\"  \"" +  dest +"\"";
     if (!copy)
-        cmd += "&& rm -rf \"" + src + "\"";
-    wxExecute(str2wxstr(cmd));
+        cmd =  "mv \"" + src + "\"  \"" +  dest +"\"";
+    // ret = wxExecute(str2wxstr(cmd));
+    ret = get_sp()->do_async_execute(str2wxstr(cmd));
     return ret;
 }
 

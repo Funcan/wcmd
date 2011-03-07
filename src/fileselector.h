@@ -14,8 +14,6 @@
 #include <wx/imaglist.h>
 #include <wx/listctrl.h>
 #include <wx/splitter.h>
-#include <wx/thread.h>
-#include <wx/mimetype.h>
 #include <wx/wx.h>
 #include <wx/iconloc.h>
 
@@ -54,7 +52,7 @@ public:
     int          view_file();
     void         goto_parent_dir();
     void         goto_dir();
-    int          wrap_open(string &path, char *ext, bool create);
+    int          wrap_open(string &path, bool create);
     const string get_cwd();
     string       get_selected_item();
     void         focus_first();
@@ -75,7 +73,8 @@ public:
     void         create_dir();
     void         real_sort(int idx);
     void         activate_item(int idx);
-
+    void OnAsyncTermination(bool up_both_fs=false);
+    int do_async_execute(const wxString &cmd);
 private:
     void delete_single_file(string &path);
     void OnColumbDrag(wxListEvent &evt);
@@ -122,6 +121,7 @@ public:
     virtual ~FileSelector();
     FSDisplayPane *sp1;
     FSDisplayPane *sp2;
+    void update_fs();
 };
 
 

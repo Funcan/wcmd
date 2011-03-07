@@ -1,10 +1,44 @@
 #include "fileselector.h"
+#include "wx/log.h"
+#include "wx/process.h"
+#include <wx/mimetype.h>
 
 #include "resources/mimetype/folder.xpm"
 #include "resources/mimetype/generic.xpm"
 
 #define LST_STYLE                                                       \
     wxLC_REPORT | wxBORDER_NONE | wxLC_EDIT_LABELS | wxLC_SORT_ASCENDING
+
+
+
+class MyProcess : public wxProcess
+{
+public:
+    MyProcess(FSDisplayPane *parent, const wxString& cmd)
+        : wxProcess(parent), m_cmd(cmd)
+        {
+            m_parent = parent;
+        }
+    virtual void OnTerminate(int pid, int status);
+
+protected:
+    FSDisplayPane *m_parent;
+    wxString m_cmd;
+    bool flag;
+};
+
+void MyProcess::OnTerminate(int pid, int status)
+{
+    wxLogStatus(wxT("Process %u ('%s') terminated with exit code %d."),
+                pid, m_cmd.c_str(), status);
+
+    if (m_cmd.StartsWith(_("mv")) || m_cmd.StartsWith(_("cp")))
+        flag = true;
+    else
+        flag = false;
+
+    m_parent->OnAsyncTermination(flag);
+}
 
 char tmp[18];
 
@@ -187,6 +221,12 @@ FileSelector::~FileSelector()
 {
 }
 
+void FileSelector::update_fs()
+{
+    sp1->update_list(sp1->cur_idx);
+    sp2->update_list(sp2->cur_idx);
+}
+
 
 
 FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
@@ -313,7 +353,7 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
     }
     cur_list.clear();
     cur_list = file_list;
-    show_list(0);
+    show_list(selected_item);
 }
 
 void FSDisplayPane::show_list(int selected_item, wxString filter)
@@ -481,7 +521,7 @@ void FSDisplayPane::activate_item(int idx)
     }
     else {
         string path = cwd + "/" + string(cur_list[idx]->name);
-        if (wrap_open(path, cur_list[idx]->ext, 0) < 0) {
+        if (wrap_open(path, 0) < 0) {
             fprintf(stderr, "ERROR: failed to execute cmd: %s!\n",
                 path.c_str());
         }
@@ -495,10 +535,11 @@ void FSDisplayPane::activate_item(int idx)
  * @return int
  * TODO: Enable multi-file edit and edit according to file type!
  */
-int FSDisplayPane::wrap_open(string &path, char *ext, bool create)
+int FSDisplayPane::wrap_open(string &path, bool create)
 {
     int ret = -1;
     wxString msg;
+    wxString ext = str2wxstr(path).AfterLast(wxT('.'));
     wxMessageDialog *dlg;
 
     if (access(path.c_str(), F_OK) == -1 && !create) {
@@ -506,7 +547,7 @@ int FSDisplayPane::wrap_open(string &path, char *ext, bool create)
     }
 
     wxFileType *ft = \
-        wxTheMimeTypesManager->GetFileTypeFromExtension(char2wxstr(ext));
+        wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
 
     if (ft == NULL) {
         msg = _("Unknow application associated with file:\n\t") +\
@@ -515,12 +556,12 @@ int FSDisplayPane::wrap_open(string &path, char *ext, bool create)
             _("Or Press F3 to view as plain file!");
         dlg = new wxMessageDialog(this, msg, _("Open fail!"), wxOK);
         dlg->ShowModal();
+        delete dlg;
     }
     else {
-
         wxString wxcmd = ft->GetOpenCommand(str2wxstr(path));
         if (wxcmd.Len() != 0) {
-            ret = (int)wxExecute(wxcmd);
+            ret = do_async_execute(wxcmd);
         }
         else {
             msg = _("No program registered for:\n\t") + str2wxstr(path) +\
@@ -528,9 +569,34 @@ int FSDisplayPane::wrap_open(string &path, char *ext, bool create)
                 _("Or Press F3 to view as plain file!");
             dlg = new wxMessageDialog(this, msg, _("Open fail!"), wxOK);
             dlg->ShowModal();
+            delete dlg;
         }
+        delete ft;
     }
     return ret;
+}
+
+int FSDisplayPane::do_async_execute(const wxString &cmd)
+{
+    MyProcess * const process = new MyProcess(this, cmd);
+    long m_pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
+    if ( !m_pidLast ) {
+        wxLogError(wxT("Execution of '%s' failed."), cmd.c_str());
+        delete process;
+    }
+    else {
+        wxLogStatus(wxT("Process %ld (%s) launched."), m_pidLast,
+                    cmd.c_str());
+    }
+    return (int)m_pidLast;
+}
+
+void FSDisplayPane::OnAsyncTermination(bool up_both_fs)
+{
+    if (up_both_fs)
+        ((FileSelector *)GetParent())->update_fs();
+    else
+        update_list(-1);
 }
 
 void FSDisplayPane::set_selected()
@@ -797,7 +863,7 @@ int FSDisplayPane::edit_file(bool create)
     }
     string cmd = config.get_config("editor") + " \"" + path + "\"";
 
-    wxExecute(str2wxstr(cmd));
+    do_async_execute(str2wxstr(cmd));
     return 0;
 }
 
@@ -832,8 +898,7 @@ int FSDisplayPane::open_terminal()
         delete ddlg;
         return -1;
     }
-    wxExecute(str2wxstr(cmd));
-    return 0;
+    return do_async_execute(str2wxstr(cmd));
 }
 /**
  * @name del_file - Move file to trashdir, or delete it if it's already in
@@ -879,14 +944,8 @@ int FSDisplayPane::delete_file()
 void FSDisplayPane::delete_single_file(string &path)
 {
     string cmd;
-
-
-    if (path.find(string(getenv("HOME")) + "/tmp/deleted") != string::npos)
-        cmd = "rm -rf \"" + path + "\"";
-    else
-        cmd = "mv \"" + path + "\"" + " ~/tmp/deleted";
-
-    wxExecute(str2wxstr(cmd));
+    cmd = "rm -rf \"" + path + "\"";
+    do_async_execute(str2wxstr(cmd));
 }
 
 void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
