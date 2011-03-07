@@ -10,7 +10,6 @@
 #include <time.h>
 #include <string.h>
 #include <wx/gbsizer.h>
-#include "resources/wxviewer.xpm"
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -122,7 +121,7 @@ private:
 class TextViewer: public wxFrame {
 public:
     TextViewer(wxWindow *parent, string path, int length);
-    virtual ~TextViewer() {PDEBUG ("called!\n"); };
+    virtual ~TextViewer() { };
 private:
     wxTextCtrl *txt;
 };
@@ -130,7 +129,7 @@ private:
 class InfoViewer: public wxFrame {
 public:
     InfoViewer(wxWindow *parent, string path);
-    virtual ~InfoViewer() {PDEBUG ("called!\n"); };
+    virtual ~InfoViewer() {};
 private:
     wxTextCtrl *txt;
 };

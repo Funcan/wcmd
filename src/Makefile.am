@@ -5,7 +5,7 @@
 # EDE is the Emacs Development Environment.
 # http://cedet.sourceforge.net/ede.shtml
 #
-AM_CXXFLAGS= -g `wx-config --cxxflags`
+AM_CXXFLAGS=-DDEBUG -g `wx-config --cxxflags` -Wall
 LIBS=`wx-config --libs`
 
 top=../

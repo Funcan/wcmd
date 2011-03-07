@@ -17,23 +17,26 @@
 #include <wx/thread.h>
 #include <wx/mimetype.h>
 #include <wx/wx.h>
+#include <wx/iconloc.h>
 
 #include "global.h"
 #include "misc.h"
 #include "utils.h"
 
-#include "resources/mimetype/folder.xpm"
-#include "resources/mimetype/generic.xpm"
-#include "resources/mimetype/image.xpm"
+#define char2wxstr(str) wxString(str, wxConvUTF8)
+#define str2wxstr(str)  wxString(str.c_str(), wxConvUTF8)
 
 extern  wxWindowID active_id;
+void init_imglist();
 
 class MyListCtrl: public wxListCtrl {
 
 public:
     MyListCtrl(wxWindow *parent, wxWindowID id);
     ~MyListCtrl();
-    wxHashTable *hash;
+    void append_item(int idx, item *entry);
+    void select_entry(int idx);
+    void deselect_entry(int idx);
 private:
     void OnPopupClick(wxCommandEvent &evt);
     void process_right_click(wxMouseEvent &evt);
@@ -44,34 +47,34 @@ class FSDisplayPane: public wxPanel {
 public:
     FSDisplayPane(wxWindow *parent, wxWindowID id, string &path);
     virtual ~FSDisplayPane(){};
-    int    cur_idx;
-    int    delete_file();
-    int    edit_file(bool create=false);
-    int    open_terminal();
-    int    view_file();
-    void  goto_parent_dir();
-    void   goto_dir();
-    int    wrap_open(string &path, bool create);
+    int          cur_idx;
+    int          delete_file();
+    int          edit_file(bool create=false);
+    int          open_terminal();
+    int          view_file();
+    void         goto_parent_dir();
+    void         goto_dir();
+    int          wrap_open(string &path, char *ext, bool create);
     const string get_cwd();
-    string get_selected_item();
-    void   focus_first();
-    void   focus_last();
-    void   focus_next();
-    void   focus_prev();
-    void   rename_file();
-    void   select_all();
-    void   set_cwd(string &path);
-    void   set_selected();
-    void   update_list(int selected_item, bool reload_dir=true);
-    void   show_list(int selected_item, wxString filter=_(""));
-    int    get_selected_files(vector<string> &list);
-    void   select_same_ext();
-    void   deselect_same_ext();
-    void  focus_list();
-    void toggle_search();
-    void create_dir();
-    void real_sort(int idx);
-    void activate_item(int idx);
+    string       get_selected_item();
+    void         focus_first();
+    void         focus_last();
+    void         focus_next();
+    void         focus_prev();
+    void         rename_file();
+    void         select_all();
+    void         set_cwd(string &path);
+    void         set_selected();
+    void         update_list(int selected_item, bool reload_dir=true);
+    void         show_list(int selected_item, wxString filter=_(""));
+    int          get_selected_files(vector<string> &list);
+    void         select_same_ext();
+    void         deselect_same_ext();
+    void         focus_list();
+    void         toggle_search();
+    void         create_dir();
+    void         real_sort(int idx);
+    void         activate_item(int idx);
 
 private:
     void delete_single_file(string &path);
@@ -85,11 +88,13 @@ private:
     void toggle_color(int idx, bool hicolor);
     void clean_resource();
     void process_right_click(wxMouseEvent &evt);
-    vector<item *>::iterator iter;
+
+    vector<item *>::iterator  iter;
+
     MyListCtrl     *lst;
     int             item_count;
-    DIR *dirp;
-    DIR *dirp_old;
+    DIR            *dirp;
+    DIR            *dirp_old;
     wxStaticText   *cwd_info, *dirinfo;
     wxTextCtrl     *quick_search;
     string          cwd;
@@ -99,12 +104,13 @@ private:
     vector<item *>  tmp_list;
     vector<item *>  cur_list;
     vector<int>     sel_idx;
-    wxString cur_target, old_target;
+    wxString        cur_target, old_target;
     wxFont          font;
     wxColour        fg_hi_col;
     wxColour        bg_hi_col;
     wxColour        bg_def_col;
     wxColour        fg_def_col;
+
     DECLARE_EVENT_TABLE()
 };
 
@@ -121,40 +127,10 @@ public:
 
 DECLARE_EVENT_TYPE(wxEVT_MY_EVENT, -1)
 
-
-class FuncHelper: public wxThread
-{
-public:
-    void Create(wxWindow *wn, string &path)
-    {
-        PDEBUG ("called, cmd: %s\n", path.c_str());
-        cmd = path + " >/dev/null 2>&1";
-        this->wn = wn;
-        wxThread::Create();
-        PDEBUG ("Exit\n");
-    };
-	void OnExit()
-    {
-        PDEBUG ("Leave thread!\n");
-        return;
-	}
-    void Run()
-    {
-        PDEBUG ("called.\n");
-        wxThread::Run();
-        PDEBUG ("bye.\n");
-    }
-private:
-	void* Entry();
-    string cmd;
-    wxWindow *wn;
-};
+#define GetMainFrame() GetParent()->GetParent()
 
 
-#define GetMainFrame()  GetParent()->GetParent()
-
-
-#endif /* _FILESELECTOR_H_ */
+#endif                          /* _FILESELECTOR_H_ */
 /*
  * Editor modelines
  *
@@ -164,6 +140,6 @@ private:
  * indent-tabs-mode: nil
  * End:
  *
- * ex: set shiftwidth=4 tabstop=4 expandtab
- * :indentSize=4:tabSize=4:noTabs=true:
+ * ex: set shiftwidth = 4 tabstop=4 expandtab
+ * :indentSize        = 4:tabSize=4:noTabs=true:
  */

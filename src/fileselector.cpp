@@ -1,20 +1,27 @@
 #include "fileselector.h"
 
+#include "resources/mimetype/folder.xpm"
+#include "resources/mimetype/generic.xpm"
+
 #define LST_STYLE                                                       \
     wxLC_REPORT | wxBORDER_NONE | wxLC_EDIT_LABELS | wxLC_SORT_ASCENDING
+
+char tmp[18];
+
 
 MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     wxListCtrl(parent, id, wxDefaultPosition, wxDefaultSize, LST_STYLE)
 {
+    wxImageList *imageList = NULL;
+    wxString mime_plain(_("txt"));
+    wxIconLocation icon_path;
+    wxString mimetype;
+    imageList = new wxImageList(22, 22);
 
-    hash = new wxHashTable(wxKEY_STRING);
+    imageList->Add(wxIcon(folder, wxBITMAP_TYPE_XPM));  // 0
+    imageList->Add(wxIcon(generic, wxBITMAP_TYPE_XPM)); // 1
 
-    wxImageList *imageList = new wxImageList(22, 22);
-    imageList->Add(wxIcon(folder, wxBITMAP_TYPE_XPM));
-    imageList->Add(wxIcon(generic, wxBITMAP_TYPE_XPM));
-    imageList->Add(wxIcon(image, wxBITMAP_TYPE_XPM));
     this->AssignImageList(imageList, wxIMAGE_LIST_SMALL);
-
     this->InsertColumn(0, _(""));
     this->InsertColumn(1, _("        File Name"));
     this->InsertColumn(2, _("Ext Name"));
@@ -30,13 +37,50 @@ MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     this->SetColumnWidth(5, 64);
 }
 
+void MyListCtrl::append_item(int idx, item *entry)
+{
+    wxString ext_name, msg;
+
+    if (entry->type == t_file) {
+        this->InsertItem(idx, 1);
+        ext_name = wxString(entry->ext, wxConvUTF8);
+        this->SetItem(idx, 2, ext_name);
+    }
+    else
+        this->InsertItem(idx, 0);
+
+    this->SetItemData(idx, idx);
+
+    this->SetItem(idx, 1, wxString(entry->name, wxConvUTF8));
+    msg.Printf(wxT("%d"), entry->size);
+    this->SetItem(idx, 3, msg);
+    memset (tmp, 0, 18);
+    format_time(&entry->ctime, tmp);
+    this->SetItem(idx, 4,  wxString(tmp, wxConvUTF8));
+    msg.Printf(wxT("%lo"), entry->mode & 0x1ff);
+    this->SetItem(idx, 5, msg);
+}
+
 MyListCtrl::~MyListCtrl()
 {
 }
 
+void MyListCtrl::select_entry(int idx)
+{
+    this->SetItemState(idx,
+                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
+                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+}
+
+void MyListCtrl::deselect_entry(int idx)
+{
+    this->SetItemState(idx, 0,
+                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+}
+
 void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
 {
-    PDEBUG ("called\n");
+
 
     FSDisplayPane *fs = (FSDisplayPane *)GetParent();
     int id = evt.GetId();
@@ -61,16 +105,16 @@ void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
         break;
     }
     default:
-        PDEBUG ("Not implemented!!\n");
+
         break;
     }
-    PDEBUG ("leave.\n");
+
 }
 
 
 void MyListCtrl::process_right_click(wxMouseEvent &evt)
 {
-    PDEBUG ("called!\n");
+
 
 	wxMenu *menu, *submenu;
     wxMenuItem *item;
@@ -148,8 +192,6 @@ FileSelector::~FileSelector()
 FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
 	wxPanel(parent, id)
 {
-    long style = wxLC_REPORT | wxBORDER_NONE | wxLC_EDIT_LABELS |\
-        wxLC_SORT_ASCENDING;
     font = wxFont(11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL,
                   wxFONTWEIGHT_NORMAL);
     SetFont(font);
@@ -207,9 +249,6 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
 
 void FSDisplayPane::update_list(int selected_item, bool reload_dir)
 {
-    PDEBUG ("CWD: %s, reload = %s, seleced_item: %d\n",
-            cwd.c_str(), reload_dir?"True":"False", selected_item);
-
     wxString msg;
     if (reload_dir) {
         clean_resource();
@@ -274,8 +313,7 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
     }
     cur_list.clear();
     cur_list = file_list;
-    show_list(1);
-    PDEBUG ("leave\n");
+    show_list(0);
 }
 
 void FSDisplayPane::show_list(int selected_item, wxString filter)
@@ -298,68 +336,34 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
     // lst->SetItem(idx, 2, msg);
 
     int size = cur_list.size();
-    char tmp[18];
-    wxFileType *ft;
-    wxString mimetype, ext_name;
-    wxString mime_plain(_("text/plain"));
-    wxIconLocation iconpath;
-
     for (int i = 0; i < size;  i++) {
-        ft = NULL;
         idx ++;
         cur_list[i]->orig_id = idx;
         // Insert Image Column & Extention Colum.
-        if (cur_list[i]->type == t_file) {
-            lst->InsertItem(idx, 1);
-            ext_name = wxString(cur_list[i]->ext, wxConvUTF8);
-            lst->SetItem(idx, 2, ext_name);
-            if (ext_name.Len() != 0)
-                ft = wxTheMimeTypesManager->GetFileTypeFromExtension(ext_name);
-
-            if (ft == NULL)
-                ft = wxTheMimeTypesManager->GetFileTypeFromMimeType(mime_plain);
-
-                if (!ft->GetMimeType(&mimetype)) {
-                    PDEBUG ("failed to get mime type\n");
-                }
-        }
-        else
-            lst->InsertItem(idx, 0);
-
-        lst->SetItemData(idx, idx);
-
-        lst->SetItem(idx, 1, wxString(cur_list[i]->name, wxConvUTF8));
-        msg.Printf(wxT("%d"), cur_list[i]->size);
-        lst->SetItem(idx, 3, msg);
-        memset (tmp, 0, 18);
-        format_time(&cur_list[i]->ctime, tmp);
-        lst->SetItem(idx, 4,  wxString(tmp, wxConvUTF8));
-        msg.Printf(wxT("%lo"), cur_list[i]->mode & 0x1ff);
-        lst->SetItem(idx, 5, msg);
+        lst->append_item(idx, cur_list[i]);
     }
 
     if (selected_item < 0) // Selecte the first one by default.
         selected_item = 1;
     if (cur_list.empty()) // If list is empty, select ".."
         selected_item = 0;
-    else if (selected_item > cur_list.size()) // Select the last one.
+    else if (selected_item > (int)cur_list.size()) // Select the last one.
         selected_item = cur_list.size();
-    lst->SetItemState(selected_item,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+
+    lst->select_entry(selected_item);
     cur_idx = selected_item;
     dirinfo->SetLabel(msg);
-    lst->SetColumnWidth(3, -1);
-    lst->SetColumnWidth(4, -1);
-    lst->SetColumnWidth(5, -2);
     item_count = idx + 1;
     Thaw();
-    PDEBUG ("leave\n");
-}
 
+}
+/**
+ * @name clean_resource - Cleans up the allocated resouces.
+ * @return void
+ */
 void FSDisplayPane::clean_resource()
 {
-    PDEBUG ("Called.\n");
+
     for (iter = file_list.begin(); iter < file_list.end(); iter++) {
         free (*iter);
     }
@@ -368,19 +372,26 @@ void FSDisplayPane::clean_resource()
     selected_list.clear();
 }
 
+/**
+ * @name select_all - Chooses the files in current list.
+ * @return void
+ */
 void FSDisplayPane::select_all()
 {
-    PDEBUG ("called.\n");
+
     selected_list.clear();
     // int idx;
-    for (int idx = 0; idx < file_list.size(); idx++) {
+    for (unsigned int idx = 0; idx < file_list.size(); idx++) {
         selected_list.push_back(file_list[idx]);
-        lst->SetItemState(idx+1, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                          wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+        lst->select_entry(idx+1);
     }
-    //    lst->SetItemState(idx, 0, (wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED));
 }
 
+/**
+ * @name select_same_ext - Chooses all files of the  of same type as the
+ *      selected one.
+ * @return void
+ */
 void FSDisplayPane::select_same_ext()
 {
     if (cur_idx == 0) {
@@ -388,16 +399,18 @@ void FSDisplayPane::select_same_ext()
     }
     selected_list.clear();
     string ext_name(file_list[cur_idx - 1]->ext);
-    for (int idx = 0; idx < file_list.size(); idx++) {
+    for (unsigned int idx = 0; idx < file_list.size(); idx++) {
         if (strstr(file_list[idx]->name, ext_name.c_str())) {
             selected_list.push_back(file_list[idx]);
-            lst->SetItemState(idx+1,
-                              wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                              wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+            lst->select_entry(idx+1);
         }
     }
 }
 
+/**
+ * @name deselect_same_ext - Deselect files  of the same type.
+ * @return void
+ */
 void FSDisplayPane::deselect_same_ext()
 {
     if (cur_idx == 0) {
@@ -406,8 +419,7 @@ void FSDisplayPane::deselect_same_ext()
     string ext_name(file_list[cur_idx - 1]->ext);
     for (int idx = selected_list.size() - 1; idx > 0; idx--) {
         if (strstr(selected_list[idx]->name, ext_name.c_str())) {
-            lst->SetItemState(selected_list[idx]->orig_id, 0,
-                              wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+            lst->deselect_entry(selected_list[idx]->orig_id);
             selected_list.erase(selected_list.begin()+idx);
         }
     }
@@ -427,7 +439,7 @@ void FSDisplayPane::OnItemSelected(wxListEvent &evt)
 
 void FSDisplayPane::item_activated(wxListEvent &evt)
 {
-    PDEBUG ("called!\n");
+
     int idx = evt.GetData();
     quick_search->Clear();
     quick_search->Show(false);
@@ -446,7 +458,7 @@ void FSDisplayPane::activate_item(int idx)
     // The first item should be processed sepratedly, cause dir ".." is not
     // stored in the file_list.
     if (idx == 0) {
-        PDEBUG ("Selected parent director!\n");
+
         cwd = string(dirname(strdup(cwd.c_str())));
         vector<int>::iterator iter;
         if (!sel_idx.empty()) {
@@ -459,7 +471,7 @@ void FSDisplayPane::activate_item(int idx)
     }
     idx--; // Strip the first item.
     if (cur_list[idx]->type == t_dir) {
-        PDEBUG ("Idx: %d, name: %s\n", idx, cur_list[idx]->name);
+
 
         old_path = cwd;
         cwd = old_path + "/" + string(cur_list[idx]->name);
@@ -469,8 +481,9 @@ void FSDisplayPane::activate_item(int idx)
     }
     else {
         string path = cwd + "/" + string(cur_list[idx]->name);
-        if (wrap_open(path, 0) < 0) {
-            PDEBUG ("Failed to open file: %s\n", path.c_str());
+        if (wrap_open(path, cur_list[idx]->ext, 0) < 0) {
+            fprintf(stderr, "ERROR: failed to execute cmd: %s!\n",
+                path.c_str());
         }
     }
  }
@@ -482,45 +495,49 @@ void FSDisplayPane::activate_item(int idx)
  * @return int
  * TODO: Enable multi-file edit and edit according to file type!
  */
-int FSDisplayPane::wrap_open(string &path, bool create)
+int FSDisplayPane::wrap_open(string &path, char *ext, bool create)
 {
-    int ret = 0;
+    int ret = -1;
+    wxString msg;
+    wxMessageDialog *dlg;
+
     if (access(path.c_str(), F_OK) == -1 && !create) {
         oops ("Failed to open file: %s\n", path.c_str());
     }
 
-    string cmd, key;
-    filetype ftype = get_file_type(path);
-    PDEBUG ("ftype: %d\n", ftype);
-    switch (ftype) {
-    case t_img: {
-        key = "img_editor";
-        break;
+    wxFileType *ft = \
+        wxTheMimeTypesManager->GetFileTypeFromExtension(char2wxstr(ext));
+
+    if (ft == NULL) {
+        msg = _("Unknow application associated with file:\n\t") +\
+            str2wxstr(path) +\
+            _(".\nYou can stroke Ctrl+i to view file info ")+ \
+            _("Or Press F3 to view as plain file!");
+        dlg = new wxMessageDialog(this, msg, _("Open fail!"), wxOK);
+        dlg->ShowModal();
     }
-    case t_pdf: {
-        key = "pdf_reader";
-        break;
+    else {
+
+        wxString wxcmd = ft->GetOpenCommand(str2wxstr(path));
+        if (wxcmd.Len() != 0) {
+            ret = (int)wxExecute(wxcmd);
+        }
+        else {
+            msg = _("No program registered for:\n\t") + str2wxstr(path) +\
+                _(".\nYou can stroke Ctrl+i to view file info ")+      \
+                _("Or Press F3 to view as plain file!");
+            dlg = new wxMessageDialog(this, msg, _("Open fail!"), wxOK);
+            dlg->ShowModal();
+        }
     }
-    case t_video: {
-        key = "video_player";
-        break;
-    }
-    default:
-        key = "editor";
-        break;
-    }
-    cmd = config.get_config(key) +  " \"" + path + "\"";
-    PDEBUG ("cmd = %s\n", cmd.c_str());
-    FuncHelper *func  = new FuncHelper();
-    func->Create((wxWindow *)GetMainFrame(), cmd);
-    func->Run();
-    return 0;
+    return ret;
 }
 
 void FSDisplayPane::set_selected()
 {
-    PDEBUG ("called;\n");
+
     if (cur_idx == 0) {
+        PDEBUG ("Should not select parent direcoty!\n");
         return;
     }
     bool found = false;
@@ -528,7 +545,6 @@ void FSDisplayPane::set_selected()
     if (!selected_list.empty()) {
         for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
             if (strcmp(entry->name, (*iter)->name) == 0) {
-                PDEBUG ("Found entry: %s\n",entry->name);
                 found = true;
                 break;
             }
@@ -548,12 +564,12 @@ void FSDisplayPane::set_selected()
 void FSDisplayPane::toggle_color(int idx, bool hicolor)
 {
     if (hicolor){
-        PDEBUG ("Hicolor\n");
+
         lst->SetItemTextColour(idx, fg_hi_col);
         lst->SetItemBackgroundColour(idx, bg_hi_col);
     }
     else{
-        PDEBUG ("Dehicolor\n");
+
         lst->SetItemTextColour(idx, fg_def_col);
         lst->SetItemBackgroundColour(idx, bg_def_col);
     }
@@ -564,7 +580,6 @@ void FSDisplayPane::rename_file()
     wxString msg;
     wxMessageDialog *ddlg;
     if (cur_idx == 0) {
-        PDEBUG ("Rename .. is not allowed!\n");
         msg = _("Rename .. is not allowed!\n");
         ddlg = \
             new wxMessageDialog(this, msg, _("Error"),
@@ -591,7 +606,6 @@ void FSDisplayPane::rename_file()
         }
         string cmd = "mv \"" + cwd + "/" + string(file_list[cur_idx-1]->name)\
             +  "\" \"" + cwd + "/" + fn + "\"";
-        cout << cmd << endl;
         if ((ret = system(cmd.c_str())) != 0 ) {
             msg = _("Failed to rename file: ") + \
                 wxString(fn.c_str(),wxConvUTF8);
@@ -671,9 +685,7 @@ void FSDisplayPane::OnKeydown(wxListEvent &evt)
             char c[2] = {'\0'};
             sprintf(c, "%c", keycode);
             if (!quick_search->IsShown()) {
-                lst->SetItemState(cur_idx, 0,
-                                  (wxLIST_STATE_SELECTED |
-                                   wxLIST_STATE_FOCUSED));
+                lst->deselect_entry(cur_idx);
             }
             quick_search->Show(true);
             quick_search->SetFocus();
@@ -691,7 +703,7 @@ void FSDisplayPane::create_dir()
     int ret = dlg->ShowModal();
     if (ret == wxID_OK) {
         string fn = cwd + "/" + string(dlg->fn.mb_str(wxConvUTF8));
-        PDEBUG ("MKDIR: %s\n", fn.c_str());
+
         if ((ret = mkdir(fn.c_str(), 0777))  ==1 ) {
             wxString msg = _("Failed to create directory: ") + \
                 wxString(fn.c_str(),wxConvUTF8) + \
@@ -723,9 +735,7 @@ int FSDisplayPane::view_file()
     }
     if (is_image(path)) {
         string cmd = config.get_config("img_viewer") + " \"" + path + "\"";
-        FuncHelper *func = new FuncHelper();
-        func->Create((wxWindow *)GetMainFrame(), cmd);
-        func->Run();
+        wxExecute(str2wxstr(cmd));
         return 0;
     }
     else {
@@ -786,10 +796,8 @@ int FSDisplayPane::edit_file(bool create)
         }
     }
     string cmd = config.get_config("editor") + " \"" + path + "\"";
-    PDEBUG ("CMD: %s\n", cmd.c_str());
-    FuncHelper *func = new FuncHelper();
-    func->Create((wxWindow *)GetMainFrame(), cmd);
-    func->Run();
+
+    wxExecute(str2wxstr(cmd));
     return 0;
 }
 
@@ -824,9 +832,7 @@ int FSDisplayPane::open_terminal()
         delete ddlg;
         return -1;
     }
-    FuncHelper *func = new FuncHelper();
-    func->Create((wxWindow *)GetMainFrame(), cmd);
-    func->Run();
+    wxExecute(str2wxstr(cmd));
     return 0;
 }
 /**
@@ -836,20 +842,20 @@ int FSDisplayPane::open_terminal()
  */
 int FSDisplayPane::delete_file()
 {
-    PDEBUG ("called.\n");
+
     string path, cmd;
     int idx = 0;
     if (selected_list.empty()) {
         if (cur_idx == 0)
             return 0;
-        PDEBUG ("Delete the on at curser\n!");
+
         path =  cwd + "/" + string(file_list[cur_idx-1]->name);
         delete_single_file(path);
         cur_idx--;
         idx = cur_idx;
     }
     else {
-        PDEBUG ("delete from selected list!\n");
+
 
         idx = (*selected_list.begin())->orig_id -1 ;
         for (iter=selected_list.begin(); iter<selected_list.end(); iter++){
@@ -873,36 +879,34 @@ int FSDisplayPane::delete_file()
 void FSDisplayPane::delete_single_file(string &path)
 {
     string cmd;
-    PDEBUG ("called: %s\n", path.c_str());
 
-    if (path.find(string(getenv("HOME")) + "/tmp/deleted") != -1)
+
+    if (path.find(string(getenv("HOME")) + "/tmp/deleted") != string::npos)
         cmd = "rm -rf \"" + path + "\"";
     else
         cmd = "mv \"" + path + "\"" + " ~/tmp/deleted";
-    FuncHelper *func = new FuncHelper();
-    func->Create((wxWindow *)GetMainFrame(), cmd);
-    func->Run();
+
+    wxExecute(str2wxstr(cmd));
 }
 
 void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
 {
-    PDEBUG ("Set %d unselected!\n", cur_idx);
-    string tmp, name;
-    int idx;
 
-    lst->SetItemState(cur_idx, 0,
-                      (wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED));
+    string tmp, name;
+    unsigned int idx;
+
+    lst->deselect_entry(cur_idx);
 
     if (!quick_search->IsShown()) {
         old_target.Clear();
-        PDEBUG ("Should not search!\n");
+
         goto ret;
         return;
     }
 
     cur_target = quick_search->GetValue();
     if (cur_target.Len() == 0) {
-        PDEBUG ("Empty search!\n");
+
         old_target.Clear();
         // cur_list = file_list;
         goto ret;
@@ -929,7 +933,7 @@ void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
     }
 
 ret:
-    if (cur_idx > cur_list.size())
+    if (cur_idx > (signed int)cur_list.size())
         cur_idx = 1;
     old_target = cur_target;
     show_list(cur_idx, cur_target);
@@ -941,12 +945,10 @@ ret:
  */
 void FSDisplayPane::OnTextEnter(wxCommandEvent &evt)
 {
-    PDEBUG ("called!\n");
+
 
     quick_search->Clear();
-    lst->SetItemState(cur_idx,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+    lst->select_entry(cur_idx);
     lst->SetFocus();
     if (quick_search->IsShown()) {
         quick_search->Show(false);
@@ -961,7 +963,7 @@ void FSDisplayPane::OnColumbDrag(wxListEvent &evt)
 {
 #ifdef DEBUG
     for (int i = 0; i < 6; i++) {
-        PDEBUG ("Column: %d, width: %d\n",i, lst->GetColumnWidth(i));
+
     }
 #endif
     evt.Skip();
@@ -985,12 +987,9 @@ string FSDisplayPane::get_selected_item()
 
 void FSDisplayPane:: focus_first()
 {
-    lst->SetItemState(cur_idx, 0,
-                      (wxLIST_STATE_SELECTED));
+    lst->deselect_entry(cur_idx);
     cur_idx = 0;
-    lst->SetItemState(cur_idx,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+    lst->select_entry(cur_idx);
     wxPoint point;
     lst->GetItemPosition(cur_idx, point);
     lst->ScrollList(0, point.y);
@@ -998,46 +997,36 @@ void FSDisplayPane:: focus_first()
 
 void FSDisplayPane:: focus_last()
 {
-    lst->SetItemState(cur_idx, 0,
-                      (wxLIST_STATE_SELECTED));
+    lst->deselect_entry(cur_idx);
     cur_idx = item_count - 1;
-    lst->SetItemState(cur_idx,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+    lst->select_entry(cur_idx);
     wxPoint point;
     lst->GetItemPosition(cur_idx, point);
     lst->ScrollList(0, point.y);
 }
 void FSDisplayPane:: focus_prev()
 {
-    lst->SetItemState(cur_idx, 0,
-                      (wxLIST_STATE_SELECTED));
+    lst->deselect_entry(cur_idx);
     cur_idx--;
     if (cur_idx < 0)
         cur_idx = 0;
 
-    lst->SetItemState(cur_idx,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+    lst->select_entry(cur_idx);
 
 }
 void FSDisplayPane:: focus_next()
 {
-    lst->SetItemState(cur_idx, 0,
-                      (wxLIST_STATE_SELECTED));
+    lst->deselect_entry(cur_idx);
     cur_idx ++;
     if (cur_idx == item_count)
         cur_idx = item_count - 1;
-
-    lst->SetItemState(cur_idx,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
-                      wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+    lst->select_entry(cur_idx);
 }
 
 void FSDisplayPane::OnMySort(wxListEvent &evt)
 {
     int col = evt.GetColumn();
-    PDEBUG ("called, col: %d\n", col);
+
     real_sort(col);
     evt.Skip();
 }
@@ -1084,7 +1073,7 @@ void  FSDisplayPane::focus_list()
 
 void  FSDisplayPane:: goto_dir()
 {
-    PDEBUG ("called.\n");
+
     DirnameDlg *dlg = \
         new DirnameDlg(this, _("Enter new directory name:"));
     int ret = dlg->ShowModal();
@@ -1112,7 +1101,7 @@ void  FSDisplayPane:: goto_dir()
 
 void FSDisplayPane::process_right_click(wxMouseEvent &evt)
 {
-    PDEBUG ("called!\n");
+
 
     wxMessageDialog *dlg = \
         new wxMessageDialog(this, _("Test"), _("Test"), wxOK);
@@ -1130,20 +1119,6 @@ EVT_TEXT(-1, FSDisplayPane::OnTextChanged)
 EVT_TEXT_ENTER(-1, FSDisplayPane::OnTextEnter)
 EVT_RIGHT_DOWN(FSDisplayPane::process_right_click)
 END_EVENT_TABLE()
-
-void *FuncHelper::Entry()
-{
-    PDEBUG ("Begin executing: %s.\n", cmd.c_str());
-    if(system(cmd.c_str()))
-        fprintf(stderr, "ERROR: failed to execute command!\n");
-    wxCommandEvent event( wxEVT_MY_EVENT, GetId() );
-    event.SetEventObject(wn);
-    (wn->GetEventHandler())->AddPendingEvent(event);
-    PDEBUG ("Leaving Thread!\n");
-    return 0;
-}
-
-
 
 /*
  * Editor modelines

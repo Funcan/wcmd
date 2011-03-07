@@ -22,8 +22,9 @@ bool endswith(string const &fullString, string const ending)
 {
     unsigned int lastMatchPos = fullString.rfind(ending);
     bool isEnding = lastMatchPos != string::npos;
-
-    for( int i = lastMatchPos + ending.length(); (i < fullString.length()) && isEnding; i++)
+    unsigned int i;
+    for(i = lastMatchPos + ending.length();
+        (i < fullString.length()) && isEnding; i++)
         {
             if( (fullString[i] != '\n') &&
                 (fullString[i] != '\r') )
@@ -81,7 +82,8 @@ char *get_real_dirname(const char *in_path)
 
 bool name_is_valid(string &fn)
 {
-    if (fn.empty() || fn.compare("..") == 0 || fn.compare(".") == 0 || fn.find("/") != -1)
+    if (fn.empty() || fn.compare("..") == 0 || fn.compare(".") == 0 ||
+        fn.find("/") != string::npos)
         return false;
     else
         return true;

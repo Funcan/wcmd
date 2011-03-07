@@ -1,4 +1,5 @@
 #include "misc.h"
+#include "resources/wxviewer.xpm"
 
 SimpleDialog:: SimpleDialog(wxWindow *parent, wxString name) :    \
     wxDialog(parent, -1, name)
@@ -36,7 +37,6 @@ void DirnameDlg::draw()
 
 void DirnameDlg::OnOK(wxCommandEvent &evt)
 {
-    PDEBUG ("called.\n");
     fn = txt->GetValue();
     EndModal(wxID_OK);
 }
@@ -130,7 +130,7 @@ void BookmarkManage::draw()
     wxBoxSizer *hbox;
     wxCheckBox *check;
     vector<string>::iterator iter;
-    int idx = 0;
+    unsigned int idx = 0;
     wxString str;
     for (; idx < bookmarks.size(); idx++) {
         str.Printf(wxT("%002d. "), idx + 1);
@@ -176,7 +176,7 @@ void BookmarkManage::OnAdd(wxCommandEvent &evt)
         wxString path = dlg->GetPath();
         string val = string(path.mb_str());
 
-        int idx1;
+        unsigned int idx1;
         for (idx1 = 0; idx1 < bookmarks.size(); idx1++) {
             if (bookmarks[idx1] == val) {
                 wxMessageDialog *ddlg = \
@@ -195,7 +195,6 @@ void BookmarkManage::OnAdd(wxCommandEvent &evt)
 
 void BookmarkManage::OnDel(wxCommandEvent &evt)
 {
-    PDEBUG ("called\n");
     int idx = 0;
     for (idx = check_list.size() - 1; idx >= 0; idx--) {
         if (check_list[idx]->GetValue()) {
@@ -283,8 +282,6 @@ BoolEntry:: BoolEntry(wxWindow *parent, string key):wxPanel(parent, -1)
 
 void BoolEntry::OnBtn(wxCommandEvent &evt)
 {
-    PDEBUG ("called.\n");
-
     if (btn1->GetValue())
         config.set_config(this->key, "true");
     else
@@ -300,7 +297,6 @@ END_EVENT_TABLE()
 MyImagePanel::MyImagePanel(wxWindow* parent, string path) :\
 wxPanel(parent, wxID_ANY)
 {
-    PDEBUG ("called: path: %s\n", path.c_str());
     fn = wxString(path.c_str(), wxConvUTF8);
     Show(true);
 }
@@ -340,7 +336,6 @@ void MyImagePanel::paintNow()
  */
 void MyImagePanel::render(wxDC&  dc)
 {
-    PDEBUG ("called.\n");
     dc.Clear();
     if (fn.Length() > 4) { // XXX.png|jpg|jpeg
         long type;
@@ -348,13 +343,11 @@ void MyImagePanel::render(wxDC&  dc)
             fn.Find(_T("jpeg")) != wxNOT_FOUND||
             fn.Find(_T("JPG")) != wxNOT_FOUND ||
             fn.Find(_T("JPEG"))!= wxNOT_FOUND) {
-            PDEBUG ("Filetype: jpeg!\n");
 
             type = wxBITMAP_TYPE_JPEG;
         }
         else if (fn.Find(_T("png")) != wxNOT_FOUND ||
                  fn.Find(_T("PNG")) != wxNOT_FOUND) {
-            PDEBUG ("Filetype: png!\n");
 
             type = wxBITMAP_TYPE_PNG;
         }
@@ -365,7 +358,6 @@ void MyImagePanel::render(wxDC&  dc)
         else if (fn.Find(_T("xpm")) != wxNOT_FOUND ||
                  fn.Find(_T("XPM")) != wxNOT_FOUND){
             type = wxBITMAP_TYPE_XPM;
-            PDEBUG ("FileType: Image, xpm!\n");
         }
         else
             type = wxBITMAP_TYPE_ANY;
@@ -383,7 +375,6 @@ void MyImagePanel::render(wxDC&  dc)
     }
 
     dc.DrawBitmap( image, 0, 0, false );
-    PDEBUG ("end\n");
 }
 
 BEGIN_EVENT_TABLE(MyImagePanel, wxPanel)

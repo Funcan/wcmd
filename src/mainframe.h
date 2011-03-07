@@ -2,22 +2,6 @@
 #define _MAINFRAME_H_
 
 #include "fileselector.h"
-#include "resources/wxcommandor.xpm"
-#include "resources/bookmark_add.xpm"
-#include "resources/bookmark_mgt.xpm"
-#include "resources/buttons/btn_copy.xpm"
-#include "resources/buttons/btn_cut.xpm"
-#include "resources/buttons/btn_move.xpm"
-#include "resources/buttons/btn_delete.xpm"
-#include "resources/buttons/btn_edit.xpm"
-#include "resources/buttons/btn_new.xpm"
-#include "resources/buttons/btn_open.xpm"
-#include "resources/buttons/btn_paste.xpm"
-#include "resources/buttons/btn_view.xpm"
-#include "resources/buttons/btn_terminal.xpm"
-
-
-#include "fileselector.h"
 
 class MainFrame: public wxFrame
 {
