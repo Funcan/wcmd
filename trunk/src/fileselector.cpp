@@ -933,8 +933,10 @@ void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
     }
 
 ret:
-    if (cur_idx > (signed int)cur_list.size())
+    if (cur_idx > (signed int)cur_list.size() || cur_idx < 1)
         cur_idx = 1;
+    if (cur_list.empty())
+        cur_idx = 0;
     old_target = cur_target;
     show_list(cur_idx, cur_target);
 }
@@ -945,18 +947,13 @@ ret:
  */
 void FSDisplayPane::OnTextEnter(wxCommandEvent &evt)
 {
-
-
-    quick_search->Clear();
+     quick_search->Clear();
+    quick_search->Show(false);
     lst->select_entry(cur_idx);
     lst->SetFocus();
-    if (quick_search->IsShown()) {
-        quick_search->Show(false);
-    }
-    else {
-        if (cur_idx != 0)
-            activate_item(cur_idx);
-    }
+
+    if (cur_idx != 0)
+        activate_item(cur_idx);
 }
 
 void FSDisplayPane::OnColumbDrag(wxListEvent &evt)
