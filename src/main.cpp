@@ -57,9 +57,24 @@ int MyApp::FilterEvent(wxEvent& event)
     if ( event.GetEventType()==wxEVT_KEY_DOWN) {
         wxKeyEvent evt = (wxKeyEvent&)event;
         int keycode = evt.GetKeyCode();
-
         if (evt.ControlDown()) {
             switch (keycode) {
+            case 49: { // Ctlr + 1,  sort by name,
+                frame->get_sp()->real_sort(COL_NAME);
+                return true;
+            }
+            case 50: { // Ctlr + 1,  sort by ext,
+                frame->get_sp()->real_sort(COL_EXT);
+                return true;
+            }
+            case 51: { // Ctlr + 1,  sort by size,
+                frame->get_sp()->real_sort(COL_SIZE);
+                return true;
+            }
+            case 52: { // Ctlr + 1,  sort by time,
+                frame->get_sp()->real_sort(COL_TIME);
+                return true;
+            }
             case 96: { // Ctrl + `, Go to HOME dir
                 string path = string(getenv("HOME"));
                 frame->get_sp()->set_cwd(path);
