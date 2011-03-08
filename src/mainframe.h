@@ -28,7 +28,7 @@ public:
     void OnThreadCompletion(wxCommandEvent& event);
     void OnPositionChanged(wxSplitterEvent& event);
     void show_file_info();
-
+    void update_status();
 private:
     FSDisplayPane *sp1;
     FSDisplayPane *sp2;

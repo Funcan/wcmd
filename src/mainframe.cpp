@@ -64,8 +64,9 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
     sizer->Add(fs, 1, wxEXPAND|wxALL, 5);
     this->SetSizer(sizer);
     SetIcon(wxIcon(wxcommandor, wxBITMAP_TYPE_XPM));
-    CreateStatusBar(2);
+    CreateStatusBar(1);
     SetStatusText(wxT("Welcome to wxCommandor!"));
+    update_status();
     Centre();
 }
 
@@ -83,6 +84,18 @@ MainFrame::~MainFrame()
     config.set_config("auto_last_path_l", sp1->get_cwd());
     config.set_config("auto_last_path_r", sp2->get_cwd());
     config.dump2file();
+}
+
+void MainFrame::update_status()
+{
+    wxString path(_("Active Directory: "));
+    if (active_id == ID_Sp1) {
+        path += str2wxstr(sp1->get_cwd());
+    }
+    else{
+        path += str2wxstr(sp2->get_cwd());
+    }
+    wxLogStatus(path);
 }
 
 
@@ -310,13 +323,13 @@ FSDisplayPane *MainFrame::get_sp()
 
 void MainFrame::exchange_sp()
 {
-
-
-    if (active_id == ID_Sp1)
+    if (active_id == ID_Sp1) {
         active_id = ID_Sp2;
-    else
+    }
+    else{
         active_id = ID_Sp1;
-
+    }
+    update_status();
 }
 
 FSDisplayPane *MainFrame::get_sp_o()
