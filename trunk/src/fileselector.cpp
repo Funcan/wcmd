@@ -624,6 +624,16 @@ void FSDisplayPane::set_selected()
         selected_list.erase(iter);
         toggle_color(cur_idx, false);
     }
+
+    int total_size = 0, total_number = 0;
+    wxString msg;
+    for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
+        total_size += (*iter)->size;
+        ++total_number;
+    }
+    msg.Printf(wxT("Total selected items: %d, \t\tsize: %d K\n"),
+               total_number, total_size/1024);
+    dirinfo->SetLabel(msg);
 }
 
 
