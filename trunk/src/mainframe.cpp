@@ -223,7 +223,7 @@ void MainFrame::OnCopy(wxCommandEvent & event)
 void MainFrame::OnDelete(wxCommandEvent & event)
 {
 
-    get_sp()->delete_file();
+    get_sp()->delete_files();
     event.Skip();
 }
 

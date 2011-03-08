@@ -297,14 +297,13 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
 
 void FSDisplayPane::update_list(int selected_item, bool reload_dir)
 {
-    wxString msg;
     if (reload_dir) {
         clean_resource();
         if (dirp != NULL){
             dirp_old = dirp;
         }
         if ((dirp = opendir(cwd.c_str())) == NULL) {
-            wxString msg = _("ERROR: failed to open :") +\
+            msg = _("ERROR: failed to open :") +\
                 wxString(cwd.c_str(), wxConvUTF8) +\
                 _("\nReason: ") + wxString(strerror(errno), wxConvUTF8);
             wxMessageDialog *dlg = \
@@ -372,9 +371,6 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
  */
 void FSDisplayPane::show_list(int selected_item, wxString filter)
 {
-    wxString msg;
-
-
     Freeze();
     if (filter.Len() != 0)
         msg = _("\t\tFILTER: ") + filter;
@@ -421,7 +417,6 @@ void FSDisplayPane::update_dir_info()
 {
     wxLongLong disk_size = 0, free_size = 0;
     int selected_size = 0, selected_number = 0;
-    wxString msg;
     for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
         selected_size += (*iter)->size;
         ++selected_number;
@@ -588,7 +583,6 @@ void FSDisplayPane::activate_item(int idx)
 int FSDisplayPane::wrap_open(string &path, bool create)
 {
     int ret = -1;
-    wxString msg;
     wxString ext = str2wxstr(path).AfterLast(wxT('.'));
     wxMessageDialog *dlg;
 
@@ -694,7 +688,6 @@ void FSDisplayPane::toggle_color(int idx, bool hicolor)
 
 void FSDisplayPane::rename_file()
 {
-    wxString msg;
     wxMessageDialog *ddlg;
     if (cur_idx == 0) {
         msg = _("Rename .. is not allowed!\n");
@@ -711,9 +704,8 @@ void FSDisplayPane::rename_file()
         new DirnameDlg(this, _("Enter new file name:"), old);
     int ret = dlg->ShowModal();
     if (ret == wxID_OK) {
-        string fn = string(dlg->fn.mb_str(wxConvUTF8));
-        if (!name_is_valid(fn)) {
-            msg = _("New name is empty or it is not valid!");
+        if (!name_is_valid(dlg->fn)) {
+            msg = _("New name is empty or not valid!");
             ddlg = \
                 new wxMessageDialog(this, msg, _("Error"),
                                     wxOK);
@@ -721,12 +713,10 @@ void FSDisplayPane::rename_file()
             delete(ddlg);
             return ;
         }
-        string cmd = "mv \"" + cwd + "/" + string(file_list[cur_idx-1]->name)\
-            +  "\" \"" + cwd + "/" + fn + "\"";
-        if ((ret = system(cmd.c_str())) != 0 ) {
-            msg = _("Failed to rename file: ") + \
-                wxString(fn.c_str(),wxConvUTF8);
-            ddlg = \
+        if (wxRenameFile(char2wxstr(file_list[cur_idx-1]->name), dlg->fn,
+                         true)  == false) {
+            msg = _("Failed to rename file: ") + dlg->fn;
+            ddlg =                                          \
                 new wxMessageDialog(this, msg, _("Error"),
                                     wxOK);
             ddlg->ShowModal();
@@ -753,7 +743,7 @@ void FSDisplayPane::OnKeydown(wxListEvent &evt)
     switch (keycode) {
     case 8: { // Backspace.
         if (quick_search->IsShown()) { // In quick search, delete one chr.
-            wxString msg = quick_search->GetValue();
+            msg = quick_search->GetValue();
             if (msg.Len() != 0 && msg.Len() != 1)
                 quick_search->SetValue(msg.Remove(msg.Len()-1));
             else
@@ -822,7 +812,7 @@ void FSDisplayPane::create_dir()
         string fn = cwd + "/" + string(dlg->fn.mb_str(wxConvUTF8));
 
         if ((ret = mkdir(fn.c_str(), 0777))  ==1 ) {
-            wxString msg = _("Failed to create directory: ") + \
+            msg = _("Failed to create directory: ") + \
                 wxString(fn.c_str(),wxConvUTF8) + \
                 _(" Reason:") + wxString(strerror(errno), wxConvUTF8);
             wxMessageDialog *ddlg = \
@@ -870,15 +860,15 @@ int FSDisplayPane::view_file()
  */
 int FSDisplayPane::edit_file(bool create)
 {
-    string path;
+    wxString path;
     if (create) {
         DirnameDlg *dlg = \
             new DirnameDlg(this, _("Enter new file name:"));
         int ret = dlg->ShowModal();
         if (ret == wxID_OK) {
-            path = string(dlg->fn.mb_str(wxConvUTF8));
+            path = dlg->fn;
             if (!name_is_valid(path)) {
-                wxString msg = _("New name is empty or it is not valid!");
+                msg = _("New name is empty or it is not valid!");
                 wxMessageDialog *ddlg = \
                     new wxMessageDialog(this, msg, _("Error"),
                                         wxOK);
@@ -886,8 +876,8 @@ int FSDisplayPane::edit_file(bool create)
                 delete(ddlg);
                 return -1;
             }
-            path = cwd + "/" + path;
-            if (!access(path.c_str(), F_OK)) {
+            path = str2wxstr(cwd) + _("/") + path;
+            if (wxFileExists(path) || wxDirExists(path)) {
                 wxMessageDialog *ddlg = \
                     new wxMessageDialog(this, _("File exised!"), _("Error"),
                                         wxOK);
@@ -901,9 +891,10 @@ int FSDisplayPane::edit_file(bool create)
         }
     }
     else {
-        path =  cwd + "/" + cur_list[cur_idx-1]->name;
-        if (access(path.c_str(), F_OK) == -1 && !create) {
-            wxString msg = _("File does not exist!");
+        path =  str2wxstr(cwd) + _("/") +           \
+            char2wxstr(cur_list[cur_idx-1]->name);
+        if ((wxFileExists(path) == false) && !create) {
+            msg = _("File does not exist!");
             wxMessageDialog *ddlg = \
                 new wxMessageDialog(this, msg, _("Error"),
                                     wxOK);
@@ -912,8 +903,7 @@ int FSDisplayPane::edit_file(bool create)
             return -1;
         }
     }
-    string cmd = config.get_config("editor") + " \"" + path + "\"";
-
+    cmd = str2wxstr(config.get_config("editor")) + _(" \"") + path + _("\"");
     do_async_execute(str2wxstr(cmd));
     return 0;
 }
@@ -956,7 +946,7 @@ int FSDisplayPane::open_terminal()
  * 					trash dir.
  * @return int : which item should be focused.
  */
-int FSDisplayPane::delete_file()
+int FSDisplayPane::delete_files()
 {
 
     string path, cmd;
@@ -991,6 +981,8 @@ int FSDisplayPane::delete_file()
  * @name delete_single_file - Delete single file.
  * @param path -  path
  * @return void
+ * XXX: call do_async_execute() to delete can have chance to call update_fs()
+ *      after command executed.
  */
 void FSDisplayPane::delete_single_file(string &path)
 {
@@ -1198,7 +1190,7 @@ void  FSDisplayPane:: goto_dir()
             cwd = path;
         }
         else {
-            wxString msg = wxString(path.c_str(), wxConvUTF8)+\
+            msg = wxString(path.c_str(), wxConvUTF8)+\
                 _("\nDirecory does not exist!\n");
             wxMessageDialog *ddlg = \
                 new wxMessageDialog(this, msg, _("Error"), wxOK);

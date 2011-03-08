@@ -28,6 +28,8 @@
 #include <time.h>
 #include <string.h>
 #include <syslog.h>
+#include <wx/wx.h>
+
 
 
 using namespace std;
@@ -69,7 +71,7 @@ bool    is_dir_exist(const string &path);
 bool    is_dir_exist(const char *path);
 bool    is_file_exist(const string &path);
 bool    is_image(const string &filename);
-bool    name_is_valid(string &name);
+bool    name_is_valid(wxString &name);
 void    format_time(const time_t *mytime, char *tmp);
 string  get_extname(const char *name);
 void    resort_time_based(vector<item *> &file_list);
