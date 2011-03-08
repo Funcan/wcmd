@@ -287,8 +287,8 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
     quick_search->Show(false);
     this->Show(true);
 
+    cur_sort = COL_NAME;
     update_list(0);
-    cur_idx = 0;
     fg_hi_col = wxColour(255, 255, 255);
     bg_hi_col = wxColour(0x20, 0x4a, 0x87);
     bg_def_col = wxColour(0xe7, 0xed, 0xf6);
@@ -364,9 +364,16 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
     show_list(selected_item);
 }
 
+/**
+ * @name show_list - Display current list in treectrl
+ * @param selected_item - Number of selected item.
+ * @param filter -  filter
+ * @return void
+ */
 void FSDisplayPane::show_list(int selected_item, wxString filter)
 {
     wxString msg;
+
 
     Freeze();
     if (filter.Len() != 0)
@@ -1131,27 +1138,32 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
     evt.Skip();
 }
 
+/**
+ * @name real_sort - Sort and display curr_list.
+ * @param idx - Identifier of
+ * @return void
+ */
 void FSDisplayPane::real_sort(int idx)
 {
     switch (idx) {
     case COL_NAME: { // Name Column
         reverse_list(file_list);
-        update_list(cur_idx, false);
+        show_list(cur_idx);
         break;
     }
     case COL_EXT: { // Ext Name
         resort_based_ext(file_list);
-        update_list(cur_idx, false);
+        show_list(cur_idx);
         break;
     }
     case COL_SIZE: { // Size
         resort_size_based(file_list);
-        update_list(cur_idx, false);
+        show_list(cur_idx);
         break;
     }
     case COL_TIME: { // Time
         resort_time_based(file_list);
-        update_list(cur_idx, false);
+        show_list(cur_idx);
         break;
     }
     default:

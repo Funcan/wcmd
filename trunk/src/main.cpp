@@ -32,18 +32,8 @@ bool MyApp::OnInit()
         }
     }
 
-    string trash_dir = string(getenv("HOME")) + "/tmp/deleted" ;
-    if (!is_dir_exist(trash_dir)) {
-        string cmd = "mkdir ~/tmp/deleted";
-        if(system(cmd.c_str()) != 0)
-            fprintf(stderr, "ERROR: Failed to create trash dir!\n");
-    }
     frame = new MainFrame( _("wcmd"), c_args);
     void wxInitAllImageHandlers();
-    // wxImage::AddHandler( new wxPNGHandler );
-    // wxImage::AddHandler( new wxJPEGHandler );
-    // wxImage::AddHandler( new wxGIFHandler );
-    // wxImage::AddHandler( new wxXPMHandler );
     frame->Show(true);
     SetTopWindow(frame);
     return true;
