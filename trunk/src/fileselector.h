@@ -75,6 +75,7 @@ public:
     void         activate_item(int idx);
     void OnAsyncTermination(bool up_both_fs=false);
     int do_async_execute(const wxString &cmd);
+    void update_dir_info();
 private:
     void delete_single_file(string &path);
     void OnColumbDrag(wxListEvent &evt);
@@ -87,7 +88,7 @@ private:
     void toggle_color(int idx, bool hicolor);
     void clean_resource();
     void process_right_click(wxMouseEvent &evt);
-
+    long long WX_2_LL(wxLongLong n);
     vector<item *>::iterator  iter;
 
     MyListCtrl     *lst;
