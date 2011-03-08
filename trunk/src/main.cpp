@@ -50,19 +50,19 @@ int MyApp::FilterEvent(wxEvent& event)
         if (evt.ControlDown()) {
             switch (keycode) {
             case 49: { // Ctlr + 1,  sort by name,
-                frame->get_sp()->real_sort(COL_NAME);
+                frame->get_sp()->sort_and_show(COL_NAME);
                 return true;
             }
             case 50: { // Ctlr + 1,  sort by ext,
-                frame->get_sp()->real_sort(COL_EXT);
+                frame->get_sp()->sort_and_show(COL_EXT);
                 return true;
             }
             case 51: { // Ctlr + 1,  sort by size,
-                frame->get_sp()->real_sort(COL_SIZE);
+                frame->get_sp()->sort_and_show(COL_SIZE);
                 return true;
             }
             case 52: { // Ctlr + 1,  sort by time,
-                frame->get_sp()->real_sort(COL_TIME);
+                frame->get_sp()->sort_and_show(COL_TIME);
                 return true;
             }
             case 96: { // Ctrl + `, Go to HOME dir

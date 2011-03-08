@@ -71,7 +71,7 @@ public:
     void         focus_list();
     void         toggle_search();
     void         create_dir();
-    void         real_sort(int idx);
+    void         sort_and_show(int idx);
     void         activate_item(int idx);
     void OnAsyncTermination(bool up_both_fs=false);
     int do_async_execute(const wxString &cmd);
