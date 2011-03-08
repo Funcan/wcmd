@@ -139,7 +139,7 @@ void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
     case ID_PopupMenu_Sort_Ext:
     case ID_PopupMenu_Sort_Time:
     case ID_PopupMenu_Sort_Size: {
-        fs->real_sort(id - ID_PopupMenu_Sort_Start);
+        fs->sort_and_show(id - ID_PopupMenu_Sort_Start);
         break;
     }
     case ID_PopupMenu_Open:{
@@ -1134,7 +1134,7 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
 {
     int col = evt.GetColumn();
 
-    real_sort(col);
+    sort_and_show(col);
     evt.Skip();
 }
 
@@ -1143,7 +1143,7 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
  * @param idx - Identifier of
  * @return void
  */
-void FSDisplayPane::real_sort(int idx)
+void FSDisplayPane::sort_and_show(int idx)
 {
     switch (idx) {
     case COL_NAME: { // Name Column
