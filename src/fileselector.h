@@ -77,6 +77,7 @@ public:
     int do_async_execute(const wxString &cmd);
     void update_dir_info();
 private:
+    int cur_sort;
     void delete_single_file(string &path);
     void OnColumbDrag(wxListEvent &evt);
     void OnItemSelected(wxListEvent &evt);
