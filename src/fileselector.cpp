@@ -10,6 +10,14 @@
     wxLC_REPORT | wxBORDER_NONE | wxLC_EDIT_LABELS | wxLC_SORT_ASCENDING
 
 
+#define KB       1024
+#define MB       KB*KB
+#define GB       KB*KB*KB
+
+#define B2K(n)       n/KB
+#define B2M(n)       n/(KB*KB)
+#define B2G(n)       n/(KB*KB*KB)
+
 
 class MyProcess : public wxProcess
 {
@@ -392,11 +400,46 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
 
     lst->select_entry(selected_item);
     cur_idx = selected_item;
-    dirinfo->SetLabel(msg);
+    update_dir_info();
     item_count = idx + 1;
     Thaw();
 
 }
+
+/**
+ * @name update_dir_info - Updates the Dirinfo label.
+ * @return void
+ */
+void FSDisplayPane::update_dir_info()
+{
+    wxLongLong disk_size = 0, free_size = 0;
+    int selected_size = 0, selected_number = 0;
+    wxString msg;
+    for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
+        selected_size += (*iter)->size;
+        ++selected_number;
+    }
+    if (wxGetDiskSpace(str2wxstr(cwd), &disk_size, &free_size) == false) {
+        disk_size = 0;
+        free_size = 0;
+    }
+
+
+    msg.Printf(wxT("Total selected items: %d,\tsize: %d K,  \tDiskspace: \
+%lld GB, Free space: %lld GB"), selected_number, B2K(selected_size),
+               B2G(WX_2_LL((disk_size))), B2G(WX_2_LL((free_size))));
+    dirinfo->SetLabel(msg);
+}
+
+long long FSDisplayPane::WX_2_LL(wxLongLong n)
+{
+    long long hi;
+    hi = n.GetHi();
+    hi <<= 32;
+    hi += n.GetLo();
+    return hi;
+}
+
 /**
  * @name clean_resource - Cleans up the allocated resouces.
  * @return void
@@ -624,16 +667,7 @@ void FSDisplayPane::set_selected()
         selected_list.erase(iter);
         toggle_color(cur_idx, false);
     }
-
-    int total_size = 0, total_number = 0;
-    wxString msg;
-    for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
-        total_size += (*iter)->size;
-        ++total_number;
-    }
-    msg.Printf(wxT("Total selected items: %d, \t\tsize: %d K\n"),
-               total_number, total_size/1024);
-    dirinfo->SetLabel(msg);
+    update_dir_info();
 }
 
 
