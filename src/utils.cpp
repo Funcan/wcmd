@@ -80,10 +80,10 @@ char *get_real_dirname(const char *in_path)
 }
 
 
-bool name_is_valid(string &fn)
+bool name_is_valid(wxString &fn)
 {
-    if (fn.empty() || fn.compare("..") == 0 || fn.compare(".") == 0 ||
-        fn.find("/") != string::npos)
+    if (fn.IsEmpty() || fn.Cmp(_("..")) == 0 || fn.Cmp(_(".")) == 0 ||
+        fn.find(_("/")) != wxNOT_FOUND)
         return false;
     else
         return true;

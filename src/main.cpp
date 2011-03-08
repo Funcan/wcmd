@@ -178,7 +178,7 @@ int MyApp::FilterEvent(wxEvent& event)
                 return true;
             }
             case WXK_F8: { //F8
-                frame->get_sp()->delete_file();
+                frame->get_sp()->delete_files();
                 return true;
             }
             case 27: { // ESC

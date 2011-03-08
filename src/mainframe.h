@@ -15,7 +15,7 @@ public:
     void ShowHidden();
     void BookmarAdd();
     void update_fs(int idx1=-1, int idx2=-1, wxWindowID id=-1);
-    void delete_file();
+    void delete_files();
     void open_terminal();
     void set_active_sp(wxWindowID id);
     FSDisplayPane *get_sp_o();
