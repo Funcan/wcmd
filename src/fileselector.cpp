@@ -399,7 +399,7 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
     }
 
     if (selected_item < 0) // Selecte the first one by default.
-        selected_item = 1;
+        selected_item = cur_idx;
     if (cur_list.empty()) // If list is empty, select ".."
         selected_item = 0;
     else if (selected_item > (int)cur_list.size()) // Select the last one.
