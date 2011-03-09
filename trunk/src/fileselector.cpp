@@ -417,6 +417,7 @@ void FSDisplayPane::update_dir_info()
 {
     wxLongLong disk_size = 0, free_size = 0;
     int selected_size = 0, selected_number = 0;
+    wxString mmsg;
     for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
         selected_size += (*iter)->size;
         ++selected_number;
@@ -427,10 +428,10 @@ void FSDisplayPane::update_dir_info()
     }
 
 
-    msg.Printf(wxT("Total selected items: %d,\tsize: %d K,  \tDiskspace: \
+    mmsg.Printf(wxT("Total selected items: %d,\tsize: %d K,  \tDiskspace: \
 %lld GB, Free space: %lld GB"), selected_number, B2K(selected_size),
                B2G(WX_2_LL((disk_size))), B2G(WX_2_LL((free_size))));
-    dirinfo->SetLabel(msg);
+    dirinfo->SetLabel(mmsg);
 }
 
 long long FSDisplayPane::WX_2_LL(wxLongLong n)
