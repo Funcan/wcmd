@@ -988,7 +988,7 @@ int FSDisplayPane::delete_files()
             if (idx > (*iter)->orig_id) {
                 idx = (*iter)->orig_id -1;
             }
-            cmd += _(" \"") + pwd + char2wxstr((*iter)->name) + _("\"");
+            cmd += _(" \"") + pwd + _("/") + char2wxstr((*iter)->name) + _("\"");
         }
         do_async_execute(cmd);
     }
