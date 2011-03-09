@@ -60,7 +60,7 @@ protected:
 void MyProcess::OnTerminate(int pid, int status)
 {
     wxLogStatus(wxT("Process %u ('%s') terminated with exit code %d."),
-                pid, m_cmd.c_str(), status);
+                pid, m_cmd.BeforeFirst(wxT(' ')).c_str(), status);
 
     if (m_cmd.StartsWith(_("mv")) || m_cmd.StartsWith(_("cp")))
         flag = true;
@@ -969,7 +969,7 @@ int FSDisplayPane::open_terminal()
 int FSDisplayPane::delete_files()
 {
 
-    string path, cmd;
+    string path;
     int idx = 0;
     if (selected_list.empty()) {
         if (cur_idx == 0)
@@ -981,16 +981,16 @@ int FSDisplayPane::delete_files()
         idx = cur_idx;
     }
     else {
-
-
+        wxString cmd = _("rm -rf ");
+        wxString pwd = str2wxstr(cwd);
         idx = (*selected_list.begin())->orig_id -1 ;
         for (iter=selected_list.begin(); iter<selected_list.end(); iter++){
             if (idx > (*iter)->orig_id) {
                 idx = (*iter)->orig_id -1;
             }
-            path =  cwd + "/" + string((*iter)->name);
-            delete_single_file(path);
+            cmd += _(" \"") + pwd + char2wxstr((*iter)->name) + _("\"");
         }
+        do_async_execute(cmd);
     }
     if (idx < 0)
         idx = 0;
