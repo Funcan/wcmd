@@ -18,6 +18,28 @@
 #define B2M(n)       n/(KB*KB)
 #define B2G(n)       n/(KB*KB*KB)
 
+/**
+ * @name size_2_wxstr - Conver size into wxString.
+ * @param size - Number of size
+ * @return wxString
+ */
+wxString size_2_wxstr(unsigned long long size)
+{
+    wxString desc;
+    if (size < KB) {
+        desc.Printf(wxT("%llu B"), size);
+    }
+    else if (size < MB){
+        desc.Printf(wxT("%'.1f KB"), (double)B2K(size));
+    }
+    else if (size < GB) {
+        desc.Printf(wxT("%'.1f MB"), (double)B2M(size));
+    }
+    else {
+        desc.Printf(wxT("%'.1f GB"), (double)B2G(size));
+    }
+    return desc;
+}
 
 class MyProcess : public wxProcess
 {
@@ -66,15 +88,15 @@ MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     this->AssignImageList(imageList, wxIMAGE_LIST_SMALL);
     this->InsertColumn(0, _(""));
     this->InsertColumn(1, _("        File Name"));
-    this->InsertColumn(2, _("Ext Name"));
+    this->InsertColumn(2, _("Ext"));
     this->InsertColumn(3, _("Size"));
     this->InsertColumn(4, _("Last Modify"));
     this->InsertColumn(5, _("Mode"));
 
     this->SetColumnWidth(0, 25);
-    this->SetColumnWidth(1, 210);
-    this->SetColumnWidth(2, 72);
-    this->SetColumnWidth(3, 68);
+    this->SetColumnWidth(1, 280);
+    this->SetColumnWidth(2, 35);
+    this->SetColumnWidth(3, 85);
     this->SetColumnWidth(4, 118);
     this->SetColumnWidth(5, 64);
 }
@@ -82,7 +104,6 @@ MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
 void MyListCtrl::append_item(int idx, item *entry)
 {
     wxString ext_name, msg;
-
     if (entry->type == t_file) {
         this->InsertItem(idx, 1);
         ext_name = wxString(entry->ext, wxConvUTF8);
@@ -94,8 +115,7 @@ void MyListCtrl::append_item(int idx, item *entry)
     this->SetItemData(idx, idx);
 
     this->SetItem(idx, 1, wxString(entry->name, wxConvUTF8));
-    msg.Printf(wxT("%d"), entry->size);
-    this->SetItem(idx, 3, msg);
+    this->SetItem(idx, 3, size_2_wxstr(entry->size));
     memset (tmp, 0, 18);
     format_time(&entry->ctime, tmp);
     this->SetItem(idx, 4,  wxString(tmp, wxConvUTF8));
@@ -426,17 +446,16 @@ void FSDisplayPane::update_dir_info()
         disk_size = 0;
         free_size = 0;
     }
-
-
-    mmsg.Printf(wxT("Total selected items: %d,\tsize: %d K,  \tDiskspace: \
-%lld GB, Free space: %lld GB"), selected_number, B2K(selected_size),
-               B2G(WX_2_LL((disk_size))), B2G(WX_2_LL((free_size))));
+    mmsg.Printf(wxT("Selected items: %d,"), selected_number);
+    mmsg += _("  size: ") + size_2_wxstr(selected_size) +  \
+        _(",\tDisk Space:") + size_2_wxstr(WX_2_LL((disk_size))) + \
+        _(", Free space: ") + size_2_wxstr(WX_2_LL((free_size)));
     dirinfo->SetLabel(mmsg);
 }
 
-long long FSDisplayPane::WX_2_LL(wxLongLong n)
+unsigned long long FSDisplayPane::WX_2_LL(wxLongLong n)
 {
-    long long hi;
+    unsigned long long hi;
     hi = n.GetHi();
     hi <<= 32;
     hi += n.GetLo();

@@ -89,7 +89,7 @@ private:
     void      toggle_color(int idx, bool hicolor);
     void      clean_resource();
     void      process_right_click(wxMouseEvent &evt);
-    long long WX_2_LL(wxLongLong n);
+    unsigned long long WX_2_LL(wxLongLong n);
 
     MyListCtrl     *lst;
     int             item_count;

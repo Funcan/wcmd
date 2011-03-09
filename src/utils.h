@@ -48,7 +48,7 @@ typedef enum _filetype{
 typedef struct _item {
     char *name;
     char *ext;
-    int size;
+    long long size;
     mode_t mode;
     time_t ctime;
     filetype type;
