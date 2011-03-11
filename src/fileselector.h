@@ -52,7 +52,7 @@ public:
     int    view_file();
     void   goto_parent_dir();
     void   goto_dir();
-    int    wrap_open(string &path, bool create);
+    int    wrap_open(wxString &path, bool create);
     string get_selected_item();
     void   focus_first();
     void   focus_last();
@@ -78,17 +78,18 @@ public:
     const string get_cwd();
 private:
     int       cur_sort;
-    void      delete_single_file(string &path);
-    void      OnColumbDrag(wxListEvent &evt);
-    void      OnItemSelected(wxListEvent &evt);
-    void      OnKeydown(wxListEvent &evt);
-    void      OnMySort(wxListEvent &evt);
-    void      OnTextChanged(wxCommandEvent &evt);
-    void      OnTextEnter(wxCommandEvent &evt);
-    void      item_activated(wxListEvent &evt);
-    void      toggle_color(int idx, bool hicolor);
-    void      clean_resource();
-    void      process_right_click(wxMouseEvent &evt);
+    void               delete_single_file(string &path);
+    void               OnColumbDrag(wxListEvent &evt);
+    void               OnItemSelected(wxListEvent &evt);
+    void               OnKeydown(wxListEvent &evt);
+    void               OnMySort(wxListEvent &evt);
+    void               OnTextChanged(wxCommandEvent &evt);
+    void               OnTextEnter(wxCommandEvent &evt);
+    void               item_activated(wxListEvent &evt);
+    void               toggle_color(int idx, bool hicolor);
+    void               clean_resource();
+    void               process_right_click(wxMouseEvent &evt);
+    void               show_err_dialog();
     unsigned long long WX_2_LL(wxLongLong n);
 
     MyListCtrl     *lst;
@@ -96,6 +97,7 @@ private:
     DIR            *dirp;
     DIR            *dirp_old;
     wxStaticText   *cwd_info, *dirinfo;
+    wxMessageDialog *dlg;
     wxTextCtrl     *quick_search;
     string          cwd;
     string          old_path;
@@ -105,7 +107,7 @@ private:
     vector<item *>  tmp_list;
     vector<item *>  cur_list;
     vector<int>     sel_idx;
-    wxString        cur_target, old_target, msg, cmd;
+    wxString        cur_target, old_target, msg, cmd, title;
     wxFont          font;
     wxColour        fg_hi_col;
     wxColour        bg_hi_col;

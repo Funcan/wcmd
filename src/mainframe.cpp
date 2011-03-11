@@ -422,7 +422,7 @@ int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
     fake_dest.assign(src, pos+1, src.length()-pos);
     fake_dest = dest + "/" + fake_dest;
 
-    if (is_file_exist(fake_dest)) {
+    if (wxFileExists(str2wxstr(fake_dest))) {
         msg += _(" already exited! Overwrite?");
         dlg = new wxMessageDialog(this, msg, _("Overwrite"), wxID_OK|wxID_CANCEL);
         id = dlg->ShowModal();
