@@ -585,10 +585,11 @@ void FSDisplayPane::activate_item(int idx)
         update_list(selected_item);
     }
     else {
-        string path = cwd + "/" + string(cur_list[idx]->name);
+        wxString path = str2wxstr(cwd) + _("/") + \
+            char2wxstr(cur_list[idx]->name);
         if (wrap_open(path, 0) < 0) {
-            fprintf(stderr, "ERROR: failed to execute cmd: %s!\n",
-                path.c_str());
+            fprintf(stderr, "ERROR: failed to openfile: %s!\n",
+                    cur_list[idx]->name);
         }
     }
  }
@@ -600,14 +601,18 @@ void FSDisplayPane::activate_item(int idx)
  * @return int
  * TODO: Enable multi-file edit and edit according to file type!
  */
-int FSDisplayPane::wrap_open(string &path, bool create)
+int FSDisplayPane::wrap_open(wxString &path, bool create)
 {
     int ret = -1;
-    wxString ext = str2wxstr(path).AfterLast(wxT('.'));
+    wxString ext = path.AfterLast(wxT('.'));
     wxMessageDialog *dlg;
 
-    if (access(path.c_str(), F_OK) == -1 && !create) {
-        oops ("Failed to open file: %s\n", path.c_str());
+    if ((wxFileExists(path) == false) && !create) {
+        msg = _("Can not access file: ") + path;
+        dlg = new wxMessageDialog(this, msg, _("Open Error!"), wxOK);
+        dlg->ShowModal();
+        delete dlg;
+        return -1;
     }
 
     wxFileType *ft = \
@@ -623,7 +628,7 @@ int FSDisplayPane::wrap_open(string &path, bool create)
         delete dlg;
     }
     else {
-        wxString wxcmd = ft->GetOpenCommand(str2wxstr(path));
+        wxString wxcmd = ft->GetOpenCommand(_("\"") + path + _("\""));
         if (wxcmd.Len() != 0) {
             ret = do_async_execute(wxcmd);
         }
@@ -847,6 +852,13 @@ void FSDisplayPane::create_dir()
     delete(dlg);
 }
 
+void FSDisplayPane::show_err_dialog()
+{
+    dlg = new wxMessageDialog(this, msg, title,  wxOK);
+    dlg->ShowModal();
+    delete(dlg);
+}
+
 /**
  * @name view_file - View file according to Magic Key!!
  * @return int
@@ -854,11 +866,16 @@ void FSDisplayPane::create_dir()
 int FSDisplayPane::view_file()
 {
     if (cur_idx == 0 || cur_list[cur_idx-1]->type == 2) {
-        oops ("View File called on dir!\n");
+        msg = _("Fivwer should be applied to files!");
+        title = _("Error!");
+        show_err_dialog();
+
     }
-    string path =  cwd + "/" + cur_list[cur_idx-1]->name;
-    if (!is_file_exist(path)) {
-        oops ("File %s does not exist!\n", path.c_str());
+    string path =  cwd + "/" +  cur_list[cur_idx-1]->name;
+    if (!wxFileExists(str2wxstr(path))) {
+        msg = _("File does not exist!");
+        title = _("Error!");
+        show_err_dialog();
     }
     if (is_image(path)) {
         string cmd = config.get_config("img_viewer") + " \"" + path + "\"";
