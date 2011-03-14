@@ -619,8 +619,7 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
         wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
 
     if (ft == NULL) {
-        msg = _("Unknow application associated with file:\n\t") +\
-            str2wxstr(path) +\
+        msg = _("Unknow filetype:\t") + ext +                 \
             _(".\nYou can stroke Ctrl+i to view file info ")+ \
             _("Or Press F3 to view as plain file!");
         dlg = new wxMessageDialog(this, msg, _("Open fail!"), wxOK);
@@ -633,9 +632,23 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
             ret = do_async_execute(wxcmd);
         }
         else {
-            msg = _("No program registered for:\n\t") + str2wxstr(path) +\
-                _(".\nYou can stroke Ctrl+i to view file info ")+      \
+            msg.Clear();
+            wxString mt;
+            if (ft->GetMimeType(&mt)) { // Can be treated as text file
+                if (mt.Find(_("text")) != wxNOT_FOUND)
+                    return edit_file(false);
+                }
+            else {
+                mt = _("Unkonwn!");
+            }
+
+            msg =  _("No program registered!\nFile Name: ") +       \
+                str2wxstr(path) +                                   \
+                _(".\nFile mimeTypes is:\t") + mt +                \
+                _("\nYou can stroke Ctrl+i to view file info ")+    \
                 _("Or Press F3 to view as plain file!");
+
+
             dlg = new wxMessageDialog(this, msg, _("Open fail!"), wxOK);
             dlg->ShowModal();
             delete dlg;
