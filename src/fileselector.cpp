@@ -95,10 +95,10 @@ MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
 
     this->SetColumnWidth(0, 25);
     this->SetColumnWidth(1, 280);
-    this->SetColumnWidth(2, 35);
-    this->SetColumnWidth(3, 85);
-    this->SetColumnWidth(4, 118);
-    this->SetColumnWidth(5, 64);
+    this->SetColumnWidth(2, 50);
+    this->SetColumnWidth(3, 90);
+    this->SetColumnWidth(4, 125);
+    this->SetColumnWidth(5, 50);
 }
 
 void MyListCtrl::append_item(int idx, item *entry)
