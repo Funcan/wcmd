@@ -16,6 +16,7 @@
 #include <wx/splitter.h>
 #include <wx/wx.h>
 #include <wx/iconloc.h>
+#include <wx/artprov.h>
 
 #include "global.h"
 #include "misc.h"

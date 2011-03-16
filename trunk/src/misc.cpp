@@ -464,7 +464,6 @@ InfoViewer::InfoViewer(wxWindow *parent, string path): \
     Show(true);
 }
 
-
 /*
  * Editor modelines
  *

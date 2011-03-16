@@ -721,6 +721,7 @@ int FSDisplayPane::view_file()
 int FSDisplayPane::edit_file(bool create)
 {
     wxString path;
+    title = _("Error!");
     if (create) {
         DirnameDlg *dlg = \
             new DirnameDlg(this, _("Enter new file name:"));
@@ -729,20 +730,13 @@ int FSDisplayPane::edit_file(bool create)
             path = dlg->fn;
             if (!name_is_valid(path)) {
                 msg = _("New name is empty or it is not valid!");
-                wxMessageDialog *ddlg = \
-                    new wxMessageDialog(this, msg, _("Error"),
-                                        wxOK);
-                ddlg->ShowModal();
-                delete(ddlg);
+                show_err_dialog();
                 return -1;
             }
             path = str2wxstr(cwd) + _("/") + path;
             if (wxFileExists(path) || wxDirExists(path)) {
-                wxMessageDialog *ddlg = \
-                    new wxMessageDialog(this, _("File exised!"), _("Error"),
-                                        wxOK);
-                ddlg->ShowModal();
-                delete(ddlg);
+                msg = _("File already exist!");
+                show_err_dialog();
                 return -1;
             }
         }
@@ -751,15 +745,16 @@ int FSDisplayPane::edit_file(bool create)
         }
     }
     else {
+        if (cur_idx == 0) {
+            msg = _("Can not edit directory!");
+            show_err_dialog();
+            return -1;
+        }
         path =  str2wxstr(cwd) + _("/") +           \
             char2wxstr(cur_list[cur_idx-1]->name);
         if ((wxFileExists(path) == false) && !create) {
             msg = _("File does not exist!");
-            wxMessageDialog *ddlg = \
-                new wxMessageDialog(this, msg, _("Error"),
-                                    wxOK);
-            ddlg->ShowModal();
-            delete(ddlg);
+            show_err_dialog();
             return -1;
         }
     }

@@ -3,14 +3,10 @@
 
 #include "resources/bookmark_add.xpm"
 #include "resources/bookmark_mgt.xpm"
-#include "resources/buttons/btn_copy.xpm"
-#include "resources/buttons/btn_move.xpm"
-#include "resources/buttons/btn_delete.xpm"
-#include "resources/buttons/btn_edit.xpm"
-#include "resources/buttons/btn_view.xpm"
 #include "resources/buttons/btn_terminal.xpm"
 #include "resources/mimetype/folder.xpm"
 #include "resources/wxcommandor.xpm"
+
 
 MainFrame::MainFrame(const wxString& title, char ** args): \
     wxFrame( NULL, -1, title, wxDefaultPosition, wxSize(1200,850))
@@ -36,20 +32,28 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
     wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     // Toobar
     wxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
-    wxBitmapButton *button = new wxBitmapButton(this, ID_View,
-                                                wxBitmap(btn_view));
+    wxBitmapButton *button = \
+        new wxBitmapButton(this, ID_View,
+                           wxArtProvider::GetBitmap(_("gtk-find-and-replace"),
+                                                    wxART_MENU));
     hbox->Add(button, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
 
-    button = new wxBitmapButton(this, ID_Edit, wxBitmap(btn_edit));
+    button = new wxBitmapButton(this, wxID_EDIT,
+                                wxArtProvider::GetBitmap(_("gtk-edit"),
+                                                         wxART_MENU));
     hbox->Add(button, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
 
-    button = new wxBitmapButton(this, ID_Copy, wxBitmap(btn_copy));
+    button = new wxBitmapButton(this, wxID_COPY,
+                                wxArtProvider::GetBitmap(wxART_COPY));
     hbox->Add(button, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
 
-    button = new wxBitmapButton(this, ID_Move, wxBitmap(btn_move));
+    button = new wxBitmapButton(this, ID_Move,
+                                wxArtProvider::GetBitmap(wxART_CUT));
+
     hbox->Add(button, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
 
-    button = new wxBitmapButton(this, ID_Delete, wxBitmap(btn_delete));
+    button = new wxBitmapButton(this, wxID_DELETE,
+                                wxArtProvider::GetBitmap(wxART_DELETE));
     hbox->Add(button, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
 
     button = new wxBitmapButton(this, ID_Terminal, wxBitmap(btn_terminal));
@@ -459,9 +463,9 @@ EVT_MENU(ID_BookmarkAdd, MainFrame::OnBookmarkAdd)
 EVT_MENU(ID_BookmarkEdit, MainFrame::OnBookmarkEdit)
 EVT_MENU(ID_View_ShowHidden, MainFrame::Show_Hidden)
 EVT_BUTTON(ID_View, MainFrame::OnView)
-EVT_BUTTON(ID_Edit, MainFrame::OnEdit)
-EVT_BUTTON(ID_Copy, MainFrame::OnCopy)
-EVT_BUTTON(ID_Delete, MainFrame::OnDelete)
+EVT_BUTTON(wxID_EDIT, MainFrame::OnEdit)
+EVT_BUTTON(wxID_COPY, MainFrame::OnCopy)
+EVT_BUTTON(wxID_DELETE, MainFrame::OnDelete)
 EVT_BUTTON(ID_Terminal, MainFrame::OpenTerminal)
 EVT_COMMAND  (-1, wxEVT_MY_EVENT, MainFrame::OnThreadCompletion)
 END_EVENT_TABLE()
