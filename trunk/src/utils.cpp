@@ -6,6 +6,17 @@ static bool time_sort=true;
 static bool size_sort=true;
 static bool ext_sort=true;
 
+
+
+#define KB       1024
+#define MB       KB*KB
+#define GB       KB*KB*KB
+
+#define B2K(n)       n/KB
+#define B2M(n)       n/(KB*KB)
+#define B2G(n)       n/(KB*KB*KB)
+
+
 typedef struct _magic_filetype {
     filetype ftype;
     string magics;
@@ -407,6 +418,30 @@ string get_content(string &path)
     }
     return val;
 }
+
+/**
+ * @name size_2_wxstr - Conver size into wxString.
+ * @param size - Number of size
+ * @return wxString
+ */
+wxString size_2_wxstr(unsigned long long size)
+{
+    wxString desc;
+    if (size < KB) {
+        desc.Printf(wxT("%llu B"), size);
+    }
+    else if (size < MB){
+        desc.Printf(wxT("%'.1f KB"), (double)B2K(size));
+    }
+    else if (size < GB) {
+        desc.Printf(wxT("%'.1f MB"), (double)B2M(size));
+    }
+    else {
+        desc.Printf(wxT("%'.1f GB"), (double)B2G(size));
+    }
+    return desc;
+}
+
 
 /*
  * Editor modelines

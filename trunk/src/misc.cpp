@@ -1,4 +1,5 @@
 #include "misc.h"
+#include "fileselector.h"
 #include "resources/wxviewer.xpm"
 
 SimpleDialog:: SimpleDialog(wxWindow *parent, wxString name) :    \

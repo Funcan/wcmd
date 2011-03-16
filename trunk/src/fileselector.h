@@ -20,6 +20,8 @@
 #include "global.h"
 #include "misc.h"
 #include "utils.h"
+#include "mylistctrl.h"
+
 
 #define char2wxstr(str) wxString(str, wxConvUTF8)
 #define str2wxstr(str)  wxString(str.c_str(), wxConvUTF8)
@@ -27,19 +29,6 @@
 extern  wxWindowID active_id;
 void init_imglist();
 
-class MyListCtrl: public wxListCtrl {
-
-public:
-    MyListCtrl(wxWindow *parent, wxWindowID id);
-    ~MyListCtrl();
-    void append_item(int idx, item *entry);
-    void select_entry(int idx);
-    void deselect_entry(int idx);
-private:
-    void OnPopupClick(wxCommandEvent &evt);
-    void process_right_click(wxMouseEvent &evt);
-    DECLARE_EVENT_TABLE()
-};
 
 class FSDisplayPane: public wxPanel {
 public:
