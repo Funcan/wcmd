@@ -83,6 +83,8 @@ int 	get_filelist(string path, vector<item *> &file_list, string &reason,
 filetype get_file_type (const string &path);
 string get_content(string &path);
 int strsplit(const string str, const string sip, vector<string> &item_list);
+wxString size_2_wxstr(unsigned long long size);
+
 #endif /* _UTILS_H_ */
 /*
  * Editor modelines
