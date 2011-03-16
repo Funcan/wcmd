@@ -105,7 +105,7 @@ void MainFrame::create_menubar()
     menuBar = new wxMenuBar;
 
     // File
-    menu->Append( ID_Quit, _("E&xit") );
+    menu->Append(wxID_EXIT);// ID_Quit, _("E&xit") );
 
     menuBar->Append( menu, _("&File") );
 
@@ -117,7 +117,7 @@ void MainFrame::create_menubar()
 
     // Edit
     menu = new wxMenu;
-    menu->Append(ID_Option, _("&Otions"));
+    menu->Append(wxID_PREFERENCES);
     menuBar->Append(menu, _("&Edit") );
 
     bookmark_menu = new wxMenu;
@@ -141,7 +141,7 @@ void MainFrame::create_menubar()
 
     // Help
     menu = new wxMenu;
-    menu->Append( ID_About, _("&About...") );
+    menu->Append(wxID_ABOUT);
     menuBar->Append(menu, _("&Help") );
     SetMenuBar( menuBar );
 }
@@ -269,8 +269,8 @@ void MainFrame::OnBookmarkEdit(wxCommandEvent &evt)
     else {
         unsigned int i;
         wxMenuItemList list = bookmark_menu->GetMenuItems();
-        if (!list.empty()) // Remove old menu items.
-            for (i = 0; i < list.size(); i++)
+        if (!list.empty()) // Remove old menu items, but leave the first 2.
+            for (i = 3; i < list.size(); i++)
                 bookmark_menu->Remove((wxMenuItem *)list[i]);
 
         if (! bookmarks.empty()) // Add new menu items.
@@ -452,9 +452,9 @@ DEFINE_EVENT_TYPE(wxEVT_MY_EVENT)
 
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
-EVT_MENU(ID_Quit, MainFrame::OnQuit)
-EVT_MENU(ID_About, MainFrame::OnAbout)
-EVT_MENU(ID_Option, MainFrame::OnOption)
+EVT_MENU(wxID_EXIT, MainFrame::OnQuit)
+EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
+EVT_MENU(wxID_PREFERENCES, MainFrame::OnOption)
 EVT_MENU(ID_BookmarkAdd, MainFrame::OnBookmarkAdd)
 EVT_MENU(ID_BookmarkEdit, MainFrame::OnBookmarkEdit)
 EVT_MENU(ID_View_ShowHidden, MainFrame::Show_Hidden)

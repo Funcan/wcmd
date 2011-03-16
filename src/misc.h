@@ -22,7 +22,8 @@ using namespace std;
 
 class SimpleDialog : public wxDialog {
 public:
-    SimpleDialog(wxWindow *parent, wxString title);
+    SimpleDialog(wxWindow *parent, wxString title,
+                 const wxPoint &pt=wxDefaultPosition);
     void post_draw();
     virtual void draw() {printf("Base class drawing\n");};
     virtual void OnOK(wxCommandEvent &evt){}

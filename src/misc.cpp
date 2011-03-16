@@ -2,8 +2,10 @@
 #include "fileselector.h"
 #include "resources/wxviewer.xpm"
 
-SimpleDialog:: SimpleDialog(wxWindow *parent, wxString name) :    \
-    wxDialog(parent, -1, name)
+static wxPoint bookmark_point(-1, -1);
+
+SimpleDialog:: SimpleDialog(wxWindow *parent, wxString name, const wxPoint &pt) : \
+    wxDialog(parent, -1, name, pt)
 {
     sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
@@ -116,7 +118,7 @@ END_EVENT_TABLE()
 
 // Bookmark management
 BookmarkManage::BookmarkManage(wxWindow *parent, wxString title):\
-SimpleDialog(parent, title)
+SimpleDialog(parent, title, bookmark_point)
 {
     SetMinSize(wxSize(400, 300));
     draw();
@@ -209,12 +211,14 @@ void BookmarkManage::OnDel(wxCommandEvent &evt)
 void BookmarkManage::OnOK(wxCommandEvent &evt)
 {
     config.dump2file();
+    bookmark_point = this->GetPosition();
     EndModal(wxID_OK);
 }
 
 
 void BookmarkManage::OnCancel(wxCommandEvent &evt)
 {
+    bookmark_point = this->GetPosition();
     EndModal(wxID_CANCEL);
 }
 
