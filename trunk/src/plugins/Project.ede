@@ -1,0 +1,7 @@
+;; Object wcmd-plugin
+;; EDE project file.
+(ede-proj-project "wcmd-plugin"
+  :name "wcmd-plugin"
+  :file "Project.ede"
+  :targets 'nil
+  )
