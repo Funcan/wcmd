@@ -1,10 +1,10 @@
 #include <stdio.h>
 
-void open_null(char *path)
+int open_null(char *path)
 {
     printf("Hello, this is a test!\n");
     printf("PATH: %s\n", path);
-    return;
+    return 0;
 }
 
 /*
