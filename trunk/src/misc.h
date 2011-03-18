@@ -135,6 +135,16 @@ private:
     wxTextCtrl *txt;
 };
 
+
+class MyThreadFunc: public wxThread {
+public:
+    MyThreadFunc(const char *fn, const char *pp);
+    virtual ~MyThreadFunc(){};
+    void *Entry();
+private:
+    char file_name[1024];
+    char plugin_path[1024];
+};
 #endif /* _MISC_H_ */
 /*
  * Editor modelines

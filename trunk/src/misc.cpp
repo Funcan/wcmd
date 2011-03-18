@@ -1,6 +1,7 @@
 #include "misc.h"
 #include "fileselector.h"
 #include "resources/wxviewer.xpm"
+#include <dlfcn.h>
 
 static wxPoint bookmark_point(-1, -1);
 
@@ -462,6 +463,55 @@ InfoViewer::InfoViewer(wxWindow *parent, string path): \
     txt->ShowPosition(0);
     SetIcon(wxIcon(wxviewer, wxBITMAP_TYPE_XPM));
     Show(true);
+}
+
+MyThreadFunc::MyThreadFunc(const char *fn, const char *pp): \
+    wxThread()
+{
+    memset(file_name, 0, 1024);
+    memset(plugin_path, 0, 1024);
+    strcpy(file_name, fn);
+    strcpy(plugin_path, pp);
+    PDEBUG ("FN: %s, PP: %s\n", this->file_name, this->plugin_path);
+}
+
+void *MyThreadFunc::Entry()
+{
+    void *handle;
+    int (*func)(const char *);
+    char *error;
+    char fn[64], ext_name[64];
+    char *base_name = basename(strdup(this->plugin_path));
+
+    memset(fn, 0, 64);
+    memset(ext_name, 0, 64);
+    strncpy(ext_name, base_name, strlen(base_name) - 3);
+
+    handle = dlopen(this->plugin_path, RTLD_LAZY);
+    if (!handle) {
+        fprintf(stderr, "%s\n", dlerror());
+        return NULL;
+    }
+
+    printf("called\n");
+    snprintf(fn, 5+strlen(base_name)-2, "open_%s", base_name);
+    dlerror();    /* Clear any existing error */
+
+    func = (int (*)(const char *)) dlsym(handle, fn);
+
+    if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "%s\n", error);
+        return 0;
+    }
+    PDEBUG ("Opening: %s\n", file_name);
+
+    char *tmp = strdup(file_name);
+    func((const char *)tmp);
+    PDEBUG ("leaveaa\n");
+    dlclose(handle);
+    PDEBUG ("leave\n");
+
+    return NULL;
 }
 
 /*

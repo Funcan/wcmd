@@ -2,6 +2,19 @@
 #include "wx/log.h"
 #include "wx/process.h"
 #include <wx/mimetype.h>
+#include <libgen.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <ftw.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <string>
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+
 
 class MyProcess : public wxProcess
 {
@@ -404,6 +417,49 @@ void FSDisplayPane::activate_item(int idx)
     }
  }
 
+int FSDisplayPane::open_with_plugin(const char *file_name)
+{
+    int len = strlen(file_name);
+    char *ptr;
+    char ext_name [1024] = {'\0'};
+    char plugin_path[1024] = {'\0'};
+
+    memset(ext_name, 0, 1024);
+    strncpy(ext_name, file_name, len);
+    for (ptr = ext_name + len - 1; ptr >= ext_name; ptr--) {
+        if (*ptr == '.') {
+            ptr++;
+            break;
+        }
+    }
+
+    sprintf(plugin_path, "%s/.config/wcmd/plugins/%s.so", getenv("HOME"),
+            ptr);
+    if (access(plugin_path, F_OK) == -1) {
+        cout << "Not found!" << endl;;
+        return -1;
+    }
+    else {
+        MyThreadFunc func(file_name, plugin_path);
+        if ( func.Create() != wxTHREAD_NO_ERROR )
+        {
+            wxLogError(wxT("Can't create thread!"));
+            PDEBUG ("Can't create thread!\n");
+            return -1;
+        }
+        if (func.Run() != wxTHREAD_NO_ERROR)
+        {
+            wxLogError(wxT("Can't create thread!"));
+            PDEBUG ("Can't create thread!\n");
+            return -1;
+        }
+        PDEBUG ("thread finished!\n");
+
+        return 0;
+    }
+    return 0;
+}
+
 /**
  * @name wrap_open - Wrapped open, run a child process to open selected files.
  * @param path -  path
@@ -424,6 +480,10 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
         delete dlg;
         return -1;
     }
+
+    ret = open_with_plugin(strdup(((const char *)path.mb_str(wxConvUTF8))));
+    if (ret != -1)
+        return ret;
 
     wxFileType *ft = \
         wxTheMimeTypesManager->GetFileTypeFromExtension(ext);

@@ -2,9 +2,9 @@ CC=gcc
 CFLAGS=-Wall -O2 -g -DDEBUG -fPIC -shared
 LDFLAGS=
 
-OBJS=null.o
+OBJS=null.o html.o
 
-TARGET=null.so
+TARGET=null.so html.so
 
 %.d: %.c
 	@set -e; rm -f $@; \

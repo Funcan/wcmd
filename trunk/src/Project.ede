@@ -13,6 +13,6 @@
     )
    )
   :makefile-type 'Makefile.am
-  :variables '(("AM_CXXFLAGS" . "`wx-config --cxxflags` -Wall") ("LIBS" . "`wx-config --libs`"))
+  :variables '(("AM_CXXFLAGS" . "`wx-config --cxxflags` -Wall") ("LIBS" . "`wx-config --libs` -ldl"))
   :configuration-variables '(("debug" ("AM_CXXFLAGS" . "-DDEBUG -g")))
   )

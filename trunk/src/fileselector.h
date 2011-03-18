@@ -81,6 +81,8 @@ private:
     void               process_right_click(wxMouseEvent &evt);
     void               show_err_dialog();
     unsigned long long WX_2_LL(wxLongLong n);
+    int __open_with_plugin(const char *file_name, const char *plugin_path);
+    int open_with_plugin(const char *file_name);
 
     MyListCtrl     *lst;
     int             item_count;
