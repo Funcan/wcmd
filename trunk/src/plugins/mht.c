@@ -8,7 +8,7 @@
 int open_mht(const char *path)
 {
     char cmd[256] = {'\0'};
-    sprintf(cmd, "/usr/bin/firefox %s", path);
+    sprintf(cmd, "/usr/bin/firefox \"%s\"", path);
     return system(cmd);
 }
 

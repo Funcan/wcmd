@@ -3,5 +3,11 @@
 (ede-proj-project "plugins"
   :name "plugins"
   :file "Project.ede"
-  :targets 'nil
+  :targets (list
+   (ede-proj-target-makefile-shared-object "html"
+    :name "html"
+    :path ""
+    :source '("html.c")
+    )
+   )
   )
