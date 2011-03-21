@@ -2,6 +2,8 @@
 #include "fileselector.h"
 #include "resources/wxviewer.xpm"
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 static wxPoint bookmark_point(-1, -1);
 
@@ -472,7 +474,6 @@ MyThreadFunc::MyThreadFunc(const char *fn, const char *pp): \
     memset(plugin_path, 0, 1024);
     strcpy(file_name, fn);
     strcpy(plugin_path, pp);
-    PDEBUG ("FN: %s, PP: %s\n", this->file_name, this->plugin_path);
 }
 
 void *MyThreadFunc::Entry()
@@ -493,7 +494,6 @@ void *MyThreadFunc::Entry()
         return NULL;
     }
 
-    printf("called\n");
     snprintf(fn, 5+strlen(base_name)-2, "open_%s", base_name);
     dlerror();    /* Clear any existing error */
 
@@ -503,17 +503,16 @@ void *MyThreadFunc::Entry()
         fprintf(stderr, "%s\n", error);
         return 0;
     }
-    PDEBUG ("Opening: %s\n", file_name);
-
     char *tmp = strdup(file_name);
     func((const char *)tmp);
-    PDEBUG ("leaveaa\n");
     dlclose(handle);
-    PDEBUG ("leave\n");
-
     return NULL;
 }
 
+void MyThreadFunc::OnExit()
+{
+    delete this;
+}
 /*
  * Editor modelines
  *

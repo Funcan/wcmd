@@ -71,6 +71,7 @@ private:
     void               delete_single_file(string &path);
     void               OnColumbDrag(wxListEvent &evt);
     void               OnItemSelected(wxListEvent &evt);
+    void               show_err_dialog();
     void               OnKeydown(wxListEvent &evt);
     void               OnMySort(wxListEvent &evt);
     void               OnTextChanged(wxCommandEvent &evt);
@@ -79,7 +80,6 @@ private:
     void               toggle_color(int idx, bool hicolor);
     void               clean_resource();
     void               process_right_click(wxMouseEvent &evt);
-    void               show_err_dialog();
     unsigned long long WX_2_LL(wxLongLong n);
     int __open_with_plugin(const char *file_name, const char *plugin_path);
     int open_with_plugin(const char *file_name);
