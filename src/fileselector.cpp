@@ -440,21 +440,19 @@ int FSDisplayPane::open_with_plugin(const char *file_name)
         return -1;
     }
     else {
-        MyThreadFunc func(file_name, plugin_path);
-        if ( func.Create() != wxTHREAD_NO_ERROR )
+        MyThreadFunc *func = new MyThreadFunc(file_name, plugin_path);
+        if ( func->Create() != wxTHREAD_NO_ERROR )
         {
             wxLogError(wxT("Can't create thread!"));
             PDEBUG ("Can't create thread!\n");
             return -1;
         }
-        if (func.Run() != wxTHREAD_NO_ERROR)
+        if (func->Run() != wxTHREAD_NO_ERROR)
         {
             wxLogError(wxT("Can't create thread!"));
             PDEBUG ("Can't create thread!\n");
             return -1;
         }
-        PDEBUG ("thread finished!\n");
-
         return 0;
     }
     return 0;
