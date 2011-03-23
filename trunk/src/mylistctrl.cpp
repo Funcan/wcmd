@@ -26,42 +26,33 @@ MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     this->InsertColumn(2, _("Ext"));
     this->InsertColumn(3, _("Size"));
     this->InsertColumn(4, _("Last Modify"));
-    this->InsertColumn(5, _("Mode"));
 
     this->SetColumnWidth(0, 25);
     this->SetColumnWidth(1, 280);
-    this->SetColumnWidth(2, 50);
+    this->SetColumnWidth(2, 80);
     this->SetColumnWidth(3, 90);
     this->SetColumnWidth(4, 125);
-    this->SetColumnWidth(5, 50);
 }
 
 MyListCtrl::~MyListCtrl()
 {
 }
 
-void MyListCtrl::append_item(int idx, item *entry)
+void MyListCtrl::append_item(int idx, ItemEntry *entry)
 {
     wxString ext_name, msg;
-    char tmp[18];
-
-    if (entry->type == t_file) {
+    if (wxDirExists(entry->fn->GetFullPath()) == false) {
         this->InsertItem(idx, 1);
-        ext_name = wxString(entry->ext, wxConvUTF8);
-        this->SetItem(idx, 2, ext_name);
+        this->SetItem(idx, 2, entry->get_ext());
     }
     else
         this->InsertItem(idx, 0);
 
     this->SetItemData(idx, idx);
 
-    this->SetItem(idx, 1, wxString(entry->name, wxConvUTF8));
-    this->SetItem(idx, 3, size_2_wxstr(entry->size));
-    memset (tmp, 0, 18);
-    format_time(&entry->ctime, tmp);
-    this->SetItem(idx, 4,  wxString(tmp, wxConvUTF8));
-    msg.Printf(wxT("%lo"), entry->mode & 0x1ff);
-    this->SetItem(idx, 5, msg);
+    this->SetItem(idx, 1, entry->get_fullname());
+    this->SetItem(idx, 3, entry->get_size_str());
+    this->SetItem(idx, 4, entry->get_date());
 }
 
 

@@ -121,7 +121,7 @@ private:
 
 class TextViewer: public wxFrame {
 public:
-    TextViewer(wxWindow *parent, string path, int length);
+    TextViewer(wxWindow *parent, wxString path, wxULongLong length);
     virtual ~TextViewer() { };
 private:
     wxTextCtrl *txt;
@@ -129,7 +129,7 @@ private:
 
 class InfoViewer: public wxFrame {
 public:
-    InfoViewer(wxWindow *parent, string path);
+    InfoViewer(wxWindow *parent, wxString path);
     virtual ~InfoViewer() {};
 private:
     wxTextCtrl *txt;

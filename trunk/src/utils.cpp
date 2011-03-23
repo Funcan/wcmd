@@ -23,6 +23,85 @@ typedef struct _magic_filetype {
 } magic_filetype;
 
 
+
+ItemEntry::ItemEntry(wxString path)
+{
+    fn = new wxFileName(path);
+    orig_id = 0;
+}
+
+ItemEntry::ItemEntry(wxString dir_name, wxString file_name)
+{
+    fn = new wxFileName(dir_name, file_name);
+    orig_id = 0;
+}
+
+ItemEntry:: ~ItemEntry()
+{
+    delete fn;
+}
+
+bool ItemEntry::is_dir()
+{
+    return wxDirExists(fn->GetFullPath());
+}
+
+wxString ItemEntry::get_ext()
+{
+    wxString ext = _("");
+    if (fn->HasExt()) {
+        ext = fn->GetExt();
+    }
+    return ext;
+}
+
+wxString ItemEntry::get_fullname()
+{
+    wxString name = _("");
+    if (fn->HasName()) {
+        name = fn->GetFullName();
+    }
+    return name;
+}
+
+wxString ItemEntry::get_fullpath()
+{
+    return fn->GetFullPath();
+}
+
+wxString ItemEntry::get_date()
+{
+    return fn->GetModificationTime().FormatISODate();
+}
+
+wxString ItemEntry::get_size_str()
+{
+    wxString size;
+    if (is_dir()) {
+        size = wxT("4KB");
+    }
+    else {
+        size = fn->GetHumanReadableSize();
+    }
+    return size;
+}
+
+wxString ItemEntry::get_parent()
+{
+    return (wxFileName::DirName(fn->GetFullPath())).GetFullPath();
+}
+
+wxULongLong ItemEntry::get_size()
+{
+    wxULongLong size;
+    if (is_dir())
+        size = wxDir::GetTotalSize(fn->GetFullPath());
+    else
+        size = fn->GetSize();
+    return size;
+}
+
+
 /**
  * @name endswith - Whether a string endswith specified subtring.
  * @param fullString -  full string
@@ -94,7 +173,7 @@ char *get_real_dirname(const char *in_path)
 bool name_is_valid(wxString &fn)
 {
     if (fn.IsEmpty() || fn.Cmp(_("..")) == 0 || fn.Cmp(_(".")) == 0 ||
-        fn.find(_("/")) != wxNOT_FOUND)
+        fn.Find(_("/")) != wxNOT_FOUND)
         return false;
     else
         return true;
@@ -145,11 +224,11 @@ void format_time(const time_t *mytime, char *tmp)
 }
 
 
-bool is_image(const string &filename)
+bool is_image(wxString &filename)
 {
-    if (get_file_type(filename) == t_img)
-        return true;
-    else
+    // if (get_file_type(filename) == t_img)
+    //     return true;
+    // else
         return false;
 }
 
@@ -160,81 +239,43 @@ bool is_image(const string &filename)
  * @param item2 -  item 2
  * @return int
  */
-int sort_name(item *item1, item *item2)
+int sort_name(ItemEntry *item1, ItemEntry *item2)
 {
-    char *p1 = item1->name;
-    char *p2 = item2->name;
-    while (*p1 && *p2) {
-        if (*p1 == *p2){
-            p1++;
-            p2++;
-            continue;
-        }
-        else if (*p1 < *p2)
-            return 1;
-        else
-            return 0;
-    }
-    return strlen(item1->name)<strlen(item2->name)?1:0;
+    return (item1->fn)->GetName().Cmp((item2->fn)->GetName()) < 0 ? 1:0;
 }
 
-int sort_ext(item *item1, item *item2)
+int sort_ext(ItemEntry *item1, ItemEntry *item2)
 {
-    char *p1 = item1->ext;
-    char *p2 = item2->ext;
-    while (*p1 && *p2) {
-        if (*p1 == *p2){
-            p1++;
-            p2++;
-            continue;
-        }
-        else if (*p1 < *p2)
-            return 1;
-        else
-            return 0;
-    }
-    return strlen(item1->name)<strlen(item2->name)?1:0;
+    return (item1->fn)->GetExt().Cmp((item2->fn)->GetExt()) < 0 ? 0:1;
 }
 
-int sort_ext2(item *item1, item *item2)
+int sort_ext2(ItemEntry *item1, ItemEntry *item2)
 {
-    char *p1 = item1->ext;
-    char *p2 = item2->ext;
-    while (*p1 && *p2) {
-        if (*p1 == *p2){
-            p1++;
-            p2++;
-            continue;
-        }
-        else if (*p1 < *p2)
-            return 0;
-        else
-            return 1;
-    }
-    return strlen(item1->name)<strlen(item2->name)?1:0;
+    return (item1->fn)->GetExt().Cmp((item2->fn)->GetExt()) < 0 ? 1:0;
 }
 
-int sort_time(item *item1, item *item2)
+int sort_time(ItemEntry *item1, ItemEntry *item2)
 {
-    return item1->ctime < item2->ctime?1:0;
+    return item1->fn->GetModificationTime().IsEarlierThan(item2->fn->GetModificationTime());
 }
 
-int sort_time_2(item *item1, item *item2)
+int sort_time_2(ItemEntry *item1, ItemEntry *item2)
 {
-    return item1->ctime > item2->ctime?1:0;
+    return item1->fn->GetModificationTime().IsLaterThan(item2->fn->GetModificationTime());
 }
 
-int sort_size(item *item1, item *item2)
+int sort_size(ItemEntry *item1, ItemEntry *item2)
 {
-    return item1->size < item2->size?1:0;
+    return item1->fn->GetSize() > item2->fn->GetSize();
+
 }
 
-int sort_size2(item *item1, item *item2)
+int sort_size2(ItemEntry *item1, ItemEntry *item2)
 {
-    return item1->size > item2->size?1:0;
+    return item1->fn->GetSize() <= item2->fn->GetSize();
 }
 
-void resort_time_based(vector<item *> &file_list)
+void resort_time_based(vector<ItemEntry *> &file_list)
 {
     time_sort = !time_sort;
     if (time_sort == true)
@@ -244,7 +285,7 @@ void resort_time_based(vector<item *> &file_list)
     return;
 }
 
-void resort_size_based(vector<item *> &file_list)
+void resort_size_based(vector<ItemEntry *> &file_list)
 {
     size_sort = !size_sort;
     if (size_sort == true)
@@ -254,7 +295,7 @@ void resort_size_based(vector<item *> &file_list)
     return;
 }
 
-void resort_based_ext(vector<item *> &file_list)
+void resort_based_ext(vector<ItemEntry *> &file_list)
 {
     ext_sort = !ext_sort;
     if (ext_sort == true)
@@ -264,61 +305,11 @@ void resort_based_ext(vector<item *> &file_list)
     return;
 }
 
-int get_filelist(string path, vector<item *> &file_list, string &reason,
-                 bool show_hiden)
-{
-    DIR *dirp = NULL;
-    struct dirent *dp = NULL;
-    if ((dirp = opendir(path.c_str())) == NULL) {
-        reason = strerror(errno);
-        return -1;
-    }
 
-    item *fn;
-    int size = sizeof(item);
-    struct stat stats;
-    vector<item *> tmp;
-    vector<item *>::iterator iter;
-    iter = file_list.begin();
-    while ((dp = readdir(dirp)) != NULL) {
-        if (stat(dp->d_name, &stats) == -1) {
-            continue;
-        }
-        if ((!show_hiden && *(dp->d_name) == '.') ||
-            strcmp(dp->d_name, "..") == 0 || strcmp(dp->d_name, ".")== 0) {
-            continue;
-        }
-        fn = new item;
-        fn = (item *)calloc(1, size);
-        fn->name = strdup(dp->d_name);
-        fn->ext = strdup(get_extname(fn->name).c_str());
-        fn->size = stats.st_size;
-        fn->mode = stats.st_mode;
-        fn->ctime = stats.st_ctime;
-        if (S_ISDIR(fn->mode)){
-            fn->type = t_dir;
-            file_list.push_back(fn);
-        }
-        else{
-            fn->type = t_file;
-            tmp.push_back(fn);
-        }
-    }
-    stable_sort(file_list.begin(), file_list.end(), sort_name);
-    if (tmp.size()) {
-        stable_sort(tmp.begin(), tmp.end(), sort_name);
-        for (iter = tmp.begin(); iter != tmp.end(); iter++) {
-            file_list.push_back(*iter);
-        }
-    }
-    closedir(dirp);
-    return 0;
-}
-
-void reverse_list(vector<item *> &file_list)
+void reverse_list(vector<ItemEntry *> &file_list)
 {
-    vector<item *> tmp_list;
-    vector<item *>::iterator iter;
+    vector<ItemEntry *> tmp_list;
+    vector<ItemEntry *>::iterator iter;
     for (iter = file_list.begin(); iter < file_list.end(); iter++) {
         tmp_list.insert(tmp_list.begin(), *iter);
     }
@@ -400,13 +391,13 @@ filetype get_file_type (const string &path)
  * @param path -  path
  * @return string
  */
-string get_content(string &path)
+string get_content(wxString &path)
 {
-    int fd = open(path.c_str(), O_RDONLY);
+    int fd = open(path.mb_str(), O_RDONLY);
     string val;
     if (fd != -1) {
         struct stat stats;
-        if (stat(path.c_str(), &stats) == 0){
+        if (stat(path.mb_str(), &stats) == 0){
             char *addr = (char *)mmap(NULL, stats.st_size, PROT_READ,
                                       MAP_PRIVATE,  fd, 0);
             if (addr != MAP_FAILED) {
