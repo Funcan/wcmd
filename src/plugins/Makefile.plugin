@@ -1,0 +1,42 @@
+# Automatically Generated Makefile by EDE.
+# For use with: make
+#
+# DO NOT MODIFY THIS FILE OR YOUR CHANGES MAY BE LOST.
+# EDE is the Emacs Development Environment.
+# http://cedet.sourceforge.net/ede.shtml
+#
+
+CC=gcc
+CPPFLAGS=-Wall -O2 -g -DDEBUG -fPIC -shared
+LDFLAGS=
+
+OBJS=html.o mht.o iso.o
+
+TARGET=html.so mht.so iso.so
+DESTDIR=~/.config/wcmd/plugins
+
+%.d: %.c
+	@set -e; rm -f $@; \
+	$(CC) -MM -MT $*.o $(CPPFLAGS) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+%.d: %.cpp
+	@set -e; rm -f $@; \
+	$(CC) -MM -MT $*.o $(CPPFLAGS) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC)  $^ -o $@ $(CPPFLAGS) $(LDFLAGS)
+	strip -s $@
+
+clean:
+	-rm -f $(TARGET) $(OBJS) $(OBJS:.o=.d)
+
+install:
+	test -z $(DESTDIR)	|| mkdir -p $(DESTDIR)
+	install -m 755 $(TARGET) $(DESTDIR)
