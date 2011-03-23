@@ -85,8 +85,8 @@ MainFrame::~MainFrame()
     memset(tmp, 0, 8);
     sprintf(tmp, "%d", y);
     config.set_config("auto_size_y", string(tmp));
-    config.set_config("auto_last_path_l", sp1->get_cwd());
-    config.set_config("auto_last_path_r", sp2->get_cwd());
+    config.set_config("auto_last_path_l", string(sp1->get_cwd().char_str()));
+    config.set_config("auto_last_path_r", string(sp2->get_cwd().char_str()));
     config.dump2file();
 }
 
@@ -153,7 +153,7 @@ void MainFrame::create_menubar()
 void MainFrame::BookmarAdd()
 {
     Freeze();
-    string path = get_sp()->get_cwd();
+    string path = string(get_sp()->get_cwd().char_str());
     bookmarks.push_back(path);
     Append_Bookmark(bookmarks.size() + ID_BookmarkAdd + 1, path);
     Thaw();
@@ -173,7 +173,7 @@ void MainFrame::Append_Bookmark(int id, string item)
 void MainFrame::OnBookmarkClicked(wxCommandEvent &evt)
 {
     int idx =  evt.GetId() - ID_BookmarkAdd - 1;
-    get_sp()->set_cwd(bookmarks[idx]);
+    get_sp()->set_cwd(str2wxstr(bookmarks[idx]));
     get_sp()->update_list(-1);
     Thaw();
 }
@@ -287,6 +287,7 @@ void MainFrame::OnBookmarkEdit(wxCommandEvent &evt)
 
 void MainFrame::compare_items()
 {
+#if 0
     string cmd = config.get_config("diff_tool");
     if (cmd.empty()) {
         wxMessageDialog *ddlg = \
@@ -301,6 +302,7 @@ void MainFrame::compare_items()
 
     get_sp()->do_async_execute(str2wxstr(cmd));
     return;
+#endif
 }
 
 void MainFrame::OnThreadCompletion(wxCommandEvent& event)
@@ -311,7 +313,7 @@ void MainFrame::OnThreadCompletion(wxCommandEvent& event)
 
 void MainFrame::open_in_other()
 {
-    string path = get_sp()->get_selected_item();
+    wxString path = get_sp()->get_selected_item();
     get_sp_o()->set_cwd(path);
     get_sp_o()->update_list(-1);
     get_sp_o()->focus_list();
@@ -329,9 +331,11 @@ void MainFrame::exchange_sp()
 {
     if (active_id == ID_Sp1) {
         active_id = ID_Sp2;
+        sp2->set_focus();
     }
     else{
         active_id = ID_Sp1;
+        sp1->set_focus();
     }
     update_status();
 }
@@ -377,8 +381,8 @@ void MainFrame::OpenTerminal(wxCommandEvent &evt)
 void MainFrame::copy_or_move(bool copy)
 {
 
-    vector<string> src_list;
-    string dest = get_sp_o()->get_cwd();
+    vector<wxString> src_list;
+    wxString dest = get_sp_o()->get_cwd();
     if (get_sp()->get_selected_files(src_list) || src_list.empty()) {
         wxMessageDialog *dlg = \
             new wxMessageDialog(this, _("Failed to get selected files!"),
@@ -387,11 +391,11 @@ void MainFrame::copy_or_move(bool copy)
         delete(dlg);
         return ;
     }
-    vector<string>::iterator iter;
+    vector<wxString>::iterator iter;
     wxString msg;
     for (iter = src_list.begin(); iter < src_list.end(); iter++) {
 
-        dest += "/";
+        dest += _("/");
         copy_or_move_single(*iter, dest, copy);
     }
     int idx = get_sp()->cur_idx;
@@ -410,23 +414,22 @@ void MainFrame::copy_or_move(bool copy)
  * @return int: 0  - success.
  *              -2 - Source or desty is empty.
  */
-int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
+int MainFrame::copy_or_move_single(wxString &src, wxString &dest, bool copy)
 {
 
     int ret = 0;
-    if (src.empty() || dest.empty()) {
+    if (src.IsEmpty() || dest.IsEmpty()) {
         fprintf(stderr, "ERROR: Source or desty is empty!\n");
         return -2;
     }
-    size_t pos = src.rfind("/");
-    string fake_dest;
+    wxFileName fn(src);
+    wxString fake_dest(fn.GetFullName());
     wxMessageDialog *dlg;
-    wxString msg = wxString(fake_dest.c_str(), wxConvUTF8);
     wxWindowID id;
-    fake_dest.assign(src, pos+1, src.length()-pos);
-    fake_dest = dest + "/" + fake_dest;
+    fake_dest = dest + _("/") + fake_dest;
+    wxString msg(fake_dest);
 
-    if (wxFileExists(str2wxstr(fake_dest))) {
+    if (wxFileExists(fake_dest)) {
         msg += _(" already exited! Overwrite?");
         dlg = new wxMessageDialog(this, msg, _("Overwrite"), wxID_OK|wxID_CANCEL);
         id = dlg->ShowModal();
@@ -435,10 +438,10 @@ int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
             return 0;
         }
     }
-    string cmd;
-    cmd =  "cp -aRf \"" + src + "\"  \"" +  dest +"\"";
+    wxString cmd;
+    cmd =  _("cp -aRf \"") + src + _("\"  \"") +  dest + _("\"");
     if (!copy)
-        cmd =  "mv \"" + src + "\"  \"" +  dest +"\"";
+        cmd = _( "mv \"") + src + _("\"  \"") +  dest + _("\"");
     // ret = wxExecute(str2wxstr(cmd));
     ret = get_sp()->do_async_execute(str2wxstr(cmd));
     return ret;
@@ -446,7 +449,7 @@ int MainFrame::copy_or_move_single(string &src, string &dest, bool copy)
 
 void MainFrame::show_file_info()
 {
-    string path = get_sp()->get_selected_item();
+    wxString path = get_sp()->get_selected_item();
     InfoViewer *info = new InfoViewer(this, path);
     info->Show();
 }

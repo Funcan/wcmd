@@ -21,7 +21,7 @@ public:
     FSDisplayPane *get_sp_o();
     FSDisplayPane *get_sp();
     void copy_or_move(bool copy=true);
-    int copy_or_move_single(string &src, string &dest, bool copy);
+    int copy_or_move_single(wxString &src, wxString &dest, bool copy);
     void exchange_sp();
     void open_in_other();
     void compare_items();

@@ -66,13 +66,13 @@ int MyApp::FilterEvent(wxEvent& event)
                 return true;
             }
             case 96: { // Ctrl + `, Go to HOME dir
-                string path = string(getenv("HOME"));
+                wxString path = char2wxstr(getenv("HOME"));
                 frame->get_sp()->set_cwd(path);
                 frame->get_sp()->update_list(0);
                 return true;
             }
             case 92: { // Ctrl + \, Go to root dir.
-                string path = "/";
+                wxString path (wxT("/"));
                 frame->get_sp()->set_cwd(path);
                 frame->get_sp()->update_list(0);
                 return true;
@@ -165,9 +165,9 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->compare_items();
                 return true;
             }
-            case 9:{
+            case 9:{ // TAB
                 frame->exchange_sp();
-                return false;
+                return true;
             }
             case WXK_F5: { //F5
                 frame->copy_or_move(true);

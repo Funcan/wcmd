@@ -1,6 +1,6 @@
 #include "misc.h"
 #include "fileselector.h"
-#include "resources/wxviewer.xpm"
+// #include "resources/wxviewer.xpm"
 #include <dlfcn.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -390,10 +390,11 @@ EVT_PAINT(MyImagePanel::paintEvent)
 END_EVENT_TABLE()
 
 
-TextViewer::TextViewer(wxWindow *parent, string path, int length): \
-wxFrame(parent, -1, _("TextViewer: ")+wxString(path.c_str(), wxConvUTF8),
+TextViewer::TextViewer(wxWindow *parent, wxString path, wxULongLong length): \
+wxFrame(parent, -1, _("TextViewer: ")+path,
         wxDefaultPosition, wxSize(750,920))
 {
+#if 0
     long style = wxTE_READONLY|wxTE_MULTILINE|wxTE_RICH;
     txt = new wxTextCtrl(this, -1, _(""), wxDefaultPosition,
                          wxDefaultSize, style);
@@ -419,8 +420,8 @@ wxFrame(parent, -1, _("TextViewer: ")+wxString(path.c_str(), wxConvUTF8),
     if (val.IsEmpty()){
         val = wxString(get_content(path).c_str(), wxConvUTF8);
         if (val.IsEmpty()) {
-            string output("/tmp/wcmd_txt_view");
-            string cmd = "hexdump -C \"" + path + "\" > " + output;
+            wxString output(wxT("/tmp/wcmd_txt_view"));
+            wxString cmd = _("hexdump -C \"") + path + _("\" > ") + output;
             if (system(cmd.c_str()) != 0)
                 val = _("Failed to read content!");
             else {
@@ -433,13 +434,15 @@ wxFrame(parent, -1, _("TextViewer: ")+wxString(path.c_str(), wxConvUTF8),
     txt->ShowPosition(0);
     SetIcon(wxIcon(wxviewer, wxBITMAP_TYPE_XPM));
     Show(true);
+#endif
 }
 
 
-InfoViewer::InfoViewer(wxWindow *parent, string path): \
+InfoViewer::InfoViewer(wxWindow *parent, wxString path): \
     wxFrame(parent, -1, _("InfoViewer: ")+wxString(path.c_str(), wxConvUTF8),
-    wxDefaultPosition, wxSize(750,300))
+            wxDefaultPosition, wxSize(750,300))
 {
+#if 0
     long style = wxTE_READONLY|wxTE_MULTILINE|wxTE_RICH;
     txt = new wxTextCtrl(this, -1, _(""), wxDefaultPosition,
                          wxDefaultSize, style);
@@ -465,6 +468,7 @@ InfoViewer::InfoViewer(wxWindow *parent, string path): \
     txt->ShowPosition(0);
     SetIcon(wxIcon(wxviewer, wxBITMAP_TYPE_XPM));
     Show(true);
+#endif
 }
 
 MyThreadFunc::MyThreadFunc(const char *fn, const char *pp): \

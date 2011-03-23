@@ -19,7 +19,7 @@ class MyListCtrl: public wxListCtrl {
 public:
     MyListCtrl(wxWindow *parent, wxWindowID id);
     ~MyListCtrl();
-    void append_item(int idx, item *entry);
+    void append_item(int idx, ItemEntry *entry);
     void select_entry(int idx);
     void deselect_entry(int idx);
 private:

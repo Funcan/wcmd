@@ -29,7 +29,12 @@
 #include <string.h>
 #include <syslog.h>
 #include <wx/wx.h>
+#include <wx/dir.h>
+#include <wx/filename.h>
 
+
+#define char2wxstr(str) wxString(str, wxConvUTF8)
+#define str2wxstr(str)  wxString(str.c_str(), wxConvUTF8)
 
 
 using namespace std;
@@ -46,6 +51,7 @@ typedef enum _filetype{
 
 
 typedef struct _item {
+    wxFileName *fn;
     char *name;
     char *ext;
     long long size;
@@ -54,6 +60,23 @@ typedef struct _item {
     filetype type;
     int orig_id;
 } item;
+
+class ItemEntry {
+public:
+    ItemEntry(wxString path);
+    ItemEntry(wxString dir_name, wxString file_name);
+    virtual ~ItemEntry();
+    bool is_dir();
+    wxFileName *fn;
+    int orig_id;
+    wxString get_ext();
+    wxString get_fullname();
+    wxString get_fullpath();
+    wxString get_size_str();
+    wxULongLong get_size();
+    wxString get_date();
+    wxString get_parent();
+};
 
 #ifdef DEBUG
 #define PDEBUG(fmt, args...)                                \
@@ -70,20 +93,26 @@ typedef struct _item {
 bool    is_dir_exist(const string &path);
 bool    is_dir_exist(const char *path);
 bool    is_file_exist(const string &path);
-bool    is_image(const string &filename);
+bool    is_image(wxString &filename);
 bool    name_is_valid(wxString &name);
 void    format_time(const time_t *mytime, char *tmp);
 string  get_extname(const char *name);
-void    resort_time_based(vector<item *> &file_list);
-void    resort_based_ext(vector<item *> &file_list);
-void    resort_size_based(vector<item *> &file_list);
-void    reverse_list(vector<item *> &file_list);
-int 	get_filelist(string path, vector<item *> &file_list, string &reason,
-                 bool show_hiden);
+void    resort_time_based(vector<ItemEntry *> &file_list);
+void    resort_based_ext(vector<ItemEntry *> &file_list);
+void    resort_size_based(vector<ItemEntry *> &file_list);
+void    reverse_list(vector<ItemEntry *> &file_list);
 filetype get_file_type (const string &path);
-string get_content(string &path);
+string get_content(wxString &path);
 int strsplit(const string str, const string sip, vector<string> &item_list);
 wxString size_2_wxstr(unsigned long long size);
+int sort_name(ItemEntry *item1, ItemEntry *item2);
+int sort_ext(ItemEntry *item1, ItemEntry *item2);
+int sort_ext2(ItemEntry *item1, ItemEntry *item2);
+int sort_time(ItemEntry *item1, ItemEntry *item2);
+int sort_time2(ItemEntry *item1, ItemEntry *item2);
+int sort_size(ItemEntry *item1, ItemEntry *item2);
+int sort_size2(ItemEntry *item1, ItemEntry *item2);
+void reverse_list(vector<ItemEntry *> &file_list);
 
 #endif /* _UTILS_H_ */
 /*

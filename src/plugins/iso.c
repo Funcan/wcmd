@@ -4,7 +4,17 @@
 
 int open_iso(const char *path)
 {
-    return 0;
+    int ret = 0;
+    char template[256] = {'\0'};
+    sprintf(template, "/tmp/ISO-XXXXXX");
+    if (mktemp(template) == NULL) {
+        fprintf(stderr, "ERROR: failed to make temporaty filename!\n");
+        ret = -1;
+        goto end;
+    }
+
+end:
+    return ret;
 }
 
 /*

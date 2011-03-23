@@ -91,26 +91,25 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
     wxPoint point;
     int height;
     sizer->Add(hbox, 0, wxEXPAND|wxALL, 0);
+    dir = new wxDir;
 
-    dirp = NULL;
-    dirp_old = NULL;
     cwd_info = new wxStaticText(this, -1, _(""));
     if (path.empty()) {
         if (id == ID_Sp1) {
-            cwd = config.get_config("auto_last_path_l");
-            if (!is_dir_exist(cwd))
-                cwd = string(getenv("HOME"));
-            cwd_info->SetLabel(wxString(cwd.c_str(), wxConvUTF8));
+            cwd = str2wxstr(config.get_config("auto_last_path_l"));
+            if (!wxDirExists(cwd))
+                cwd = char2wxstr(getenv("HOME"));
+            cwd_info->SetLabel(cwd);
         }
         else {
-            cwd = config.get_config("auto_last_path_r");
-            if (!is_dir_exist(cwd))
-                cwd = string(getenv("HOME"));
-            cwd_info->SetLabel(wxString(cwd.c_str(), wxConvUTF8));
+            cwd = str2wxstr(config.get_config("auto_last_path_r"));
+            if (!wxDirExists(cwd))
+                cwd = char2wxstr(getenv("HOME"));
+            cwd_info->SetLabel(cwd);
         }
     }
     else {
-        cwd = path;
+        cwd = str2wxstr(path);
     }
 
     sizer->Add(cwd_info, 0, wxEXPAND|wxBOTTOM, 2);
@@ -137,51 +136,67 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, string &path): \
     bg_def_col = wxColour(0xe7, 0xed, 0xf6);
     fg_def_col = wxColour(0,0,0);
 }
+/**
+ * @name get_cur_filelist - Get filelist of current dir.
+ * @return int
+ */
+int FSDisplayPane::get_cur_filelist()
+{
+    ItemEntry *entry;
+
+    vector<ItemEntry *> tmp;
+    vector<ItemEntry *>::iterator iter;
+
+    DIR *dp;
+    struct dirent *den;
+    wxString fn;
+    dp = opendir(cwd.mb_str(wxConvUTF8));
+
+    while ((den = readdir(dp)) != NULL) {
+        fn = char2wxstr(den->d_name);
+        if (fn.Find(wxT(".")) == 0 )
+            continue;
+        entry = new ItemEntry(cwd, fn);
+        if (wxDirExists(entry->fn->GetFullPath())) {
+            file_list.push_back(entry);
+        }
+        else{
+            tmp.push_back(entry);
+        }
+    }
+    closedir(dp);
+
+    stable_sort(file_list.begin(), file_list.end(), sort_name);
+    if (tmp.size()) {
+        stable_sort(tmp.begin(), tmp.end(), sort_name);
+        for (iter = tmp.begin(); iter != tmp.end(); iter++) {
+            file_list.push_back(*iter);
+        }
+    }
+
+    return 0;
+}
 
 void FSDisplayPane::update_list(int selected_item, bool reload_dir)
 {
     if (reload_dir) {
         clean_resource();
-        if (dirp != NULL){
-            dirp_old = dirp;
-        }
-        if ((dirp = opendir(cwd.c_str())) == NULL) {
-            msg = _("ERROR: failed to open :") +\
-                wxString(cwd.c_str(), wxConvUTF8) +\
-                _("\nReason: ") + wxString(strerror(errno), wxConvUTF8);
-            wxMessageDialog *dlg = \
-                new wxMessageDialog(this, msg,  _("Error"), wxOK);
-            dlg->ShowModal();
-            delete(dlg);
-            if (old_path.empty()) {
-                char ccwd[1024] = {'\0'};
-                if (getcwd(ccwd, 1024) == NULL){
-                    sprintf(ccwd, "%s", getenv("HOME"));
-                }
-                cwd = string(ccwd);
+        if (wxDirExists(cwd) == false) {
+            msg = _("Dir: ") + cwd + _("can not be accessed!\n");
+            title = _("Error!");
+            show_err_dialog();
+
+            if (old_path.IsEmpty()) {
+                cwd = char2wxstr(getenv("HOME"));
             }
             else {
                 cwd = old_path;
             }
-            dirp = opendir(cwd.c_str());
             update_list(-1);
             return ;
         }
-        if (fchdir(dirfd(dirp)) == -1) {
-            fprintf(stderr, "ERROR: Failed to change directory into: %s\n",
-                    cwd.c_str());
-            fprintf(stderr, "reason: %s\n", strerror(errno));
-            closedir(dirp);
-            return;
-        };
 
         // Close old dir after enter new dir.
-        if (dirp_old) {
-            int fd = dirfd(dirp_old);
-            closedir(dirp_old);
-            close(fd);
-        }
-
         bool flag;
         if (config.get_config("show_hidden") == "false")
             flag = false;
@@ -189,15 +204,13 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
             flag = true;
 
         string reason;
-        int ret = get_filelist(".", file_list, reason, flag);
+        int ret = get_cur_filelist();
         if (ret != 0) {
             msg = _("Failed to open dir: ") + wxString(cwd.c_str(),
                                                        wxConvUTF8) +    \
                 _(" Reason:") + wxString(reason.c_str(), wxConvUTF8);
-            wxMessageDialog *dlg = new wxMessageDialog(this, msg, _("Error"),
-                                                       wxOK);
-            dlg->ShowModal();
-            delete(dlg);
+            title = _("Error");
+            show_err_dialog();
             return ;
         }
     }
@@ -227,13 +240,11 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
     lst->InsertItem(idx, 0);
     lst->SetItemData(idx, idx);
     lst->SetItem(idx, 1, _(".."));
-    // lst->SetItem(idx, 2, msg);
 
     int size = cur_list.size();
     for (int i = 0; i < size;  i++) {
         idx ++;
         cur_list[i]->orig_id = idx;
-        // Insert Image Column & Extention Colum.
         lst->append_item(idx, cur_list[i]);
     }
 
@@ -259,21 +270,24 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
 void FSDisplayPane::update_dir_info()
 {
     wxLongLong disk_size = 0, free_size = 0;
-    int selected_size = 0, selected_number = 0;
+    wxULongLong selected_size = 0;
+    int selected_number = 0;
     wxString mmsg;
     for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
-        selected_size += (*iter)->size;
+        selected_size += (*iter)->get_size();
         ++selected_number;
     }
     if (wxGetDiskSpace(str2wxstr(cwd), &disk_size, &free_size) == false) {
         disk_size = 0;
         free_size = 0;
     }
+
     mmsg.Printf(wxT("Selected items: %d,"), selected_number);
-    mmsg += _("  size: ") + size_2_wxstr(selected_size) +  \
-        _(",\tDisk Space:") + size_2_wxstr(WX_2_LL((disk_size))) + \
+    mmsg += _("  size: ") + size_2_wxstr(WX_2_LL(selected_size)) \
+        + _(",\tDisk Space:") + size_2_wxstr(WX_2_LL((disk_size))) +    \
         _(", Free space: ") + size_2_wxstr(WX_2_LL((free_size)));
     dirinfo->SetLabel(mmsg);
+    wxLogStatus(_("Active Directory:") + str2wxstr(cwd));
 }
 
 unsigned long long FSDisplayPane::WX_2_LL(wxLongLong n)
@@ -285,15 +299,26 @@ unsigned long long FSDisplayPane::WX_2_LL(wxLongLong n)
     return hi;
 }
 
+unsigned long long FSDisplayPane::WX_2_LL(wxULongLong n)
+{
+    unsigned long long hi;
+    hi = n.GetHi();
+    hi <<= 32;
+    hi += n.GetLo();
+    cout << hi << endl;
+    return hi;
+}
+
 /**
  * @name clean_resource - Cleans up the allocated resouces.
  * @return void
  */
 void FSDisplayPane::clean_resource()
 {
-
+    ItemEntry *entry;
     for (iter = file_list.begin(); iter < file_list.end(); iter++) {
-        free (*iter);
+        entry = (*iter);
+        delete entry;
     }
 
     file_list.clear();
@@ -326,9 +351,9 @@ void FSDisplayPane::select_same_ext()
         return;
     }
     selected_list.clear();
-    string ext_name(file_list[cur_idx - 1]->ext);
+    wxString ext_name = file_list[cur_idx - 1]->get_ext();
     for (unsigned int idx = 0; idx < file_list.size(); idx++) {
-        if (strstr(file_list[idx]->name, ext_name.c_str())) {
+        if (ext_name.Cmp(file_list[idx]->get_ext()) == 0) {
             selected_list.push_back(file_list[idx]);
             lst->select_entry(idx+1);
         }
@@ -344,16 +369,16 @@ void FSDisplayPane::deselect_same_ext()
     if (cur_idx == 0) {
         return;
     }
-    string ext_name(file_list[cur_idx - 1]->ext);
+    wxString ext_name = file_list[cur_idx - 1]->get_ext();
     for (int idx = selected_list.size() - 1; idx > 0; idx--) {
-        if (strstr(selected_list[idx]->name, ext_name.c_str())) {
+        if (ext_name.Cmp(file_list[idx]->get_ext()) == 0) {
             lst->deselect_entry(selected_list[idx]->orig_id);
             selected_list.erase(selected_list.begin()+idx);
         }
     }
 }
 
-const string FSDisplayPane::get_cwd()
+const wxString FSDisplayPane::get_cwd()
 {
     return cwd;
 }
@@ -386,33 +411,29 @@ void FSDisplayPane::activate_item(int idx)
     // The first item should be processed sepratedly, cause dir ".." is not
     // stored in the file_list.
     if (idx == 0) {
-
-        cwd = string(dirname(strdup(cwd.c_str())));
         vector<int>::iterator iter;
         if (!sel_idx.empty()) {
             iter = sel_idx.end();
             selected_item = *(--iter) + 1;
             sel_idx.pop_back();
         }
+        old_path = cwd;
+        cwd = wxFileName::DirName(cwd).GetFullPath().BeforeLast(wxT('/')).BeforeLast(wxT('/'));
+        cout << cwd.char_str() << endl;
         update_list(selected_item);
         return;
     }
     idx--; // Strip the first item.
-    if (cur_list[idx]->type == t_dir) {
-
-
+    if (wxDirExists(cur_list[idx]->fn->GetFullPath())) {
         old_path = cwd;
-        cwd = old_path + "/" + string(cur_list[idx]->name);
-        cwd = realpath(cwd.c_str(), NULL);
+        cwd = cur_list[idx]->fn->GetFullPath();
         sel_idx.push_back(idx);
         update_list(selected_item);
     }
     else {
-        wxString path = str2wxstr(cwd) + _("/") + \
-            char2wxstr(cur_list[idx]->name);
+        wxString path = cur_list[idx]->fn->GetFullPath();
         if (wrap_open(path, 0) < 0) {
-            fprintf(stderr, "ERROR: failed to openfile: %s!\n",
-                    cur_list[idx]->name);
+            fprintf(stderr, "ERROR: failed to openfile!\n");
         }
     }
  }
@@ -557,10 +578,10 @@ void FSDisplayPane::set_selected()
         return;
     }
     bool found = false;
-    item *entry = file_list[cur_idx-1];
+    ItemEntry *entry = file_list[cur_idx-1];
     if (!selected_list.empty()) {
         for (iter = selected_list.begin(); iter<selected_list.end();iter++) {
-            if (strcmp(entry->name, (*iter)->name) == 0) {
+            if ((void *)entry == (void *)(*iter)) {
                 found = true;
                 break;
             }
@@ -605,7 +626,7 @@ void FSDisplayPane::rename_file()
         return;
     }
     // wxString old(wxT(basename(strdup(cwd.c_str()))));
-    wxString old(file_list[cur_idx-1]->name, wxConvUTF8);
+    wxString old(file_list[cur_idx-1]->fn->GetFullPath(), wxConvUTF8);
     DirnameDlg *dlg = \
         new DirnameDlg(this, _("Enter new file name:"), old);
     int ret = dlg->ShowModal();
@@ -619,7 +640,8 @@ void FSDisplayPane::rename_file()
             delete(ddlg);
             return ;
         }
-        if (wxRenameFile(char2wxstr(file_list[cur_idx-1]->name), dlg->fn,
+        wxString new_name = wxFileName(str2wxstr(cwd), dlg->fn).GetFullPath();
+        if (wxRenameFile(file_list[cur_idx-1]->fn->GetFullPath(), new_name,
                          true)  == false) {
             msg = _("Failed to rename file: ") + dlg->fn;
             ddlg =                                          \
@@ -656,7 +678,7 @@ void FSDisplayPane::OnKeydown(wxListEvent &evt)
                 quick_search->Show(false);
         }
         else { // Not in quick search, back into previous directory.
-            string tmp(cwd);
+            wxString tmp(cwd);
             cwd = old_path;
             old_path = tmp;
             update_list(-1);
@@ -715,17 +737,11 @@ void FSDisplayPane::create_dir()
         new DirnameDlg(this, _("Enter new directory name:"));
     int ret = dlg->ShowModal();
     if (ret == wxID_OK) {
-        string fn = cwd + "/" + string(dlg->fn.mb_str(wxConvUTF8));
-
-        if ((ret = mkdir(fn.c_str(), 0777))  ==1 ) {
-            msg = _("Failed to create directory: ") + \
-                wxString(fn.c_str(),wxConvUTF8) + \
-                _(" Reason:") + wxString(strerror(errno), wxConvUTF8);
-            wxMessageDialog *ddlg = \
-                new wxMessageDialog(this, msg, _("Error"),
-                                    wxOK);
-            ddlg->ShowModal();
-            delete(ddlg);
+        wxFileName fn(cwd, dlg->fn);
+        if (fn.Mkdir(fn.GetFullPath()) == false) {
+            msg = _("Failed to create directory: ") + fn.GetFullPath();
+            title = _("Error");
+            show_err_dialog();
             return ;
         }
         update_list(cur_idx);
@@ -746,26 +762,27 @@ void FSDisplayPane::show_err_dialog()
  */
 int FSDisplayPane::view_file()
 {
-    if (cur_idx == 0 || cur_list[cur_idx-1]->type == 2) {
+    if (cur_idx == 0 ||wxDirExists( cur_list[cur_idx-1]->fn->GetFullPath())) {
         msg = _("Fivwer should be applied to files!");
         title = _("Error!");
         show_err_dialog();
 
     }
-    string path =  cwd + "/" +  cur_list[cur_idx-1]->name;
-    if (!wxFileExists(str2wxstr(path))) {
+    wxString path =  cur_list[cur_idx-1]->get_fullpath();
+    if (!wxFileExists(path)) {
         msg = _("File does not exist!");
         title = _("Error!");
         show_err_dialog();
     }
     if (is_image(path)) {
-        string cmd = config.get_config("img_viewer") + " \"" + path + "\"";
+        string cmd = config.get_config("img_viewer") + " \"" + \
+            string(path.char_str()) + "\"";
         wxExecute(str2wxstr(cmd));
         return 0;
     }
     else {
         TextViewer *viewer = new TextViewer(GetParent(), path,
-                                            cur_list[cur_idx-1]->size);
+                                            cur_list[cur_idx-1]->fn->GetSize());
         viewer->Show(true);
     }
     return 0;
@@ -808,8 +825,7 @@ int FSDisplayPane::edit_file(bool create)
             show_err_dialog();
             return -1;
         }
-        path =  str2wxstr(cwd) + _("/") +           \
-            char2wxstr(cur_list[cur_idx-1]->name);
+        path =  cur_list[cur_idx-1]->fn->GetFullPath();
         if ((wxFileExists(path) == false) && !create) {
             msg = _("File does not exist!");
             show_err_dialog();
@@ -821,17 +837,17 @@ int FSDisplayPane::edit_file(bool create)
     return 0;
 }
 
-int FSDisplayPane::get_selected_files(vector<string> &list)
+int FSDisplayPane::get_selected_files(vector<wxString> &list)
 {
     list.clear();
-    string fn;
+    wxString fn;
     if (selected_list.empty()) {
-        fn = cwd + "/" + string(file_list[cur_idx-1]->name);
+        fn = file_list[cur_idx-1]->fn->GetFullPath();
         list.push_back(fn);
     }
     else {
         for (iter = selected_list.begin(); iter < selected_list.end();iter++){
-            fn = cwd + "/" + string((*iter)->name);
+            fn = (*iter)->fn->GetFullPath();
             list.push_back(fn);
         }
     }
@@ -841,7 +857,7 @@ int FSDisplayPane::get_selected_files(vector<string> &list)
 int FSDisplayPane::open_terminal()
 {
     string cmd = config.get_config("app_terminal");
-    if (chdir(cwd.c_str()) == -1) {
+    if (wxSetWorkingDirectory(cwd) == false) {
         fprintf(stderr, "ERROR: failed to change dir!\n");
     }
     if (cmd.empty()) {
@@ -862,26 +878,25 @@ int FSDisplayPane::open_terminal()
 int FSDisplayPane::delete_files()
 {
 
-    string path;
+    wxString path;
     int idx = 0;
     if (selected_list.empty()) {
         if (cur_idx == 0)
             return 0;
-
-        path =  cwd + "/" + string(file_list[cur_idx-1]->name);
+        path =  file_list[cur_idx-1]->fn->GetFullPath();
         delete_single_file(path);
         cur_idx--;
         idx = cur_idx;
     }
     else {
         wxString cmd = _("rm -rf ");
-        wxString pwd = str2wxstr(cwd);
+        wxString pwd = cwd;
         idx = (*selected_list.begin())->orig_id -1 ;
         for (iter=selected_list.begin(); iter<selected_list.end(); iter++){
             if (idx > (*iter)->orig_id) {
                 idx = (*iter)->orig_id -1;
             }
-            cmd += _(" \"") + pwd + _("/") + char2wxstr((*iter)->name) + _("\"");
+            cmd += _(" \"") + (*iter)->fn->GetFullPath() + _("\"");
         }
         do_async_execute(cmd);
     }
@@ -897,17 +912,17 @@ int FSDisplayPane::delete_files()
  * XXX: call do_async_execute() to delete can have chance to call update_fs()
  *      after command executed.
  */
-void FSDisplayPane::delete_single_file(string &path)
+void FSDisplayPane::delete_single_file(wxString &path)
 {
-    string cmd;
-    cmd = "rm -rf \"" + path + "\"";
+    wxString cmd;
+    cmd = _("rm -rf \"") + path + _("\"");
     do_async_execute(str2wxstr(cmd));
 }
 
 void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
 {
 
-    string tmp, name;
+    wxString name;
     unsigned int idx;
 
     lst->deselect_entry(cur_idx);
@@ -937,12 +952,9 @@ void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
 
     cur_list.clear();
 
-    tmp = string(cur_target.mb_str(wxConvUTF8));
-    transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
     for (idx = 0; idx < tmp_list.size(); idx++) {
-        name = (tmp_list[idx])->name;
-        transform(name.begin(), name.end(), name.begin(), ::tolower);
-        if (name.find(tmp) != string::npos) {
+        name = (tmp_list[idx])->fn->GetFullName();
+        if (name.Lower().Find(cur_target.Lower()) !=  wxNOT_FOUND) {
             cur_list.push_back(tmp_list[idx]);
         }
     }
@@ -981,19 +993,19 @@ void FSDisplayPane::OnColumbDrag(wxListEvent &evt)
     evt.Skip();
 }
 
-void FSDisplayPane::set_cwd(string &path)
+void FSDisplayPane::set_cwd(wxString path)
 {
     cwd = path;
 }
 
-string FSDisplayPane::get_selected_item()
+wxString FSDisplayPane::get_selected_item()
 {
-    string path;
+    wxString path;
 
     if (cur_idx == 0)
-        path = string(dirname(strdup(cwd.c_str())));
+        path = (wxFileName::DirName(cwd)).GetFullPath();
     else
-        path = cwd + "/" + string(file_list[cur_idx-1]->name);
+        path = file_list[cur_idx-1]->fn->GetFullPath();
     return path;
 }
 
@@ -1079,7 +1091,7 @@ void FSDisplayPane::sort_and_show(int idx)
 void  FSDisplayPane:: goto_parent_dir()
 {
     old_path = cwd;
-    cwd = string(dirname(strdup(cwd.c_str())));
+    cwd = (wxFileName::DirName(old_path)).GetFullPath();
     update_list(-1);
 }
 
@@ -1095,20 +1107,19 @@ void  FSDisplayPane:: goto_dir()
         new DirnameDlg(this, _("Enter new directory name:"));
     int ret = dlg->ShowModal();
     if (ret == wxID_OK) {
-        string path(dlg->fn.mb_str(wxConvUTF8));
-        if (path.find("/") != 0) // Relative path.
-            path = cwd + "/" + path;
-        if (is_dir_exist(path)) {
+        wxFileName fn(dlg->fn);
+        wxString path(dlg->fn);
+        if (fn.IsRelative()) // Relative path.
+            path = cwd + _("/") + fn.GetFullPath();
+
+        if (wxDirExists(path)) {
             old_path = cwd;
             cwd = path;
         }
         else {
-            msg = wxString(path.c_str(), wxConvUTF8)+\
-                _("\nDirecory does not exist!\n");
-            wxMessageDialog *ddlg = \
-                new wxMessageDialog(this, msg, _("Error"), wxOK);
-            ddlg->ShowModal();
-            delete ddlg;
+            msg = path + _(" does not exist!\n");
+            title =  _("Error");
+            show_err_dialog();
             return ;
         }
     }
@@ -1123,6 +1134,11 @@ void FSDisplayPane::process_right_click(wxMouseEvent &evt)
     wxMessageDialog *dlg = \
         new wxMessageDialog(this, _("Test"), _("Test"), wxOK);
     dlg->ShowModal();
+}
+
+void FSDisplayPane::set_focus()
+{
+    lst->SetFocus();
 }
 
 

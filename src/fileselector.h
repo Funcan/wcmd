@@ -23,10 +23,6 @@
 #include "utils.h"
 #include "mylistctrl.h"
 
-
-#define char2wxstr(str) wxString(str, wxConvUTF8)
-#define str2wxstr(str)  wxString(str.c_str(), wxConvUTF8)
-
 extern  wxWindowID active_id;
 void init_imglist();
 
@@ -43,18 +39,18 @@ public:
     void   goto_parent_dir();
     void   goto_dir();
     int    wrap_open(wxString &path, bool create);
-    string get_selected_item();
+    wxString get_selected_item();
     void   focus_first();
     void   focus_last();
     void   focus_next();
     void   focus_prev();
     void   rename_file();
     void   select_all();
-    void   set_cwd(string &path);
+    void   set_cwd(wxString path);
     void   set_selected();
     void   update_list(int selected_item, bool reload_dir=true);
     void   show_list(int selected_item, wxString filter=_(""));
-    int    get_selected_files(vector<string> &list);
+    int    get_selected_files(vector<wxString> &list);
     void   select_same_ext();
     void   deselect_same_ext();
     void   focus_list();
@@ -65,39 +61,40 @@ public:
     void   OnAsyncTermination(bool up_both_fs = false);
     int    do_async_execute(const wxString &cmd);
     void   update_dir_info();
-    const string get_cwd();
+    void set_focus();
+    const wxString get_cwd();
+    wxString          cwd,  old_path;
 private:
     int       cur_sort;
-    void               delete_single_file(string &path);
-    void               OnColumbDrag(wxListEvent &evt);
-    void               OnItemSelected(wxListEvent &evt);
-    void               show_err_dialog();
-    void               OnKeydown(wxListEvent &evt);
-    void               OnMySort(wxListEvent &evt);
-    void               OnTextChanged(wxCommandEvent &evt);
-    void               OnTextEnter(wxCommandEvent &evt);
-    void               item_activated(wxListEvent &evt);
-    void               toggle_color(int idx, bool hicolor);
-    void               clean_resource();
-    void               process_right_click(wxMouseEvent &evt);
+    void delete_single_file(wxString &path);
+    void OnColumbDrag(wxListEvent &evt);
+    void OnItemSelected(wxListEvent &evt);
+    void show_err_dialog();
+    void OnKeydown(wxListEvent &evt);
+    void OnMySort(wxListEvent &evt);
+    void OnTextChanged(wxCommandEvent &evt);
+    void OnTextEnter(wxCommandEvent &evt);
+    void item_activated(wxListEvent &evt);
+    void toggle_color(int idx, bool hicolor);
+    void clean_resource();
+    void process_right_click(wxMouseEvent &evt);
     unsigned long long WX_2_LL(wxLongLong n);
+    unsigned long long WX_2_LL(wxULongLong n);
     int __open_with_plugin(const char *file_name, const char *plugin_path);
     int open_with_plugin(const char *file_name);
+    int get_cur_filelist();
 
     MyListCtrl     *lst;
     int             item_count;
-    DIR            *dirp;
-    DIR            *dirp_old;
+    wxDir *dir;
     wxStaticText   *cwd_info, *dirinfo;
     wxMessageDialog *dlg;
     wxTextCtrl     *quick_search;
-    string          cwd;
-    string          old_path;
-    vector<item *>::iterator  iter;
-    vector<item *>  file_list;
-    vector<item *>  selected_list;
-    vector<item *>  tmp_list;
-    vector<item *>  cur_list;
+    vector<ItemEntry *>::iterator  iter;
+    vector<ItemEntry *>  file_list;
+    vector<ItemEntry *>  selected_list;
+    vector<ItemEntry *>  tmp_list;
+    vector<ItemEntry *>  cur_list;
     vector<int>     sel_idx;
     wxString        cur_target, old_target, msg, cmd, title;
     wxFont          font;
