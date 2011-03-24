@@ -127,14 +127,6 @@ private:
     wxTextCtrl *txt;
 };
 
-class InfoViewer: public wxFrame {
-public:
-    InfoViewer(wxWindow *parent, wxString path);
-    virtual ~InfoViewer() {};
-private:
-    wxTextCtrl *txt;
-};
-
 
 class MyThreadFunc: public wxThread {
 public:

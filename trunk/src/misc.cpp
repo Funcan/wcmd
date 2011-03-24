@@ -397,38 +397,6 @@ wxFrame(parent, -1, _("TextViewer: ")+path,
 }
 
 
-InfoViewer::InfoViewer(wxWindow *parent, wxString path): \
-    wxFrame(parent, -1, _("InfoViewer: ")+wxString(path.c_str(), wxConvUTF8),
-            wxDefaultPosition, wxSize(750,300))
-{
-#if 0
-    long style = wxTE_READONLY|wxTE_MULTILINE|wxTE_RICH;
-    txt = new wxTextCtrl(this, -1, _(""), wxDefaultPosition,
-                         wxDefaultSize, style);
-    wxFont font = wxFont(11, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL,
-                         wxFONTWEIGHT_NORMAL);
-
-    txt->SetDefaultStyle(wxTextAttr(wxColour(0,0,0),
-                                    wxColour(255,255,255), font));
-    txt->SetFont(font);
-
-    wxString val;
-    string output("/tmp/wcmd_info_view");
-    string cmd = "stat \"" + path + "\" > " + output;
-    cmd += "&& echo \"FileType:\" >> " + output;
-    cmd += "&& file \"" + path + "\" >> " + output;
-    if (system(cmd.c_str()) != 0)
-        val = _("Failed to read content!");
-    else {
-        val = wxString(get_content(output).c_str(),wxConvUTF8);
-        unlink(output.c_str());
-    }
-    txt->SetValue(val);
-    txt->ShowPosition(0);
-    SetIcon(wxIcon(wxviewer, wxBITMAP_TYPE_XPM));
-    Show(true);
-#endif
-}
 
 MyThreadFunc::MyThreadFunc(const char *fn, const char *pp): \
     wxThread()
