@@ -781,9 +781,16 @@ int FSDisplayPane::view_file()
         return 0;
     }
     else {
-        TextViewer *viewer = new TextViewer(GetParent(), path,
-                                            cur_list[cur_idx-1]->fn->GetSize());
-        viewer->Show(true);
+        wxString cmd(wxT("xterm -e \""));
+        if (is_text(path)) {
+            cmd += _("less ") + path;
+        }
+        else {
+            cmd += _("hexdump -C ") + path + _(" | less");
+        }
+
+        cmd += _("\"");
+        do_async_execute(cmd);
     }
     return 0;
 }
@@ -833,7 +840,7 @@ int FSDisplayPane::edit_file(bool create)
         }
     }
     cmd = str2wxstr(config.get_config("editor")) + _(" \"") + path + _("\"");
-    do_async_execute(str2wxstr(cmd));
+    do_async_execute(cmd);
     return 0;
 }
 
