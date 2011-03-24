@@ -287,9 +287,8 @@ void MainFrame::OnBookmarkEdit(wxCommandEvent &evt)
 
 void MainFrame::compare_items()
 {
-#if 0
-    string cmd = config.get_config("diff_tool");
-    if (cmd.empty()) {
+    wxString cmd = str2wxstr(config.get_config("diff_tool"));
+    if (cmd.IsEmpty()) {
         wxMessageDialog *ddlg = \
             new wxMessageDialog(this, _("Diff tool is not configured!"),
                                 _("Error"), wxOK);
@@ -297,12 +296,11 @@ void MainFrame::compare_items()
         delete(ddlg);
         return ;
     }
-    cmd += " \"" + sp1->get_selected_item() + "\" \"" + \
-        sp2->get_selected_item()+"\"";
+    cmd += _(" \"") + sp1->get_selected_item() + _("\" \"") +   \
+        sp2->get_selected_item() + _("\"");
 
     get_sp()->do_async_execute(str2wxstr(cmd));
     return;
-#endif
 }
 
 void MainFrame::OnThreadCompletion(wxCommandEvent& event)
@@ -317,6 +315,7 @@ void MainFrame::open_in_other()
     get_sp_o()->set_cwd(path);
     get_sp_o()->update_list(-1);
     get_sp_o()->focus_list();
+    exchange_sp();
 }
 
 FSDisplayPane *MainFrame::get_sp()

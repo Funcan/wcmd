@@ -67,16 +67,21 @@ public:
     ItemEntry(wxString path);
     ItemEntry(wxString dir_name, wxString file_name);
     virtual ~ItemEntry();
-    bool is_dir();
-    wxFileName *fn;
-    int orig_id;
-    wxString get_ext();
-    wxString get_fullname();
-    wxString get_fullpath();
-    wxString get_size_str();
-    wxULongLong get_size();
-    wxString get_date();
-    wxString get_parent();
+    bool         is_dir();
+    wxString     get_ext();
+    wxString     get_fullname();
+    wxString     get_fullpath();
+    wxString     get_size_str();
+    wxULongLong  get_size();
+    wxString     get_date();
+    wxString     get_parent();
+    bool         is_text();
+    bool         is_image();
+    bool         is_file_exist();
+
+    wxFileName  *fn;
+    int          orig_id;
+
 };
 
 #ifdef DEBUG
@@ -94,8 +99,6 @@ public:
 bool    is_dir_exist(const string &path);
 bool    is_dir_exist(const char *path);
 bool    is_file_exist(const string &path);
-bool    is_image(wxString &filename);
-bool is_text(wxString &filename);
 bool    name_is_valid(wxString &name);
 void    format_time(const time_t *mytime, char *tmp);
 string  get_extname(const char *name);
