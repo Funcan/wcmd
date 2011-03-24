@@ -305,7 +305,6 @@ unsigned long long FSDisplayPane::WX_2_LL(wxULongLong n)
     hi = n.GetHi();
     hi <<= 32;
     hi += n.GetLo();
-    cout << hi << endl;
     return hi;
 }
 
@@ -419,7 +418,6 @@ void FSDisplayPane::activate_item(int idx)
         }
         old_path = cwd;
         cwd = wxFileName::DirName(cwd).GetFullPath().BeforeLast(wxT('/')).BeforeLast(wxT('/'));
-        cout << cwd.char_str() << endl;
         update_list(selected_item);
         return;
     }
@@ -457,7 +455,6 @@ int FSDisplayPane::open_with_plugin(const char *file_name)
     sprintf(plugin_path, "%s/.config/wcmd/plugins/%s.so", getenv("HOME"),
             ptr);
     if (access(plugin_path, F_OK) == -1) {
-        cout << "Not found!" << endl;;
         return -1;
     }
     else {
@@ -762,37 +759,51 @@ void FSDisplayPane::show_err_dialog()
  */
 int FSDisplayPane::view_file()
 {
-    if (cur_idx == 0 ||wxDirExists( cur_list[cur_idx-1]->fn->GetFullPath())) {
-        msg = _("Fivwer should be applied to files!");
+    if (cur_idx <= 0) {
+        msg = _("Fileviwer should be only applied to files!");
         title = _("Error!");
         show_err_dialog();
-
+        return -1;
     }
-    wxString path =  cur_list[cur_idx-1]->get_fullpath();
-    if (!wxFileExists(path)) {
+
+    int ret = 0;
+    ItemEntry *entry = cur_list[cur_idx-1];
+    wxString path =  entry->get_fullpath();
+    wxString cmd;
+
+    if (entry->is_dir()) {
+        msg = _("Fivwer should be only applied to files!");
+        title = _("Error!");
+        show_err_dialog();
+        ret = -1;
+        goto end;
+    }
+    if (!entry->is_file_exist()) {
         msg = _("File does not exist!");
         title = _("Error!");
         show_err_dialog();
+        ret = -1;
+        goto end;
     }
-    if (is_image(path)) {
-        string cmd = config.get_config("img_viewer") + " \"" + \
-            string(path.char_str()) + "\"";
-        wxExecute(str2wxstr(cmd));
-        return 0;
+
+    if (entry->is_image()) {
+        cmd = str2wxstr(config.get_config("img_viewer")) + _(" \"") +  \
+            path + _("\"");
     }
     else {
-        wxString cmd(wxT("xterm -e \""));
-        if (is_text(path)) {
+        cmd = _("xterm -e \"");
+        if (entry->is_text()) {
             cmd += _("less ") + path;
         }
         else {
             cmd += _("hexdump -C ") + path + _(" | less");
         }
-
         cmd += _("\"");
-        do_async_execute(cmd);
     }
-    return 0;
+
+    ret = do_async_execute(cmd);
+end:
+    return ret;
 }
 
 /**
@@ -832,16 +843,17 @@ int FSDisplayPane::edit_file(bool create)
             show_err_dialog();
             return -1;
         }
-        path =  cur_list[cur_idx-1]->fn->GetFullPath();
-        if ((wxFileExists(path) == false) && !create) {
+        ItemEntry *entry = cur_list[cur_idx-1];
+        path =  entry->get_fullpath();
+        if ((entry->is_file_exist() == false) && !create) {
             msg = _("File does not exist!");
+            title = _("Error");
             show_err_dialog();
             return -1;
         }
     }
     cmd = str2wxstr(config.get_config("editor")) + _(" \"") + path + _("\"");
-    do_async_execute(cmd);
-    return 0;
+    return do_async_execute(cmd);
 }
 
 int FSDisplayPane::get_selected_files(vector<wxString> &list)
