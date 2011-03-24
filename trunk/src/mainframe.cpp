@@ -443,15 +443,15 @@ int MainFrame::copy_or_move_single(wxString &src, wxString &dest, bool copy)
     if (!copy)
         cmd = _( "mv \"") + src + _("\"  \"") +  dest + _("\"");
     // ret = wxExecute(str2wxstr(cmd));
-    ret = get_sp()->do_async_execute(str2wxstr(cmd));
+    ret = get_sp()->do_async_execute(cmd);
     return ret;
 }
 
 void MainFrame::show_file_info()
 {
     wxString path = get_sp()->get_selected_item();
-    InfoViewer *info = new InfoViewer(this, path);
-    info->Show();
+    wxString cmd = _("xterm -e \" file ") + path + _(" | less \"");
+    get_sp()->do_async_execute(cmd);
 }
 
 

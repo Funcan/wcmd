@@ -390,51 +390,10 @@ EVT_PAINT(MyImagePanel::paintEvent)
 END_EVENT_TABLE()
 
 
-TextViewer::TextViewer(wxWindow *parent, wxString path, wxULongLong length): \
+TextViewer::TextViewer(wxWindow *parent, wxString path): \
 wxFrame(parent, -1, _("TextViewer: ")+path,
         wxDefaultPosition, wxSize(750,920))
 {
-#if 0
-    long style = wxTE_READONLY|wxTE_MULTILINE|wxTE_RICH;
-    txt = new wxTextCtrl(this, -1, _(""), wxDefaultPosition,
-                         wxDefaultSize, style);
-    wxFont font = wxFont(11, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL,
-                         wxFONTWEIGHT_NORMAL);
-
-    txt->SetDefaultStyle(wxTextAttr(wxColour(0,0,0),
-                                    wxColour(255,255,255), font));
-    txt->SetFont(font);
-    wxString val;
-    if (length == 0)
-        val = _("Empty!");
-    else if (length > 1024*1024) {
-        wxMessageDialog *dlg = \
-            new wxMessageDialog(this,
-                                _("File is larger than 1M, Realy open it?"),
-                                _("Warnning"), wxID_OK|wxID_CANCEL);
-        int ret = dlg->ShowModal();
-        if (ret == wxID_CANCEL)
-            val = _("Skipped for big file");
-    }
-
-    if (val.IsEmpty()){
-        val = wxString(get_content(path).c_str(), wxConvUTF8);
-        if (val.IsEmpty()) {
-            wxString output(wxT("/tmp/wcmd_txt_view"));
-            wxString cmd = _("hexdump -C \"") + path + _("\" > ") + output;
-            if (system(cmd.c_str()) != 0)
-                val = _("Failed to read content!");
-            else {
-                val = wxString(get_content(output).c_str(),wxConvUTF8);
-                unlink(output.c_str());
-            }
-        }
-    }
-    txt->SetValue(val);
-    txt->ShowPosition(0);
-    SetIcon(wxIcon(wxviewer, wxBITMAP_TYPE_XPM));
-    Show(true);
-#endif
 }
 
 

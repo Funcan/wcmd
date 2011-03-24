@@ -30,6 +30,7 @@
 #include <syslog.h>
 #include <wx/wx.h>
 #include <wx/dir.h>
+#include <wx/mimetype.h>
 #include <wx/filename.h>
 
 
@@ -94,6 +95,7 @@ bool    is_dir_exist(const string &path);
 bool    is_dir_exist(const char *path);
 bool    is_file_exist(const string &path);
 bool    is_image(wxString &filename);
+bool is_text(wxString &filename);
 bool    name_is_valid(wxString &name);
 void    format_time(const time_t *mytime, char *tmp);
 string  get_extname(const char *name);

@@ -121,7 +121,7 @@ private:
 
 class TextViewer: public wxFrame {
 public:
-    TextViewer(wxWindow *parent, wxString path, wxULongLong length);
+    TextViewer(wxWindow *parent, wxString path);
     virtual ~TextViewer() { };
 private:
     wxTextCtrl *txt;
