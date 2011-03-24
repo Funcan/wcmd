@@ -7,21 +7,8 @@
    (ede-proj-target-makefile-miscelaneous "plugins"
     :name "plugins"
     :path ""
-    :source '("html.c" "iso.c" "mht.c" "null.c")
-    :rules (list
-     (ede-makefile-rule "Custom-new"
-      :target "%.o"
-      :dependencies "%.c"
-      :rules '("echo \"AAAAAAAA\"")
-      )
-     )
-    :submakefile "Makefile.plugin"
-    )
-   (ede-proj-target-makefile-miscelaneous "makefile"
-    :name "makefile"
-    :path ""
-    :source '("Makefile.plugin")
+    :source '("html.c" "iso.c" "mht.c" "null.c" "Makefile.plugin")
     )
    )
-  :configuration-variables 'nil
+  :makefile-type 'Makefile.am
   )

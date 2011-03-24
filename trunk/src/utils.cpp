@@ -102,6 +102,49 @@ wxULongLong ItemEntry::get_size()
 }
 
 
+
+bool ItemEntry::is_image()
+{
+    bool ret = false;
+    wxString mt;
+    wxString path = fn->GetFullPath();
+    if (fn->HasExt()) {
+        wxFileType *ft = \
+            wxTheMimeTypesManager->GetFileTypeFromExtension(fn->GetExt());
+        if (ft != NULL) {
+            if (ft->GetMimeType(&mt)) { // Can be treated as text file
+                if (mt.Find(_("image/")) != wxNOT_FOUND)
+                    ret = true;
+            }
+        }
+    }
+    return ret;
+}
+
+bool ItemEntry::is_text()
+{
+    bool ret = false;
+    wxString mt;
+    wxString path = fn->GetFullPath();
+    if (fn->HasExt()) {
+        wxFileType *ft = \
+            wxTheMimeTypesManager->GetFileTypeFromExtension(fn->GetExt());
+        if (ft != NULL) {
+            if (ft->GetMimeType(&mt)) { // Can be treated as text file
+                if (mt.Find(_("text")) != wxNOT_FOUND)
+                    ret = true;
+            }
+        }
+    }
+    return ret;
+}
+
+bool ItemEntry::is_file_exist()
+{
+    return wxFileExists(fn->GetFullPath());
+}
+
+
 /**
  * @name endswith - Whether a string endswith specified subtring.
  * @param fullString -  full string
@@ -224,41 +267,6 @@ void format_time(const time_t *mytime, char *tmp)
 }
 
 
-bool is_image(wxString &filename)
-{
-    bool ret = false;
-    wxString mt;
-    wxFileName *fn = new wxFileName(filename);
-    if (fn->HasExt()) {
-        wxFileType *ft = \
-            wxTheMimeTypesManager->GetFileTypeFromExtension(fn->GetExt());
-        if (ft != NULL) {
-            if (ft->GetMimeType(&mt)) { // Can be treated as text file
-                if (mt.Find(_("image/")) != wxNOT_FOUND)
-                    ret = true;
-            }
-        }
-    }
-    return ret;
-}
-
-bool is_text(wxString &filename)
-{
-    bool ret = false;
-    wxString mt;
-    wxFileName *fn = new wxFileName(filename);
-    if (fn->HasExt()) {
-        wxFileType *ft = \
-            wxTheMimeTypesManager->GetFileTypeFromExtension(fn->GetExt());
-        if (ft != NULL) {
-            if (ft->GetMimeType(&mt)) { // Can be treated as text file
-                if (mt.Find(_("text")) != wxNOT_FOUND)
-                    ret = true;
-            }
-        }
-    }
-    return ret;
-}
 
 
 /**
