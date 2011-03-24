@@ -429,8 +429,8 @@ int MainFrame::copy_or_move_single(wxString &src, wxString &dest, bool copy)
     wxString msg(fake_dest);
 
     if (wxFileExists(fake_dest)) {
-        msg += _(" already exited! Overwrite?");
-        dlg = new wxMessageDialog(this, msg, _("Overwrite"), wxID_OK|wxID_CANCEL);
+        msg += _(" already exited!\n\nOverwrite?");
+        dlg = new wxMessageDialog(this, msg, _("Overwrite"));
         id = dlg->ShowModal();
         if (id == wxID_CANCEL){
             delete(dlg);
@@ -441,7 +441,6 @@ int MainFrame::copy_or_move_single(wxString &src, wxString &dest, bool copy)
     cmd =  _("cp -aRf \"") + src + _("\"  \"") +  dest + _("\"");
     if (!copy)
         cmd = _( "mv \"") + src + _("\"  \"") +  dest + _("\"");
-    // ret = wxExecute(str2wxstr(cmd));
     ret = get_sp()->do_async_execute(cmd);
     return ret;
 }
