@@ -248,6 +248,7 @@ bool is_file_exist(const string &path)
     return (access(path.c_str(), F_OK) == -1)?false:true;
 }
 
+
 bool is_dir_exist(const string &path)
 {
     struct stat st;
@@ -512,7 +513,14 @@ unsigned long long WX_2_LL(wxULongLong n)
     return hi;
 }
 
-
+wxString get_parent_dir(wxString path)
+{
+    wxString tmp = wxFileName::DirName(path).GetFullPath().BeforeLast(wxT('/')).BeforeLast(wxT('/'));
+    if (tmp.IsEmpty()) {
+        tmp = _("/");
+    }
+    return tmp;
+}
 
 /*
  * Editor modelines

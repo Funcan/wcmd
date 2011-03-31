@@ -100,6 +100,7 @@ filetype get_file_type (const string &path);
 string get_content(wxString &path);
 int strsplit(const string str, const string sip, vector<string> &item_list);
 wxString size_2_wxstr(unsigned long long size);
+wxString get_parent_dir(wxString path);
 int sort_name(ItemEntry *item1, ItemEntry *item2);
 int sort_ext(ItemEntry *item1, ItemEntry *item2);
 int sort_ext2(ItemEntry *item1, ItemEntry *item2);

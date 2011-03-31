@@ -195,6 +195,7 @@ void FSDisplayPane::restore_cwd()
     else {
         cwd = old_path;
     }
+    old_path = get_parent_dir(cwd);
 }
 
 void FSDisplayPane::update_list(int selected_item, bool reload_dir)
@@ -415,7 +416,7 @@ void FSDisplayPane::activate_item(int idx)
             sel_idx.pop_back();
         }
         old_path = cwd;
-        cwd = wxFileName::DirName(cwd).GetFullPath().BeforeLast(wxT('/')).BeforeLast(wxT('/'));
+        cwd = get_parent_dir(cwd);
         update_list(selected_item);
         return;
     }
@@ -423,7 +424,6 @@ void FSDisplayPane::activate_item(int idx)
     if (wxDirExists(cur_list[idx]->fn->GetFullPath())) {
         old_path = cwd;
         cwd = cur_list[idx]->fn->GetFullPath();
-        cout << "CWD:" << cwd.char_str() << endl;
         sel_idx.push_back(idx);
         update_list(selected_item);
     }
