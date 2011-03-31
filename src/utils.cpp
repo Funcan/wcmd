@@ -64,6 +64,15 @@ wxString ItemEntry::get_fullname()
     return name;
 }
 
+wxString ItemEntry::get_name()
+{
+    wxString name = _("");
+    if (fn->HasName()) {
+        name = fn->GetName();
+    }
+    return name;
+}
+
 wxString ItemEntry::get_fullpath()
 {
     return fn->GetFullPath();
@@ -100,8 +109,19 @@ wxULongLong ItemEntry::get_size()
         size = fn->GetSize();
     return size;
 }
-
-
+/**
+ * @name get_file_size - Get file size (return 0 if item is a directory.)
+ * @return unsigned long long
+ */
+unsigned long long ItemEntry::get_file_size()
+{
+    unsigned long long size;
+    if (is_dir())
+        size = 0;
+    else
+        size = WX_2_LL(fn->GetSize());
+    return size;
+}
 
 bool ItemEntry::is_image()
 {
@@ -266,9 +286,6 @@ void format_time(const time_t *mytime, char *tmp)
     return ;
 }
 
-
-
-
 /**
  * @name sort_name - Sort function.
  * @param item1 -  item 1
@@ -277,22 +294,28 @@ void format_time(const time_t *mytime, char *tmp)
  */
 int sort_name(ItemEntry *item1, ItemEntry *item2)
 {
-    return (item1->fn)->GetName().Cmp((item2->fn)->GetName()) < 0 ? 1:0;
+    return item1->get_name().Cmp(item2->get_name()) < 0 ? 1:0;
+}
+
+int sort_name2(ItemEntry *item1, ItemEntry *item2)
+{
+    return item1->get_name().Cmp(item2->get_name()) < 0 ? 0:1;
 }
 
 int sort_ext(ItemEntry *item1, ItemEntry *item2)
 {
-    return (item1->fn)->GetExt().Cmp((item2->fn)->GetExt()) < 0 ? 0:1;
+    return item1->get_ext().Cmp(item2->get_ext()) < 0 ? 0:1;
 }
 
 int sort_ext2(ItemEntry *item1, ItemEntry *item2)
 {
-    return (item1->fn)->GetExt().Cmp((item2->fn)->GetExt()) < 0 ? 1:0;
+    return item1->get_ext().Cmp(item2->get_ext()) < 0 ? 1:0;
 }
 
 int sort_time(ItemEntry *item1, ItemEntry *item2)
 {
-    return item1->fn->GetModificationTime().IsEarlierThan(item2->fn->GetModificationTime());
+    return item1->fn->GetModificationTime().IsEarlierThan(\
+        item2->fn->GetModificationTime());
 }
 
 int sort_time_2(ItemEntry *item1, ItemEntry *item2)
@@ -302,13 +325,14 @@ int sort_time_2(ItemEntry *item1, ItemEntry *item2)
 
 int sort_size(ItemEntry *item1, ItemEntry *item2)
 {
-    return item1->fn->GetSize() > item2->fn->GetSize();
-
+    int ret = item1->get_file_size() > item2->get_file_size();
+    return ret;
 }
 
 int sort_size2(ItemEntry *item1, ItemEntry *item2)
 {
-    return item1->fn->GetSize() <= item2->fn->GetSize();
+    int ret = item1->get_file_size() <= item2->get_file_size();
+    return ret;
 }
 
 void resort_time_based(vector<ItemEntry *> &file_list)
@@ -346,7 +370,7 @@ void reverse_list(vector<ItemEntry *> &file_list)
 {
     vector<ItemEntry *> tmp_list;
     vector<ItemEntry *>::iterator iter;
-    for (iter = file_list.begin(); iter < file_list.end(); iter++) {
+    for ( iter = file_list.begin(); iter < file_list.end(); iter++) {
         tmp_list.insert(tmp_list.begin(), *iter);
     }
     file_list.clear();
@@ -468,6 +492,26 @@ wxString size_2_wxstr(unsigned long long size)
     }
     return desc;
 }
+
+
+unsigned long long WX_2_LL(wxLongLong n)
+{
+    unsigned long long hi;
+    hi = n.GetHi();
+    hi <<= 32;
+    hi += n.GetLo();
+    return hi;
+}
+
+unsigned long long WX_2_LL(wxULongLong n)
+{
+    unsigned long long hi;
+    hi = n.GetHi();
+    hi <<= 32;
+    hi += n.GetLo();
+    return hi;
+}
+
 
 
 /*

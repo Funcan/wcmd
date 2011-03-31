@@ -50,18 +50,6 @@ typedef enum _filetype{
     t_audio,
 } filetype;
 
-
-typedef struct _item {
-    wxFileName *fn;
-    char *name;
-    char *ext;
-    long long size;
-    mode_t mode;
-    time_t ctime;
-    filetype type;
-    int orig_id;
-} item;
-
 class ItemEntry {
 public:
     ItemEntry(wxString path);
@@ -70,9 +58,11 @@ public:
     bool         is_dir();
     wxString     get_ext();
     wxString     get_fullname();
+    wxString     get_name();
     wxString     get_fullpath();
     wxString     get_size_str();
     wxULongLong  get_size();
+    unsigned long long  get_file_size();
     wxString     get_date();
     wxString     get_parent();
     bool         is_text();
@@ -118,7 +108,8 @@ int sort_time2(ItemEntry *item1, ItemEntry *item2);
 int sort_size(ItemEntry *item1, ItemEntry *item2);
 int sort_size2(ItemEntry *item1, ItemEntry *item2);
 void reverse_list(vector<ItemEntry *> &file_list);
-
+unsigned long long WX_2_LL(wxLongLong n);
+unsigned long long WX_2_LL(wxULongLong n);
 #endif /* _UTILS_H_ */
 /*
  * Editor modelines
