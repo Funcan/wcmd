@@ -53,15 +53,15 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->get_sp()->sort_and_show(COL_NAME);
                 return true;
             }
-            case 50: { // Ctlr + 1,  sort by ext,
+            case 50: { // Ctlr + 2,  sort by ext,
                 frame->get_sp()->sort_and_show(COL_EXT);
                 return true;
             }
-            case 51: { // Ctlr + 1,  sort by size,
+            case 51: { // Ctlr + 3,  sort by size,
                 frame->get_sp()->sort_and_show(COL_SIZE);
                 return true;
             }
-            case 52: { // Ctlr + 1,  sort by time,
+            case 52: { // Ctlr + 4,  sort by time,
                 frame->get_sp()->sort_and_show(COL_TIME);
                 return true;
             }

@@ -29,7 +29,7 @@ void init_imglist();
 
 class FSDisplayPane: public wxPanel {
 public:
-    FSDisplayPane(wxWindow *parent, wxWindowID id, string &path);
+    FSDisplayPane(wxWindow *parent, wxWindowID id, wxString &path);
     virtual ~FSDisplayPane(){};
     int    cur_idx;
     int    delete_files();
@@ -58,7 +58,8 @@ public:
     void   create_dir();
     void   sort_and_show(int idx);
     void   activate_item(int idx);
-    void   OnAsyncTermination(bool up_both_fs = false);
+    void   OnAsyncTermination(bool up_flag = false, bool err_flag = false,
+                              wxString cmd=_(""));
     int    do_async_execute(const wxString &cmd);
     void   update_dir_info();
     void set_focus();
@@ -66,6 +67,7 @@ public:
     wxString          cwd,  old_path;
 private:
     int       cur_sort;
+    void restore_cwd();
     void delete_single_file(wxString &path);
     void OnColumbDrag(wxListEvent &evt);
     void OnItemSelected(wxListEvent &evt);
@@ -78,8 +80,6 @@ private:
     void toggle_color(int idx, bool hicolor);
     void clean_resource();
     void process_right_click(wxMouseEvent &evt);
-    unsigned long long WX_2_LL(wxLongLong n);
-    unsigned long long WX_2_LL(wxULongLong n);
     int __open_with_plugin(const char *file_name, const char *plugin_path);
     int open_with_plugin(const char *file_name);
     int get_cur_filelist();
