@@ -28,10 +28,10 @@ MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     this->InsertColumn(4, _("Last Modify"));
 
     this->SetColumnWidth(0, 25);
-    this->SetColumnWidth(1, 280);
+    this->SetColumnWidth(1, 330);
     this->SetColumnWidth(2, 80);
     this->SetColumnWidth(3, 90);
-    this->SetColumnWidth(4, 125);
+    this->SetColumnWidth(4, 110);
 }
 
 MyListCtrl::~MyListCtrl()
