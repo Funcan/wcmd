@@ -157,6 +157,10 @@ int FSDisplayPane::get_cur_filelist()
     DIR *dp;
     struct dirent *den;
     wxString fn;
+    bool show_hidded = false;
+    if (config.get_config("show_hidden") != "false") {
+        show_hidded = true;
+    }
     dp = opendir(cwd.mb_str(wxConvUTF8));
     if (dp == NULL) {
         return -1;
@@ -164,8 +168,16 @@ int FSDisplayPane::get_cur_filelist()
 
     while ((den = readdir(dp)) != NULL) {
         fn = char2wxstr(den->d_name);
-        if (fn.Find(wxT(".")) == 0 )
-            continue;
+        if (fn.Find(wxT(".")) == 0 ) {
+            if (show_hidded == false) {
+                continue;
+            }
+            else {
+                if (fn.Cmp(wxT("..")) == 0 || fn.Cmp(wxT(".")) == 0) {
+                    continue;
+                }
+            }
+        }
         entry = new ItemEntry(cwd, fn);
         if (wxDirExists(entry->fn->GetFullPath())) {
             file_list.push_back(entry);
@@ -891,9 +903,9 @@ int FSDisplayPane::open_terminal()
     }
     return do_async_execute(str2wxstr(cmd));
 }
+
 /**
- * @name del_file - Move file to trashdir, or delete it if it's already in
- * 					trash dir.
+ * @name del_file - Delete selected files .
  * @return int : which item should be focused.
  */
 int FSDisplayPane::delete_files()
