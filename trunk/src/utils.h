@@ -40,16 +40,6 @@
 
 using namespace std;
 
-typedef enum _filetype{
-    t_null = NULL,
-    t_file = 1,
-    t_dir,
-    t_img,
-    t_pdf,
-    t_video,
-    t_audio,
-} filetype;
-
 class ItemEntry {
 public:
     ItemEntry(wxString path);
@@ -96,7 +86,6 @@ void    resort_time_based(vector<ItemEntry *> &file_list);
 void    resort_based_ext(vector<ItemEntry *> &file_list);
 void    resort_size_based(vector<ItemEntry *> &file_list);
 void    reverse_list(vector<ItemEntry *> &file_list);
-filetype get_file_type (const string &path);
 string get_content(wxString &path);
 int strsplit(const string str, const string sip, vector<string> &item_list);
 wxString size_2_wxstr(unsigned long long size);

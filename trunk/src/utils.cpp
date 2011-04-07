@@ -17,13 +17,6 @@ static bool ext_sort=true;
 #define B2G(n)       n/(KB*KB*KB)
 
 
-typedef struct _magic_filetype {
-    filetype ftype;
-    string magics;
-} magic_filetype;
-
-
-
 ItemEntry::ItemEntry(wxString path)
 {
     fn = new wxFileName(path);
@@ -380,14 +373,6 @@ void reverse_list(vector<ItemEntry *> &file_list)
     }
 }
 
-magic_filetype mtype[] = {
-    { t_img, "image data"},
-    { t_pdf, "PDF document"},
-    { t_video, "RealMedia file|Microsoft ASF|MPEG|RIFFOgg data|Matroska data"},
-    { t_audio, "Audio file"},
-    { t_null, ""},
-};
-
 int sort_length(string str1, string str2)
 {
     return str1.size() < str2.size()?1:0;
@@ -411,42 +396,6 @@ int strsplit(const string str, const string sip, vector<string> &item_list)
     return item_list.size();
 }
 
-void get_magics(const string str, vector<string> &item_list)
-{
-    string sip("|");
-    if (!strsplit(str, sip, item_list))
-        fprintf(stderr, "Faild to get magics for: %s\n",
-                str.c_str());
-    return;
-}
-
-filetype get_file_type (const string &path)
-{
-    int i = 0;
-    string cmd;
-    vector <string> item_list;
-
-    while (mtype[i].ftype != t_null) {
-        if (mtype[i].magics.find("|") == string::npos) {
-            cmd = "file \"" + path + "\" | grep \"" + mtype[i].magics+\
-                "\" >/dev/null 2>&1";
-            if (system(cmd.c_str()) == 0)
-                return mtype[i].ftype;
-        }
-        else {
-            get_magics(mtype[i].magics, item_list);
-            vector<string>::iterator iter;
-            for (iter = item_list.begin(); iter < item_list.end(); iter++) {
-                cmd = "file \"" + path + "\" | grep \"" + *iter + \
-                    "\" >/dev/null 2>&1";
-                if (system(cmd.c_str()) == 0)
-                    return mtype[i].ftype;
-            }
-        }
-        i++;
-    }
-    return t_file;
-}
 /**
  * @name get_content - Get content of file.
  * @param path -  path

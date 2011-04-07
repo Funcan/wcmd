@@ -104,30 +104,6 @@ private:
 };
 
 
-class MyImagePanel : public wxPanel
-{
-
-public:
-    MyImagePanel(wxWindow* parent, string path);
-    wxBitmap image;
-    void paintEvent(wxPaintEvent & evt);
-    void paintNow();
-    void render(wxDC& dc);
-
-private:
-    wxString fn;
-    DECLARE_EVENT_TABLE()
-};
-
-class TextViewer: public wxFrame {
-public:
-    TextViewer(wxWindow *parent, wxString path);
-    virtual ~TextViewer() { };
-private:
-    wxTextCtrl *txt;
-};
-
-
 class MyThreadFunc: public wxThread {
 public:
     MyThreadFunc(const char *fn, const char *pp);

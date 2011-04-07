@@ -244,7 +244,6 @@ void MainFrame::ShowHidden()
         menu_item_view_hidden -> Check(false);
     }
 
-
     update_fs();
 }
 
