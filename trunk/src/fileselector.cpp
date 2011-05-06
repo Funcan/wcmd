@@ -156,7 +156,6 @@ int FSDisplayPane::get_cur_filelist()
 
     DIR *dp;
     struct dirent *den;
-    wxString fn;
     bool show_hidded = false;
     if (config.get_config("show_hidden") != "false") {
         show_hidded = true;
@@ -166,24 +165,34 @@ int FSDisplayPane::get_cur_filelist()
         return -1;
     }
 
+    struct stat status;
+    char *d_name = NULL;
     while ((den = readdir(dp)) != NULL) {
-        fn = char2wxstr(den->d_name);
-        if (fn.Find(wxT(".")) == 0 ) {
-            if (show_hidded == false) {
-                continue;
-            }
-            else {
-                if (fn.Cmp(wxT("..")) == 0 || fn.Cmp(wxT(".")) == 0) {
+        d_name = den->d_name;
+        if (strlen(d_name) == 0 )
+            continue;
+        else {
+            if (*d_name == '.') {
+                if (strlen(d_name) == 1 || show_hidded == false ||
+                    *(d_name + 1) == '.') {
                     continue;
                 }
             }
         }
-        entry = new ItemEntry(cwd, fn);
-        if (wxDirExists(entry->fn->GetFullPath())) {
-            file_list.push_back(entry);
+        entry = new ItemEntry(cwd, char2wxstr(d_name));
+        if (stat(entry->get_fullpath().mb_str(wxConvUTF8), &status) == 0) {
+            if (S_ISDIR(status.st_mode)) {
+                file_list.push_back(entry);
+            }
+            else{
+                tmp.push_back(entry);
+            }
         }
-        else{
-            tmp.push_back(entry);
+        else {
+
+            cout << "Can not get status of entry: " << \
+                entry->get_fullpath().mb_str(wxConvUTF8) << endl;
+            continue;
         }
     }
     closedir(dp);
