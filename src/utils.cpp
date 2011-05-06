@@ -228,8 +228,7 @@ char *get_real_dirname(const char *in_path)
 
 bool name_is_valid(wxString &fn)
 {
-    if (fn.IsEmpty() || fn.Cmp(_("..")) == 0 || fn.Cmp(_(".")) == 0 ||
-        fn.Find(_("/")) != wxNOT_FOUND)
+    if (fn.IsEmpty() || fn.Cmp(_("..")) == 0 || fn.Cmp(_(".")) == 0)
         return false;
     else
         return true;

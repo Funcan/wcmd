@@ -636,24 +636,23 @@ void FSDisplayPane::rename_file()
         ddlg->ShowModal();
         return;
     }
-    // wxString old(wxT(basename(strdup(cwd.c_str()))));
-    wxString old(file_list[cur_idx-1]->fn->GetFullPath(), wxConvUTF8);
+
+    wxFileName *fn = file_list[cur_idx-1]->fn;
+    wxString path_name = fn->GetPath();
+    wxString old_name = fn->GetFullName();
     DirnameDlg *dlg = \
-        new DirnameDlg(this, _("Enter new file name:"), old);
+        new DirnameDlg(this, _("Enter new file name:"), old_name);
     int ret = dlg->ShowModal();
+
     if (ret == wxID_OK) {
         if (!name_is_valid(dlg->fn)) {
             msg = _("New name is empty or not valid!");
-            ddlg = \
-                new wxMessageDialog(this, msg, _("Error"),
-                                    wxOK);
-            ddlg->ShowModal();
-            delete(ddlg);
+            title = _("Error");
+            show_err_dialog();
             return ;
         }
-        wxString new_name = wxFileName(str2wxstr(cwd), dlg->fn).GetFullPath();
-        if (wxRenameFile(file_list[cur_idx-1]->fn->GetFullPath(), new_name,
-                         true)  == false) {
+        wxString new_name = wxFileName(cwd, dlg->fn).GetFullPath();
+        if (wxRenameFile(fn->GetFullPath(), new_name,  true)  == false) {
             msg = _("Failed to rename file: ") + dlg->fn;
             ddlg =                                          \
                 new wxMessageDialog(this, msg, _("Error"),
