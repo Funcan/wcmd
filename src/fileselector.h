@@ -51,6 +51,7 @@ public:
     void   update_list(int selected_item, bool reload_dir=true);
     void   show_list(int selected_item, wxString filter=_(""));
     int    get_selected_files(vector<wxString> &list);
+    int    get_selected_files(vector<ItemEntry *> &list);
     void   select_same_ext();
     void   deselect_same_ext();
     void   focus_list();
@@ -61,8 +62,9 @@ public:
     void   OnAsyncTermination(bool up_flag = false, bool err_flag = false,
                               wxString cmd=_(""));
     int    do_async_execute(const wxString &cmd);
+    int    compress_files();
     void   update_dir_info();
-    void set_focus();
+    void   set_focus();
     const wxString get_cwd();
     wxString          cwd,  old_path;
 private:

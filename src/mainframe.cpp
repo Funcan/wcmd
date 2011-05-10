@@ -378,9 +378,9 @@ void MainFrame::OpenTerminal(wxCommandEvent &evt)
 
 void MainFrame::copy_or_move(bool copy)
 {
-
-    vector<wxString> src_list;
+    vector<ItemEntry *> src_list;
     wxString dest = get_sp_o()->get_cwd();
+    wxString src;
     if (get_sp()->get_selected_files(src_list) || src_list.empty()) {
         wxMessageDialog *dlg = \
             new wxMessageDialog(this, _("Failed to get selected files!"),
@@ -389,12 +389,11 @@ void MainFrame::copy_or_move(bool copy)
         delete(dlg);
         return ;
     }
-    vector<wxString>::iterator iter;
-    wxString msg;
+    vector<ItemEntry *>::iterator iter;
     for (iter = src_list.begin(); iter < src_list.end(); iter++) {
-
         dest += _("/");
-        copy_or_move_single(*iter, dest, copy);
+        src = (*iter)->get_fullpath();
+        copy_or_move_single(src, dest, copy);
     }
     int idx = get_sp()->cur_idx;
     if (!copy) {
