@@ -46,6 +46,7 @@ enum{
     ID_PopupMenu_Sort_Time,
     ID_PopupMenu_Sort_Ext,
     ID_PopupMenu_Open = 20500,
+    ID_PopupMenu_Compress,
 
 };
 

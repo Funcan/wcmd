@@ -314,7 +314,7 @@ void FSDisplayPane::update_dir_info()
         selected_size += (*iter)->get_size();
         ++selected_number;
     }
-    if (wxGetDiskSpace(str2wxstr(cwd), &disk_size, &free_size) == false) {
+    if (wxGetDiskSpace(cwd, &disk_size, &free_size) == false) {
         disk_size = 0;
         free_size = 0;
     }
@@ -324,7 +324,7 @@ void FSDisplayPane::update_dir_info()
         + _(",\tDisk Space:") + size_2_wxstr(WX_2_LL((disk_size))) +    \
         _(", Free space: ") + size_2_wxstr(WX_2_LL((free_size)));
     dirinfo->SetLabel(mmsg);
-    wxLogStatus(_("Active Directory:") + str2wxstr(cwd));
+    wxLogStatus(_("Active Directory:") + cwd);
 }
 
 
@@ -848,7 +848,7 @@ int FSDisplayPane::edit_file(bool create)
                 show_err_dialog();
                 return -1;
             }
-            path = str2wxstr(cwd) + _("/") + path;
+            path = cwd + _("/") + path;
             if (wxFileExists(path) || wxDirExists(path)) {
                 msg = _("File already exist!");
                 show_err_dialog();
@@ -891,6 +891,65 @@ int FSDisplayPane::get_selected_files(vector<wxString> &list)
             fn = (*iter)->fn->GetFullPath();
             list.push_back(fn);
         }
+    }
+    return 0;
+}
+
+int FSDisplayPane::get_selected_files(vector<ItemEntry *> &list)
+{
+    list.clear();
+    wxString fn;
+    if (selected_list.empty()) {
+        list.push_back(file_list[cur_idx-1]);
+    }
+    else {
+        for (iter = selected_list.begin(); iter < selected_list.end();iter++){
+            list.push_back(*iter);
+        }
+    }
+    return 0;
+}
+
+int FSDisplayPane::compress_files()
+{
+    vector<ItemEntry *> list;
+    if(get_selected_files(list) || list.empty()) {
+        msg = _("Failed to get selected files!");
+        title = _("Error");
+        show_err_dialog();
+        return -1;
+    }
+    DirnameDlg *dlg = \
+        new DirnameDlg(this, _("Enter file name (without extension):"));
+    int ret = dlg->ShowModal();
+    wxString path;
+    if (ret == wxID_OK) {
+        path = dlg->fn;
+        if (!name_is_valid(path)) {
+            msg = _("New name is empty or it is not valid!");
+            show_err_dialog();
+            return -1;
+        }
+        if (chdir(cwd.mb_str(wxConvUTF8))) {
+            msg = _("Failed to change dir into") + cwd;
+            title = _("Error");
+            show_err_dialog();
+            return -2;
+        }
+
+        if (wxFileExists(path) || wxDirExists(path)) {
+            msg = _("File already exist!");
+            show_err_dialog();
+            return -1;
+        }
+
+        wxString cmd(wxT("7z a  "));
+        cmd += path + wxT(".7z ");
+        vector<ItemEntry *>::iterator iter;
+        for (iter = list.begin(); iter < list.end(); iter++) {
+            cmd += _("\"") + (*iter)->get_fullname() + _("\" ");
+        }
+        return do_async_execute(cmd);
     }
     return 0;
 }

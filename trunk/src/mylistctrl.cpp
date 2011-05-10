@@ -95,6 +95,10 @@ void MyListCtrl::OnPopupClick(wxCommandEvent &evt)
         fs->activate_item(-1);
         break;
     }
+    case ID_PopupMenu_Compress: {
+        fs->compress_files();
+        break;
+    }
     default:
 
         break;
@@ -139,6 +143,8 @@ void MyListCtrl::process_right_click(wxMouseEvent &evt)
     }
     else { // Right click on files or directories.
         menu->Append(ID_PopupMenu_Open, _("Open"));
+        menu->Append(ID_PopupMenu_Compress, _("Compress"));
+
         menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
                       (wxObjectEventFunction)&MyListCtrl::OnPopupClick, NULL,
                       this);
