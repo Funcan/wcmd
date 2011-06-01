@@ -32,7 +32,9 @@
 #include <wx/dir.h>
 #include <wx/mimetype.h>
 #include <wx/filename.h>
+#include <wx/log.h>
 
+extern wxLog *logger;
 
 #define char2wxstr(str) wxString(str, wxConvUTF8)
 #define str2wxstr(str)  wxString(str.c_str(), wxConvUTF8)
@@ -66,7 +68,7 @@ public:
 
 #ifdef DEBUG
 #define PDEBUG(fmt, args...)                                \
-    printf("%s(%d)-%s:\t",__FILE__,__LINE__,__FUNCTION__);        \
+    printf("%s(%d)-%s:\t",__FILE__,__LINE__,__FUNCTION__);  \
     printf("\033[31m"fmt"\033[0m", ##args);
 #else
 #define PDEBUG(fmt, args...)  ;

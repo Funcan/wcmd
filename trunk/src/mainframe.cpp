@@ -6,11 +6,21 @@
 #include "resources/buttons/btn_terminal.xpm"
 #include "resources/mimetype/folder.xpm"
 #include "resources/wxcommandor.xpm"
+#include <wx/log.h>
+
+wxLog *logger;
 
 
 MainFrame::MainFrame(const wxString& title, char ** args): \
     wxFrame( NULL, -1, title, wxDefaultPosition, wxSize(1200,850))
 {
+    // Init logger
+    logger = new wxLogWindow(this, _("WCMD Debug Info"), false);
+    if (logger == NULL)
+    {
+        wxLogFatalError(_("Failed to initiate logger."));
+    }
+    wxLog::SetActiveTarget(logger);
     // Set Size;
     int x, y;
     string tmp = config.get_config("auto_size_x");
@@ -117,6 +127,8 @@ void MainFrame::create_menubar()
     menu = new wxMenu;
     menu_item_view_hidden = menu->AppendCheckItem(ID_View_ShowHidden,
                                                   _("&Show Hidden Files"));
+    menu_item_view_debug = menu->AppendCheckItem(ID_View_ShowDebug,
+                                                  _("&Show Debug Info"));
     menuBar->Append(menu, _("&View") );
 
     // Edit
@@ -233,8 +245,6 @@ void MainFrame::OnDelete(wxCommandEvent & event)
 
 void MainFrame::ShowHidden()
 {
-
-
     if (config.get_config("show_hidden") == "false") {
         config.set_config("show_hidden", "true");
         menu_item_view_hidden -> Check(true);
@@ -404,7 +414,7 @@ void MainFrame::copy_or_move(bool copy)
 }
 
 /**
- * @name copy_or_move_single - Copy or move file from src to dst.
+ * Copy or move file from src to dst.
  * @param src -  src
  * @param dst -  dst
  * @param copy - Flag copy, true to copy, false to move.
@@ -450,6 +460,21 @@ void MainFrame::show_file_info()
     get_sp()->do_async_execute(cmd);
 }
 
+void MainFrame::Show_Debug(wxCommandEvent &evt)
+{
+
+    if (menu_item_view_debug->IsChecked()) {
+        wxLogMessage(_("Log enabled!"));
+        ((wxLogWindow *)logger)->Show(true);
+    }
+    else {
+        wxLogMessage(_("Log disabled!"));
+        ((wxLogWindow *)logger)->Show(false);
+    }
+    evt.Skip();
+    return;
+}
+
 
 DEFINE_EVENT_TYPE(wxEVT_MY_EVENT)
 
@@ -461,6 +486,7 @@ EVT_MENU(wxID_PREFERENCES, MainFrame::OnOption)
 EVT_MENU(ID_BookmarkAdd, MainFrame::OnBookmarkAdd)
 EVT_MENU(ID_BookmarkEdit, MainFrame::OnBookmarkEdit)
 EVT_MENU(ID_View_ShowHidden, MainFrame::Show_Hidden)
+EVT_MENU(ID_View_ShowDebug, MainFrame::Show_Debug)
 EVT_BUTTON(ID_View, MainFrame::OnView)
 EVT_BUTTON(wxID_EDIT, MainFrame::OnEdit)
 EVT_BUTTON(wxID_COPY, MainFrame::OnCopy)

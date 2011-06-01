@@ -48,11 +48,13 @@ private:
     void OnDelete(wxCommandEvent & event);
     void OnCopy(wxCommandEvent & event);
     void OpenTerminal(wxCommandEvent & event);
+    void Show_Debug(wxCommandEvent &evt);
     vector<string> bookmark_list;
     wxMenu *bookmark_menu;
     wxMenuBar *menuBar;
     FileSelector *fs;
     wxMenuItem *menu_item_view_hidden;
+    wxMenuItem *menu_item_view_debug;
     wxMenuItem *menuitem;
     DECLARE_EVENT_TABLE()
 };

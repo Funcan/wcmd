@@ -144,7 +144,7 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, wxString &path): \
     fg_def_col = wxColour(0,0,0);
 }
 /**
- * @name get_cur_filelist - Get filelist of current dir.
+ * Get filelist of current dir.
  * @return int
  */
 int FSDisplayPane::get_cur_filelist()
@@ -256,7 +256,7 @@ void FSDisplayPane::update_list(int selected_item, bool reload_dir)
 }
 
 /**
- * @name show_list - Display current list in treectrl
+ * Display current list in treectrl
  * @param selected_item - Number of selected item.
  * @param filter -  filter
  * @return void
@@ -301,7 +301,7 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
 }
 
 /**
- * @name update_dir_info - Updates the Dirinfo label.
+ * Updates the Dirinfo label.
  * @return void
  */
 void FSDisplayPane::update_dir_info()
@@ -329,7 +329,7 @@ void FSDisplayPane::update_dir_info()
 
 
 /**
- * @name clean_resource - Cleans up the allocated resouces.
+ * Cleans up the allocated resouces.
  * @return void
  */
 void FSDisplayPane::clean_resource()
@@ -345,7 +345,7 @@ void FSDisplayPane::clean_resource()
 }
 
 /**
- * @name select_all - Chooses the files in current list.
+ * Chooses the files in current list.
  * @return void
  */
 void FSDisplayPane::select_all()
@@ -360,7 +360,7 @@ void FSDisplayPane::select_all()
 }
 
 /**
- * @name select_same_ext - Chooses all files of the  of same type as the
+ * Chooses all files of the  of same type as the
  *      selected one.
  * @return void
  */
@@ -380,7 +380,7 @@ void FSDisplayPane::select_same_ext()
 }
 
 /**
- * @name deselect_same_ext - Deselect files  of the same type.
+ * Deselect files  of the same type.
  * @return void
  */
 void FSDisplayPane::deselect_same_ext()
@@ -482,13 +482,11 @@ int FSDisplayPane::open_with_plugin(const char *file_name)
         if ( func->Create() != wxTHREAD_NO_ERROR )
         {
             wxLogError(wxT("Can't create thread!"));
-            PDEBUG ("Can't create thread!\n");
             return -1;
         }
         if (func->Run() != wxTHREAD_NO_ERROR)
         {
             wxLogError(wxT("Can't create thread!"));
-            PDEBUG ("Can't create thread!\n");
             return -1;
         }
         return 0;
@@ -497,7 +495,7 @@ int FSDisplayPane::open_with_plugin(const char *file_name)
 }
 
 /**
- * @name wrap_open - Wrapped open, run a child process to open selected files.
+ * Wrapped open, run a child process to open selected files.
  * @param path -  path
  * @param create - Flag create
  * @return int
@@ -594,7 +592,7 @@ void FSDisplayPane::set_selected()
 {
 
     if (cur_idx == 0) {
-        PDEBUG ("Should not select parent direcoty!\n");
+        wxLogMessage (_("Should not select parent direcoty!\n"));
         return;
     }
     bool found = false;
@@ -776,7 +774,7 @@ void FSDisplayPane::show_err_dialog()
 }
 
 /**
- * @name view_file - View file according to Magic Key!!
+ * View file according to Magic Key!!
  * @return int
  */
 int FSDisplayPane::view_file()
@@ -972,7 +970,7 @@ int FSDisplayPane::open_terminal()
 }
 
 /**
- * @name del_file - Delete selected files .
+ * Delete selected files .
  * @return int : which item should be focused.
  */
 int FSDisplayPane::delete_files()
@@ -1006,7 +1004,7 @@ int FSDisplayPane::delete_files()
 }
 
 /**
- * @name delete_single_file - Delete single file.
+ * Delete single file.
  * @param path -  path
  * @return void
  * XXX: call do_async_execute() to delete can have chance to call update_fs()
@@ -1068,7 +1066,7 @@ ret:
     show_list(cur_idx, cur_target);
 }
 /**
- * @name OnTextEnter - When Enter pressed, close quick_search.
+ * When Enter pressed, close quick_search.
  * @param evt -  evt
  * @return void
  */
@@ -1156,7 +1154,7 @@ void FSDisplayPane::OnMySort(wxListEvent &evt)
 }
 
 /**
- * @name real_sort - Sort and display curr_list.
+ * Sort and display curr_list.
  * @param idx - Identifier of
  * @return void
  */

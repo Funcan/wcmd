@@ -19,6 +19,7 @@ enum{
     ID_Terminal,
 
     ID_View_ShowHidden,
+    ID_View_ShowDebug,
 
     ID_Delete,
     ID_SplitWindow = 101,
