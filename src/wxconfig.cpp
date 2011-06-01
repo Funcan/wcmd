@@ -164,7 +164,7 @@ void Config::dump_bookmarks()
 }
 
 /**
- * @name read_configs - Reads configurations, fill them into enter_list.
+ * Reads configurations, fill them into enter_list.
  * @return void
  */
 void Config::read_configs()
@@ -194,7 +194,7 @@ void Config::read_configs()
 }
 
 /**
- * @name read_bookmarks - Read bookmarks, fill them into bookmarks.
+ * Read bookmarks, fill them into bookmarks.
  * @return void
  */
 void Config::read_bookmarks()

@@ -103,7 +103,7 @@ wxULongLong ItemEntry::get_size()
     return size;
 }
 /**
- * @name get_file_size - Get file size (return 0 if item is a directory.)
+ * Get file size (return 0 if item is a directory.)
  * @return unsigned long long
  */
 unsigned long long ItemEntry::get_file_size()
@@ -159,7 +159,7 @@ bool ItemEntry::is_file_exist()
 
 
 /**
- * @name endswith - Whether a string endswith specified subtring.
+ * Whether a string endswith specified subtring.
  * @param fullString -  full string
  * @param ending -  ending
  * @return bool
@@ -182,7 +182,7 @@ bool endswith(string const &fullString, string const ending)
     return isEnding;
 }
 /**
- * @name string_to_lower - Converts string into lower case.
+ * Converts string into lower case.
  * @param str -  string
  * @return string
  */
@@ -280,7 +280,7 @@ void format_time(const time_t *mytime, char *tmp)
 }
 
 /**
- * @name sort_name - Sort function.
+ * Sort function.
  * @param item1 -  item 1
  * @param item2 -  item 2
  * @return int
@@ -396,7 +396,7 @@ int strsplit(const string str, const string sip, vector<string> &item_list)
 }
 
 /**
- * @name get_content - Get content of file.
+ * Get content of file.
  * @param path -  path
  * @return string
  */
@@ -420,7 +420,7 @@ string get_content(wxString &path)
 }
 
 /**
- * @name size_2_wxstr - Conver size into wxString.
+ * Conver size into wxString.
  * @param size - Number of size
  * @return wxString
  */
@@ -445,19 +445,36 @@ wxString size_2_wxstr(unsigned long long size)
 
 unsigned long long WX_2_LL(wxLongLong n)
 {
-    unsigned long long hi;
+    unsigned long long hi = 0;
+    unsigned int tmp;
     hi = n.GetHi();
     hi <<= 32;
-    hi += n.GetLo();
+    tmp = (unsigned int)(n.GetLo() & 0xFFFFFFFF);
+    if (tmp == 0xFFFFFFFF) {
+        tmp = 4096;
+    }
+    hi += hi + tmp;
     return hi;
 }
 
+/**
+ * Convert a wxULongLong into unsigned long long.
+ *
+ * @param n - Number to be convert.
+ * @return unsigned long long
+ * @bug Ticket #9745
+ */
 unsigned long long WX_2_LL(wxULongLong n)
 {
-    unsigned long long hi;
+    unsigned long long hi = 0;
+    unsigned int tmp;
     hi = n.GetHi();
     hi <<= 32;
-    hi += n.GetLo();
+    tmp = (unsigned int)(n.GetLo() & 0xFFFFFFFF);
+    if (tmp == 0xFFFFFFFF) {
+        tmp = 4096;
+    }
+    hi += hi + tmp;
     return hi;
 }
 
