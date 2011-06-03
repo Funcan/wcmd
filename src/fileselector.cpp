@@ -1,6 +1,6 @@
 #include "fileselector.h"
-#include "wx/log.h"
-#include "wx/process.h"
+#include <wx/log.h>
+#include <wx/process.h>
 #include <wx/mimetype.h>
 #include <libgen.h>
 #include <sys/types.h>
