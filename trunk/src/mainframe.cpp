@@ -462,13 +462,11 @@ void MainFrame::show_file_info()
 
 void MainFrame::Show_Debug(wxCommandEvent &evt)
 {
-
     if (menu_item_view_debug->IsChecked()) {
         wxLogMessage(_("Log enabled!"));
         ((wxLogWindow *)logger)->Show(true);
     }
     else {
-        wxLogMessage(_("Log disabled!"));
         ((wxLogWindow *)logger)->Show(false);
     }
     evt.Skip();
