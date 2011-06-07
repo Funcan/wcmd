@@ -8,19 +8,11 @@
 #include "resources/wxcommandor.xpm"
 #include <wx/log.h>
 
-wxLog *logger;
 
 
 MainFrame::MainFrame(const wxString& title, char ** args): \
     wxFrame( NULL, -1, title, wxDefaultPosition, wxSize(1200,850))
 {
-    // Init logger
-    logger = new wxLogWindow(this, _("WCMD Debug Info"), false);
-    if (logger == NULL)
-    {
-        wxLogFatalError(_("Failed to initiate logger."));
-    }
-    wxLog::SetActiveTarget(logger);
     // Set Size;
     int x, y;
     string tmp = config.get_config("auto_size_x");
@@ -127,8 +119,6 @@ void MainFrame::create_menubar()
     menu = new wxMenu;
     menu_item_view_hidden = menu->AppendCheckItem(ID_View_ShowHidden,
                                                   _("&Show Hidden Files"));
-    menu_item_view_debug = menu->AppendCheckItem(ID_View_ShowDebug,
-                                                  _("&Show Debug Info"));
     menuBar->Append(menu, _("&View") );
 
     // Edit
@@ -460,16 +450,31 @@ void MainFrame::show_file_info()
     get_sp()->do_async_execute(cmd);
 }
 
-void MainFrame::Show_Debug(wxCommandEvent &evt)
+
+/**
+ * Creates a soft link of selected file(s).
+ * @return void
+ */
+void MainFrame::create_softlink()
 {
-    if (menu_item_view_debug->IsChecked()) {
-        wxLogMessage(_("Log enabled!"));
-        ((wxLogWindow *)logger)->Show(true);
+    vector<ItemEntry *> list;
+    list.clear();
+    if((get_sp())->get_selected_files(list) || list.empty()) {
+        wxLogStatus(_("Failed to get selected files!"));
+        wxLogMessage(_("Failed to get selected files!"));
+        return ;
     }
-    else {
-        ((wxLogWindow *)logger)->Show(false);
+
+    wxString cmd;
+    wxString dst_dir = get_sp_o()->get_cwd();
+    unsigned int i;
+
+    for (i = 0; i < list.size(); ++i) {
+        cmd = _("ln -sf \"") + (list[i])->get_fullpath() + _("\" \"") +  \
+            dst_dir + _("/\"");
+        get_sp()->do_async_execute(cmd);
     }
-    evt.Skip();
+
     return;
 }
 
@@ -484,7 +489,6 @@ EVT_MENU(wxID_PREFERENCES, MainFrame::OnOption)
 EVT_MENU(ID_BookmarkAdd, MainFrame::OnBookmarkAdd)
 EVT_MENU(ID_BookmarkEdit, MainFrame::OnBookmarkEdit)
 EVT_MENU(ID_View_ShowHidden, MainFrame::Show_Hidden)
-EVT_MENU(ID_View_ShowDebug, MainFrame::Show_Debug)
 EVT_BUTTON(ID_View, MainFrame::OnView)
 EVT_BUTTON(wxID_EDIT, MainFrame::OnEdit)
 EVT_BUTTON(wxID_COPY, MainFrame::OnCopy)

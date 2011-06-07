@@ -19,10 +19,11 @@
 class MyProcess : public wxProcess
 {
 public:
-    MyProcess(FSDisplayPane *parent, const wxString& cmd)
+    MyProcess(FSDisplayPane *parent, const wxString& cmd, bool up_flag)
         : wxProcess(parent), m_cmd(cmd)
         {
             m_parent = parent;
+            this->up_flag = up_flag;
         }
     virtual void OnTerminate(int pid, int status);
 
@@ -36,11 +37,6 @@ void MyProcess::OnTerminate(int pid, int status)
 {
     wxLogStatus(wxT("Process %u ('%s') terminated with exit code %d."),
                 pid, m_cmd.BeforeFirst(wxT(' ')).c_str(), status);
-
-    if (m_cmd.StartsWith(_("mv")) || m_cmd.StartsWith(_("cp")))
-        up_flag = true;
-    else
-        up_flag = false;
 
     if (status != 0)
         err_flag = true;
@@ -189,9 +185,11 @@ int FSDisplayPane::get_cur_filelist()
             }
         }
         else {
-
-            cout << "Can not get status of entry: " << \
-                entry->get_fullpath().mb_str(wxConvUTF8) << endl;
+            if (errno != ELOOP && errno != EMLINK) {
+                cout << "Can not get status of entry: " <<      \
+                    entry->get_fullpath().mb_str(wxConvUTF8)    \
+                     << ".  Reason: " << strerror(errno)  << endl;
+            }
             continue;
         }
     }
@@ -559,9 +557,9 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
     return ret;
 }
 
-int FSDisplayPane::do_async_execute(const wxString &cmd)
+int FSDisplayPane::do_async_execute(const wxString &cmd, bool up_flag)
 {
-    MyProcess * const process = new MyProcess(this, cmd);
+    MyProcess * const process = new MyProcess(this, cmd, up_flag);
     long m_pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
     if ( !m_pidLast ) {
         wxLogError(wxT("Execution of '%s' failed."), cmd.c_str());
@@ -592,7 +590,6 @@ void FSDisplayPane::set_selected()
 {
 
     if (cur_idx == 0) {
-        wxLogMessage (_("Should not select parent direcoty!\n"));
         return;
     }
     bool found = false;
@@ -874,23 +871,6 @@ int FSDisplayPane::edit_file(bool create)
     }
     cmd = str2wxstr(config.get_config("editor")) + _(" \"") + path + _("\"");
     return do_async_execute(cmd);
-}
-
-int FSDisplayPane::get_selected_files(vector<wxString> &list)
-{
-    list.clear();
-    wxString fn;
-    if (selected_list.empty()) {
-        fn = file_list[cur_idx-1]->fn->GetFullPath();
-        list.push_back(fn);
-    }
-    else {
-        for (iter = selected_list.begin(); iter < selected_list.end();iter++){
-            fn = (*iter)->fn->GetFullPath();
-            list.push_back(fn);
-        }
-    }
-    return 0;
 }
 
 int FSDisplayPane::get_selected_files(vector<ItemEntry *> &list)
