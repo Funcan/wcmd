@@ -50,7 +50,6 @@ public:
     void   set_selected();
     void   update_list(int selected_item, bool reload_dir=true);
     void   show_list(int selected_item, wxString filter=_(""));
-    int    get_selected_files(vector<wxString> &list);
     int    get_selected_files(vector<ItemEntry *> &list);
     void   select_same_ext();
     void   deselect_same_ext();
@@ -59,9 +58,9 @@ public:
     void   create_dir();
     void   sort_and_show(int idx);
     void   activate_item(int idx);
-    void   OnAsyncTermination(bool up_flag = false, bool err_flag = false,
+    void   OnAsyncTermination(bool up_flag, bool err_flag = false,
                               wxString cmd=_(""));
-    int    do_async_execute(const wxString &cmd);
+    int    do_async_execute(const wxString &cmd, bool up_flag = true);
     int    compress_files();
     void   update_dir_info();
     void   set_focus();

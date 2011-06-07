@@ -29,6 +29,7 @@ public:
     void OnPositionChanged(wxSplitterEvent& event);
     void show_file_info();
     void update_status();
+    void create_softlink();
 private:
     FSDisplayPane *sp1;
     FSDisplayPane *sp2;
@@ -48,7 +49,6 @@ private:
     void OnDelete(wxCommandEvent & event);
     void OnCopy(wxCommandEvent & event);
     void OpenTerminal(wxCommandEvent & event);
-    void Show_Debug(wxCommandEvent &evt);
     vector<string> bookmark_list;
     wxMenu *bookmark_menu;
     wxMenuBar *menuBar;

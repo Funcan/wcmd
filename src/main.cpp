@@ -91,8 +91,8 @@ int MyApp::FilterEvent(wxEvent& event)
             }
             case 66: { // Ctrl + B: Add to bookmark
                 frame->BookmarAdd();
-                    return true;
-                }
+                return true;
+            }
             case 78: { // Ctrl + n
                 frame->get_sp()->focus_next();
                 return true;
@@ -116,11 +116,16 @@ int MyApp::FilterEvent(wxEvent& event)
             case 82: { // Ctrl + R: Reload current directory.
                 frame->update_fs();
                 return true;
-                }
+            }
             case 87: {
                 exit(1);
                 break;
             }
+            case WXK_F5: { // Ctrl+F5, Make a link, soft link!
+                frame->create_softlink();
+                return true;
+            }
+
             default:
                 return -1;
             }
