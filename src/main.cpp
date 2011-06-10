@@ -186,6 +186,22 @@ int MyApp::FilterEvent(wxEvent& event)
                 frame->get_sp()->delete_files();
                 return true;
             }
+            case WXK_F2: { // F2, rename.
+                frame->get_sp()->rename_file();
+                return true;
+            }
+            case WXK_F3: { // F3
+                frame->get_sp()->view_file();
+                return true;
+            }
+            case WXK_F4: { //F4
+                frame->get_sp()->edit_file(false);
+                return true;
+            }
+            case WXK_F7: { // F7
+                frame->get_sp()->create_dir();
+                return true;
+            }
             case 27: { // ESC
                 frame->get_sp()->toggle_search();
                 return true;
