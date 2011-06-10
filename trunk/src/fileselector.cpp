@@ -703,32 +703,13 @@ void FSDisplayPane::OnKeydown(wxListEvent &evt)
         set_selected();
         break;
     }
-    case 53: {
+    case 53: { // 5.
         open_terminal();
         break;
     }
     case 349:
     case 350:
         break;
-    case WXK_F2: { // F2, rename.
-        rename_file();
-        break;
-    }
-    case WXK_F3: { // F3
-        view_file();
-        break;
-    }
-    case WXK_F4: { //F4
-        if (cur_idx == 0) {
-            return;
-        }
-        edit_file(false);
-        break;
-    }
-    case WXK_F7: { // F7
-        create_dir();
-        break;
-    }
     default:
         if (keycode >= 65 && keycode <= 122) {
             char c[2] = {'\0'};
@@ -830,6 +811,10 @@ end:
  */
 int FSDisplayPane::edit_file(bool create)
 {
+    if (cur_idx == 0) {
+        return -1;
+    }
+
     wxString path;
     title = _("Error!");
     if (create) {
