@@ -21,6 +21,9 @@ enum{
     ID_View_ShowHidden,
     ID_View_ShowDebug,
 
+    ID_Compress,
+    ID_Decompress,
+
     ID_Delete,
     ID_SplitWindow = 101,
     ID_Sp1,
@@ -29,6 +32,8 @@ enum{
     ID_Search1,
     ID_Lst2,
     ID_search2,
+
+    ID_ext_choice,
 
     ID_BookmarkEdit = 9999,
     ID_BookmarkAdd = 10000,

@@ -119,6 +119,61 @@ EVT_BUTTON(wxID_CANCEL, PrefDialog::OnCancel)
 END_EVENT_TABLE()
 
 
+CompressDlg::CompressDlg(wxWindow *parent, wxString name, wxString msg):   \
+SimpleDialog(parent, name)
+{
+    draw();
+    post_draw();
+    txt->SetValue(msg);
+    txt->SetFocus();
+    type = 0;
+    Fit();
+}
+
+void CompressDlg::draw()
+{
+    wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+    txt = new wxTextCtrl(this, -1, _(""));
+    hbox->Add(txt, 1, wxEXPAND|wxALL, 2);
+    wxArrayString choices;
+    int i;
+    for (i = 0; i < TYPE_CNT; i++)
+        choices.Add(compress_base[i].ext);
+
+    choice = new wxChoice((wxWindow *)this, (wxWindowID)ID_ext_choice, wxDefaultPosition,
+                      wxDefaultSize, choices);
+    hbox->Add(choice, 0, wxEXPAND|wxALL, 2);
+    sizer->Add(hbox, 1, wxEXPAND|wxALL, 6);
+}
+
+void CompressDlg::OnOK(wxCommandEvent &evt)
+{
+    fn = txt->GetValue();
+    EndModal(wxID_OK);
+}
+
+void CompressDlg::OnCancel(wxCommandEvent &evt)
+{
+    EndModal(wxID_CANCEL);
+}
+
+void CompressDlg::OnChoice(wxCommandEvent &evt)
+{
+    type = choice->GetCurrentSelection();
+    cout << "Selected = " << type << endl;
+
+    evt.Skip();
+}
+
+
+BEGIN_EVENT_TABLE(CompressDlg, wxDialog)
+EVT_BUTTON(wxID_OK, CompressDlg::OnOK)
+EVT_BUTTON(wxID_CANCEL, CompressDlg::OnCancel)
+EVT_CHOICE(ID_ext_choice, CompressDlg::OnChoice)
+END_EVENT_TABLE()
+
+
+
 // Bookmark management
 BookmarkManage::BookmarkManage(wxWindow *parent, wxString title):\
 SimpleDialog(parent, title, bookmark_point)

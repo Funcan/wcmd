@@ -49,6 +49,8 @@ private:
     void OnDelete(wxCommandEvent & event);
     void OnCopy(wxCommandEvent & event);
     void OpenTerminal(wxCommandEvent & event);
+    void compress_files(wxCommandEvent &evt);
+    void decompress_files(wxCommandEvent &evt);
     vector<string> bookmark_list;
     wxMenu *bookmark_menu;
     wxMenuBar *menuBar;

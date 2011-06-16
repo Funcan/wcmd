@@ -42,6 +42,23 @@ extern wxLog *logger;
 
 using namespace std;
 
+typedef enum _COMPRESS_TYPE{
+    ZIP = 0,
+    TAR,
+    GZIP,
+    BZIP2,
+    P7Z,
+    TYPE_CNT,
+} COMPRESS_TYPE;
+
+typedef struct _TYPE_2_EXT {
+    COMPRESS_TYPE type;
+    wxString ext;
+} TYPE_2_EXT;
+
+extern TYPE_2_EXT compress_base[];
+
+
 class ItemEntry {
 public:
     ItemEntry(wxString path);
@@ -99,6 +116,8 @@ int sort_time(ItemEntry *item1, ItemEntry *item2);
 int sort_time2(ItemEntry *item1, ItemEntry *item2);
 int sort_size(ItemEntry *item1, ItemEntry *item2);
 int sort_size2(ItemEntry *item1, ItemEntry *item2);
+wxString type_2_ext(COMPRESS_TYPE &type);
+COMPRESS_TYPE type_2_ext(wxString &ext);
 void reverse_list(vector<ItemEntry *> &file_list);
 unsigned long long WX_2_LL(wxLongLong n);
 unsigned long long WX_2_LL(wxULongLong n);
