@@ -132,18 +132,29 @@ SimpleDialog(parent, name)
 
 void CompressDlg::draw()
 {
-    wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
-    txt = new wxTextCtrl(this, -1, _(""));
-    hbox->Add(txt, 1, wxEXPAND|wxALL, 2);
+    wxStaticText *label;
+    wxGridBagSizer *grid = new wxGridBagSizer(2, 4);
+
+    label = new wxStaticText(this, -1, _("File name"));
+    grid->Add(label, wxGBPosition(0, 0), wxGBSpan(1,3), wxEXPAND|wxLEFT, 10);
+    label = new wxStaticText(this, -1, _("Format"));
+    grid->Add(label, wxGBPosition(0, 3), wxGBSpan(1,1), wxEXPAND|wxRIGHT, 10);
+
+    txt = new wxTextCtrl(this, -1, _(""), wxDefaultPosition, wxSize(260, -1));
+    grid->Add(txt, wxGBPosition(1, 0), wxGBSpan(1,3),
+              wxEXPAND|wxLEFT|wxTOP, 10);
+
     wxArrayString choices;
     int i;
     for (i = 0; i < TYPE_CNT; i++)
         choices.Add(compress_base[i].ext);
+    choice = new wxChoice((wxWindow *)this, (wxWindowID)ID_ext_choice,
+                          wxDefaultPosition, wxDefaultSize, choices);
+    grid->Add(choice, wxGBPosition(1, 3), wxGBSpan(1,1),
+              wxEXPAND|wxRIGHT|wxTOP,10);
 
-    choice = new wxChoice((wxWindow *)this, (wxWindowID)ID_ext_choice, wxDefaultPosition,
-                      wxDefaultSize, choices);
-    hbox->Add(choice, 0, wxEXPAND|wxALL, 2);
-    sizer->Add(hbox, 1, wxEXPAND|wxALL, 6);
+    sizer->Add(grid, 1, wxEXPAND|wxBOTTOM|wxTOP, 10);
+
 }
 
 void CompressDlg::OnOK(wxCommandEvent &evt)
