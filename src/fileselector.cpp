@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 class MyProcess : public wxProcess
 {
 public:
@@ -861,8 +860,7 @@ int FSDisplayPane::edit_file(bool create)
 int FSDisplayPane::get_selected_files(vector<ItemEntry *> &list)
 {
     list.clear();
-    wxString fn;
-    if (selected_list.empty()) {
+    if (selected_list.empty() && cur_idx != 0) {
         list.push_back(file_list[cur_idx-1]);
     }
     else {
@@ -877,17 +875,23 @@ int FSDisplayPane::compress_files()
 {
     vector<ItemEntry *> list;
     if(get_selected_files(list) || list.empty()) {
-        msg = _("Failed to get selected files!");
+        msg = _("Source not selected!");
         title = _("Error");
         show_err_dialog();
         return -1;
     }
-    DirnameDlg *dlg = \
-        new DirnameDlg(this, _("Enter file name (without extension):"));
+    CompressDlg *dlg = \
+        new CompressDlg(this, _("Enter file name (without extension):"));
     int ret = dlg->ShowModal();
-    wxString path;
     if (ret == wxID_OK) {
-        path = dlg->fn;
+        wxString path = dlg->fn;
+        COMPRESS_TYPE type = (COMPRESS_TYPE)dlg->type;
+        if (type < 0 || type >= TYPE_CNT) {
+            msg = msg.Format(_("Wrong type: %d"), (int) type);
+            title = _("Error");
+            show_err_dialog();
+            return -1;
+        }
         if (!name_is_valid(path)) {
             msg = _("New name is empty or it is not valid!");
             show_err_dialog();
@@ -900,21 +904,151 @@ int FSDisplayPane::compress_files()
             return -2;
         }
 
+        path += _(".") + type_2_ext(type);
         if (wxFileExists(path) || wxDirExists(path)) {
             msg = _("File already exist!");
             show_err_dialog();
             return -1;
         }
 
-        wxString cmd(wxT("7z a  "));
-        cmd += path + wxT(".7z ");
-        vector<ItemEntry *>::iterator iter;
-        for (iter = list.begin(); iter < list.end(); iter++) {
-            cmd += _("\"") + (*iter)->get_fullname() + _("\" ");
-        }
-        return do_async_execute(cmd);
+        return do_async_execute(get_compress_cmd(path, list, type));
     }
     return 0;
+}
+
+int FSDisplayPane::decompress_files()
+{
+    vector<ItemEntry *> list;
+    if(get_selected_files(list) || list.empty()) {
+        msg = _("Source not selected!");
+        title = _("Error");
+        show_err_dialog();
+        return -1;
+    }
+
+    if (chdir(cwd.mb_str(wxConvUTF8))) {
+        msg = _("Failed to change dir into") + cwd;
+        title = _("Error");
+        show_err_dialog();
+        return -2;
+    }
+
+    return do_async_execute(get_decompress_cmd(list));
+}
+
+wxString FSDisplayPane::get_decompress_cmd(vector<ItemEntry *> &list)
+{
+    wxString cmd, option, ext;
+    vector<ItemEntry *>::iterator iter;
+
+    for (iter = list.begin(); iter < list.end(); iter++) {
+        ext = (*iter)->get_ext();
+        if (ext.Cmp(_("bz2")) == 0 ||
+            ext.Cmp(_("gz")) == 0) {
+            if (((*iter) -> get_name()).EndsWith(_(".tar"))) {
+                ext = _("tar.") + ext;
+            }
+            else {
+                ext = _("7z");
+            }
+        }
+        get_cmd_option(type_2_ext(ext), cmd, option, false);
+        cmd += option;
+        cmd += _(" \"") + (*iter)->get_fullname() + _("\" ");
+        if (iter != list.end() - 1) {
+            cmd += _("&& ");
+        }
+    }
+
+    return cmd;
+}
+
+/**
+ * Get command string to compress files.
+ *
+ * @param list -  list of files to be compressed.
+ * @param dstname - dest name.
+ * @param type -  type of extension.
+ * @return command to be executed.
+ */
+wxString FSDisplayPane::get_compress_cmd(wxString &dstname,
+                                         vector<ItemEntry *> &list,
+                                         COMPRESS_TYPE type)
+{
+    wxString cmd, options;
+    get_cmd_option(type, cmd, options, true);
+    cmd += options + dstname;
+    vector<ItemEntry *>::iterator iter;
+    for (iter = list.begin(); iter < list.end(); iter++) {
+        cmd += _(" \"") + (*iter)->get_fullname() + _("\" ");
+    }
+    return cmd;
+}
+
+/**
+ * Get cmd and option based on file type.
+ *
+ * @param type - Type of
+ *
+ * @param cmd -  cmd
+ *
+ * @param option -  option
+ *
+ * @param compress - Flag compress
+ * @return int
+ */
+void FSDisplayPane::get_cmd_option(COMPRESS_TYPE type, wxString &cmd,
+                                  wxString &option, bool compress)
+{
+    switch (type) {
+    case TAR: {
+        cmd = _("tar ");
+        if (compress)
+            option = _("-cvf ");
+        else
+            option = _("-xvf ");
+        break;
+    }
+    case GZIP: {
+        cmd = _("tar ");
+        if (compress)
+            option = _("-czvzf ");
+        else
+            option = _("-xzvf ");
+        break;
+    }
+    case BZIP2: {
+        cmd = _("tar ");
+        if (compress)
+            option = _("-cjvf ");
+        else
+            option = _("-xjvf ");
+        break;
+    }
+    case ZIP: {
+        if (compress) {
+            cmd = _("zip ");
+            option = _("-cvf ");
+        }
+        else {
+            cmd = _("7z ");
+            option = _("x -y");
+        }
+        break;
+    }
+    case P7Z: {
+        cmd = _("7z ");
+        if (compress) {
+            option = _("a ");
+        }
+        else {
+            option = _("x -y ");
+        }
+        break;
+    }
+    default:
+        ;
+    }
 }
 
 int FSDisplayPane::open_terminal()

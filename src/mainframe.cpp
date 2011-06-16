@@ -6,6 +6,9 @@
 #include "resources/buttons/btn_terminal.xpm"
 #include "resources/mimetype/folder.xpm"
 #include "resources/wxcommandor.xpm"
+#include "resources/arch_add.xpm"
+#include "resources/arch_extract.xpm"
+
 #include <wx/log.h>
 
 
@@ -144,6 +147,19 @@ void MainFrame::create_menubar()
         }
     }
     menuBar->Append(bookmark_menu, _("Bookmarks"));
+
+    menu = new wxMenu;
+    menuitem = new wxMenuItem(menu, ID_Compress,
+                              _("Compress ..."));
+    menuitem->SetBitmap(wxBitmap(arch_add));
+    menu->Append(menuitem);
+
+    menuitem = new wxMenuItem(menu, ID_Decompress,
+                              _("Decompress ..."));
+    menuitem->SetBitmap(wxBitmap(arch_extract));
+    menu->Append(menuitem);
+    menuBar->Append(menu, _("&Actions"));
+
 
     // Help
     menu = new wxMenu;
@@ -478,6 +494,27 @@ void MainFrame::create_softlink()
     return;
 }
 
+/**
+ * Compares the selected files.
+ * @return void
+ */
+void MainFrame::compress_files(wxCommandEvent &evt)
+{
+    get_sp()->compress_files();
+    evt.Skip();
+}
+
+/**
+ * Decompress the selected file.
+ * @return void
+ */
+void MainFrame::decompress_files(wxCommandEvent &evt)
+{
+    get_sp()->decompress_files();
+    evt.Skip();
+}
+
+
 
 DEFINE_EVENT_TYPE(wxEVT_MY_EVENT)
 
@@ -489,6 +526,8 @@ EVT_MENU(wxID_PREFERENCES, MainFrame::OnOption)
 EVT_MENU(ID_BookmarkAdd, MainFrame::OnBookmarkAdd)
 EVT_MENU(ID_BookmarkEdit, MainFrame::OnBookmarkEdit)
 EVT_MENU(ID_View_ShowHidden, MainFrame::Show_Hidden)
+EVT_MENU(ID_Compress, MainFrame::compress_files)
+EVT_MENU(ID_Decompress, MainFrame::decompress_files)
 EVT_BUTTON(ID_View, MainFrame::OnView)
 EVT_BUTTON(wxID_EDIT, MainFrame::OnEdit)
 EVT_BUTTON(wxID_COPY, MainFrame::OnCopy)

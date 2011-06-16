@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "wxconfig.h"
+#include "utils.h"
 #include "global.h"
 
 using namespace std;
@@ -43,6 +44,22 @@ public:
     wxString fn;
 private:
     wxTextCtrl *txt;
+    DECLARE_EVENT_TABLE()
+};
+
+class CompressDlg:public SimpleDialog {
+public:
+    CompressDlg(wxWindow *parent, wxString title, wxString content=_(""));
+    virtual void draw();
+    virtual void OnOK(wxCommandEvent &evt);
+    virtual void OnCancel(wxCommandEvent &evt);
+    virtual ~CompressDlg() {};
+    wxString fn;
+    int type;
+private:
+    wxTextCtrl *txt;
+    wxChoice *choice;
+    void OnChoice(wxCommandEvent &evt);
     DECLARE_EVENT_TABLE()
 };
 

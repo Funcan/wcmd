@@ -17,6 +17,14 @@ static bool ext_sort=true;
 #define B2G(n)       n/(KB*KB*KB)
 
 
+TYPE_2_EXT compress_base[] = {
+    {ZIP,  _("zip")},
+    {TAR,   _("tar")},
+    {GZIP,  _("tar.gz")},
+    {BZIP2, _("tar.bz2")},
+    {P7Z,    _("7z")},
+};
+
 ItemEntry::ItemEntry(wxString path)
 {
     fn = new wxFileName(path);
@@ -486,6 +494,31 @@ wxString get_parent_dir(wxString path)
     }
     return tmp;
 }
+
+wxString type_2_ext(COMPRESS_TYPE &type)
+{
+    int i = 0;
+    wxString ext;
+    for (i = 0; i < TYPE_CNT; i++) {
+        if (i == type) {
+            ext = compress_base[i].ext;
+            break;
+        }
+    }
+    return ext;
+}
+
+COMPRESS_TYPE type_2_ext(wxString &ext)
+{
+    int i;
+    for (i = 0; i < TYPE_CNT; i++) {
+        if (ext.Cmp(compress_base[i].ext) == 0) {
+            return compress_base[i].type;
+        }
+    }
+    return P7Z;
+}
+
 
 /*
  * Editor modelines

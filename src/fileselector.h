@@ -62,6 +62,7 @@ public:
                               wxString cmd=_(""));
     int    do_async_execute(const wxString &cmd, bool up_flag = true);
     int    compress_files();
+    int    decompress_files();
     void   update_dir_info();
     void   set_focus();
     const wxString get_cwd();
@@ -84,6 +85,13 @@ private:
     int __open_with_plugin(const char *file_name, const char *plugin_path);
     int open_with_plugin(const char *file_name);
     int get_cur_filelist();
+    wxString get_compress_cmd(wxString &dstname,
+                              vector<ItemEntry *> &list,
+                              COMPRESS_TYPE type);
+    void get_cmd_option(COMPRESS_TYPE type, wxString &cmd,
+                        wxString &option, bool compress);
+
+    wxString get_decompress_cmd(vector<ItemEntry *> &list);
 
     MyListCtrl     *lst;
     int             item_count;
