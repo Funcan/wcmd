@@ -1028,7 +1028,7 @@ void FSDisplayPane::get_cmd_option(COMPRESS_TYPE type, wxString &cmd,
     case ZIP: {
         if (compress) {
             cmd = _("zip ");
-            option = _("-cvf ");
+            option = _("-r ");
         }
         else {
             cmd = _("7z ");
