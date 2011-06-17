@@ -10,7 +10,7 @@
 # Process this file with autoconf to produce a configure script
 
 AC_INIT(Project.ede)
-AM_INIT_AUTOMAKE([wcmd], 1.0.1)
+AM_INIT_AUTOMAKE([wcmd], 1.0.2)
 AM_CONFIG_HEADER(config.h)
 AC_PROG_CXX
 
