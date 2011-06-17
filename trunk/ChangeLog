@@ -1,3 +1,13 @@
+2011-06-17  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Fixed: a bug when renaming files.
+
+	* Added: Hotkey (Ctrl+F5) to make soft link between two directories.
+
+	* Update: Use wxFileName to present filenames.
+
+	* Others: clean up codes, and other small changes.
+
 2011-03-08  Yang, Ying-chao  <yangyingchao@gmail.com>
 
 	* Update: Use dirinfo to display selected items and filesystem info.
