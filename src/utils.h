@@ -121,6 +121,8 @@ COMPRESS_TYPE type_2_ext(wxString &ext);
 void reverse_list(vector<ItemEntry *> &file_list);
 unsigned long long WX_2_LL(wxLongLong n);
 unsigned long long WX_2_LL(wxULongLong n);
+void string_split(wxString &str, wxArrayString &array, const wxString &sip=_("/"));
+wxString array_2_string(wxArrayString &array, const int id);
 #endif /* _UTILS_H_ */
 /*
  * Editor modelines

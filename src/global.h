@@ -33,6 +33,9 @@ enum{
     ID_Lst2,
     ID_search2,
 
+    ID_CWD_FIRST = 200,
+    ID_CWD_SECOND = 201,
+
     ID_ext_choice,
 
     ID_BookmarkEdit = 9999,

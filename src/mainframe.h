@@ -34,6 +34,8 @@ private:
     FSDisplayPane *sp1;
     FSDisplayPane *sp2;
 
+    wxSizer *sizer;
+
     void Append_Bookmark(int id, string item);
     void Show_Hidden(wxCommandEvent &evt);
     void OnBookmarkAdd(wxCommandEvent &evt);
@@ -51,10 +53,12 @@ private:
     void OpenTerminal(wxCommandEvent & event);
     void compress_files(wxCommandEvent &evt);
     void decompress_files(wxCommandEvent &evt);
+    void create_displayer(char **args);
+    void create_toolbar();
+    void read_set_size();
     vector<string> bookmark_list;
     wxMenu *bookmark_menu;
     wxMenuBar *menuBar;
-    FileSelector *fs;
     wxMenuItem *menu_item_view_hidden;
     wxMenuItem *menu_item_view_debug;
     wxMenuItem *menuitem;

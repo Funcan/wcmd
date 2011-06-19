@@ -116,17 +116,6 @@ private:
 };
 
 
-class FileSelector: public wxSplitterWindow
-{
-public:
-    FileSelector(wxWindow *parent, char **args);
-    virtual ~FileSelector();
-    FSDisplayPane *sp1;
-    FSDisplayPane *sp2;
-    void update_fs();
-};
-
-
 DECLARE_EVENT_TYPE(wxEVT_MY_EVENT, -1)
 
 #define GetMainFrame() GetParent()->GetParent()
