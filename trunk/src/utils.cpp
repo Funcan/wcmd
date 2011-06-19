@@ -519,6 +519,34 @@ COMPRESS_TYPE type_2_ext(wxString &ext)
     return P7Z;
 }
 
+/**
+ * Split a string into an array
+ */
+void string_split(wxString &str, wxArrayString &array, const wxString &sip)
+{
+    int pos, pos_old = 0;
+    wxString sstr(str);
+    while ((pos = sstr.Find(sip)) != wxNOT_FOUND) {
+        if (pos != 0)
+            array.Add(sstr.Mid(pos_old, pos - pos_old - 1));
+        else
+            array.Add(_("ROOT"));
+        sstr = sstr.Mid(pos+1);
+        pos_old = pos;
+    }
+    array.Add(sstr.Mid(pos));
+}
+
+wxString array_2_string(wxArrayString &array, const int id)
+{
+    wxString str = array[0];
+    if (str.Cmp(_("ROOT")) == 0)
+        str = _("");
+
+    for (int i = 1; i < array.Count(); i++)
+        str += _("/") + array[i];
+    return str;
+}
 
 /*
  * Editor modelines

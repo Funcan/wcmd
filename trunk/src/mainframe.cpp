@@ -17,6 +17,26 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
     wxFrame( NULL, -1, title, wxDefaultPosition, wxSize(1200,850))
 {
     // Set Size;
+    read_set_size();
+    sizer = new wxBoxSizer(wxVERTICAL);
+
+    // Menubar
+    create_menubar();
+
+    // Toobar
+    create_toolbar();
+    create_displayer(args);
+
+    this->SetSizer(sizer);
+    SetIcon(wxIcon(wxcommandor, wxBITMAP_TYPE_XPM));
+    CreateStatusBar(1);
+    SetStatusText(wxT("Welcome to wxCommandor!"));
+    update_status();
+    Centre();
+}
+
+void MainFrame::read_set_size()
+{
     int x, y;
     string tmp = config.get_config("auto_size_x");
     if (tmp.empty())
@@ -31,11 +51,10 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
         y = atoi(tmp.c_str());
 
     SetSize(wxSize(x, y));
-    // Menubar
-    create_menubar();
+}
 
-    wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    // Toobar
+void MainFrame::create_toolbar()
+{
     wxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
     wxBitmapButton *button = \
         new wxBitmapButton(this, ID_View,
@@ -66,17 +85,30 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
 
     sizer->Add(hbox, 0, wxEXPAND|wxTOP|wxBOTTOM, 2);
 
-    fs = new FileSelector(this, args);
-    sp1 = fs->sp1;
-    sp2 = fs->sp2;
+}
+
+void MainFrame::create_displayer(char **args)
+{
+    wxSplitterWindow *sp = new wxSplitterWindow(this, -1, wxDefaultPosition);
+    wxString path0, path1;
+    if (args[0] && strlen(args[0])) {
+        path0 = char2wxstr(args[0]);
+        if (!wxDirExists(path0))
+            path0.Clear();
+    }
+
+    if (args[1] && strlen(args[1])) {
+        path1 = char2wxstr(args[1]);
+        if (!wxDirExists(path1))
+            path1.Clear();
+    }
+    sp1 = new FSDisplayPane(sp, ID_Sp1, path0);
+    sp2 = new FSDisplayPane(sp, ID_Sp2, path1);
+    sp->SplitVertically(sp1, sp2);
+    sp->Show(true);
+    sp1->SetFocus();
     active_id = ID_Sp1;
-    sizer->Add(fs, 1, wxEXPAND|wxALL, 5);
-    this->SetSizer(sizer);
-    SetIcon(wxIcon(wxcommandor, wxBITMAP_TYPE_XPM));
-    CreateStatusBar(1);
-    SetStatusText(wxT("Welcome to wxCommandor!"));
-    update_status();
-    Centre();
+    sizer->Add(sp, 1, wxEXPAND|wxALL, 5);
 }
 
 MainFrame::~MainFrame()
@@ -237,7 +269,6 @@ void MainFrame::OnMove(wxCommandEvent & event)
 }
 void MainFrame::OnCopy(wxCommandEvent & event)
 {
-
     copy_or_move();
 }
 
@@ -364,7 +395,6 @@ FSDisplayPane *MainFrame::get_sp_o()
 
 void MainFrame::update_fs(int idx1, int idx2, wxWindowID id)
 {
-
     if (id == -1) // Get active_id first, it will be changed in "update_list"
         id = active_id;
     sp1->update_list(idx1==-1?sp1->cur_idx:idx1);
@@ -378,7 +408,6 @@ void MainFrame::update_fs(int idx1, int idx2, wxWindowID id)
         active_id = id;
         sp2->SetFocus();
     }
-
 }
 
 void MainFrame::set_active_sp(wxWindowID id)

@@ -14,6 +14,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include "mainframe.h"
+
 
 class MyProcess : public wxProcess
 {
@@ -46,41 +48,6 @@ void MyProcess::OnTerminate(int pid, int status)
 }
 
 wxWindowID active_id;
-
-FileSelector:: FileSelector(wxWindow *parent, char **args): \
-    wxSplitterWindow(parent, -1, wxDefaultPosition)
-{
-    wxString path0, path1;
-    if (args[0] && strlen(args[0])) {
-        path0 = char2wxstr(args[0]);
-        if (!wxDirExists(path0))
-            path0.Clear();
-    }
-
-    if (args[1] && strlen(args[1])) {
-        path1 = char2wxstr(args[1]);
-        if (!wxDirExists(path1))
-            path1.Clear();
-    }
-    sp1 = new FSDisplayPane(this, ID_Sp1, path0);
-    sp2 = new FSDisplayPane(this, ID_Sp2, path1);
-    this->SplitVertically(sp1, sp2);
-    this->Show(true);
-    sp1->SetFocus();
-    active_id = ID_Sp1;
-}
-
-FileSelector::~FileSelector()
-{
-}
-
-void FileSelector::update_fs()
-{
-    sp1->update_list(sp1->cur_idx);
-    sp2->update_list(sp2->cur_idx);
-}
-
-
 
 FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, wxString &path): \
 	wxPanel(parent, id)
@@ -574,8 +541,11 @@ int FSDisplayPane::do_async_execute(const wxString &cmd, bool up_flag)
 void FSDisplayPane::OnAsyncTermination(bool up_flag, bool err_flag,
                                        wxString cmd)
 {
-    if (up_flag)
-        ((FileSelector *)GetParent())->update_fs();
+    cout << "called!@ " << endl;
+
+    if (up_flag) {
+        ((MainFrame *)(GetParent())->GetParent())->update_fs();
+    }
     else
         update_list(-1);
     if (err_flag) {
