@@ -5,7 +5,7 @@
 #include "resources/bookmark_mgt.xpm"
 #include "resources/buttons/btn_terminal.xpm"
 #include "resources/mimetype/folder.xpm"
-#include "resources/wxcommandor.xpm"
+#include "resources/wcmd.xpm"
 #include "resources/arch_add.xpm"
 #include "resources/arch_extract.xpm"
 
@@ -28,7 +28,7 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
     create_displayer(args);
 
     this->SetSizer(sizer);
-    SetIcon(wxIcon(wxcommandor, wxBITMAP_TYPE_XPM));
+    SetIcon(wxIcon(wcmd, wxBITMAP_TYPE_XPM));
     CreateStatusBar(1);
     SetStatusText(wxT("Welcome to wxCommandor!"));
     update_status();
