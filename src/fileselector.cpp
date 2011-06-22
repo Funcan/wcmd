@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include "mainframe.h"
 
+const wxString PERL_PATH(_("/usr/bin/perl"));
+const wxString MIME_OPEN_PATH(_("/usr/bin/mimeopen"));
 
 class MyProcess : public wxProcess
 {
@@ -468,7 +470,6 @@ int FSDisplayPane::open_with_plugin(const char *file_name)
 int FSDisplayPane::wrap_open(wxString &path, bool create)
 {
     int ret = -1;
-    wxString ext = path.AfterLast(wxT('.'));
     wxMessageDialog *dlg;
 
     if ((wxFileExists(path) == false) && !create) {
@@ -483,6 +484,14 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
     if (ret != -1)
         return ret;
 
+    // Failed to open through plugins, try  other ways.
+    wxString cmd;
+    if (wxFileExists(PERL_PATH) && wxFileExists(MIME_OPEN_PATH)) {
+        cmd = PERL_PATH + _(" ") + MIME_OPEN_PATH + _(" -n ") + path;
+        ret = do_async_execute(cmd);
+        return ret;
+    }
+    wxString ext = path.AfterLast(wxT('.'));
     wxFileType *ft = \
         wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
 
@@ -495,9 +504,9 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
         delete dlg;
     }
     else {
-        wxString wxcmd = ft->GetOpenCommand(_("\"") + path + _("\""));
-        if (wxcmd.Len() != 0) {
-            ret = do_async_execute(wxcmd);
+        cmd = ft->GetOpenCommand(_("\"") + path + _("\""));
+        if (cmd.Len() != 0) {
+            ret = do_async_execute(cmd);
         }
         else {
             msg.Clear();
@@ -541,8 +550,6 @@ int FSDisplayPane::do_async_execute(const wxString &cmd, bool up_flag)
 void FSDisplayPane::OnAsyncTermination(bool up_flag, bool err_flag,
                                        wxString cmd)
 {
-    cout << "called!@ " << endl;
-
     if (up_flag) {
         ((MainFrame *)(GetParent())->GetParent())->update_fs();
     }
