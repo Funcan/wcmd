@@ -543,7 +543,7 @@ wxString array_2_string(wxArrayString &array, const int id)
     if (str.Cmp(_("ROOT")) == 0)
         str = _("");
 
-    for (int i = 1; i < array.Count(); i++)
+    for (unsigned int i = 1; i < array.Count(); i++)
         str += _("/") + array[i];
     return str;
 }
