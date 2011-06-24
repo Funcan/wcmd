@@ -24,8 +24,6 @@
 #include "mylistctrl.h"
 
 extern  wxWindowID active_id;
-void init_imglist();
-
 
 class FSDisplayPane: public wxPanel {
 public:
