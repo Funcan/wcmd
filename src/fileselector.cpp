@@ -19,8 +19,6 @@
 const wxString PERL_PATH(_("/usr/bin/perl"));
 const wxString MIME_OPEN_PATH(_("/usr/bin/mimeopen"));
 
-static int FRAME_BORDER_WIDTH = 130;
-
 class MyProcess : public wxProcess
 {
 public:
@@ -265,7 +263,6 @@ void FSDisplayPane::show_list(int selected_item, wxString filter)
     update_dir_info();
     item_count = idx + 1;
     Thaw();
-
 }
 
 /**
@@ -1214,11 +1211,6 @@ void FSDisplayPane:: focus_prev()
 
     lst->select_entry(cur_idx);
 
-    wxPoint point;
-    lst->GetItemPosition(cur_idx, point);
-    if (point.y < 0) {
-        lst->ScrollList(0, point.y);
-    }
 }
 
 void FSDisplayPane:: focus_next()
@@ -1229,12 +1221,6 @@ void FSDisplayPane:: focus_next()
         cur_idx = item_count - 1;
     lst->select_entry(cur_idx);
 
-    wxPoint point;
-    wxSize size = GetSize();
-    lst->GetItemPosition(cur_idx, point);
-    if (point.y > size.GetHeight() - FRAME_BORDER_WIDTH) {
-        lst->ScrollList(0, point.y + FRAME_BORDER_WIDTH -size.GetHeight());
-    }
 }
 
 void FSDisplayPane::OnMySort(wxListEvent &evt)

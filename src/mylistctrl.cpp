@@ -8,6 +8,8 @@
     wxLC_REPORT | wxBORDER_NONE | wxLC_EDIT_LABELS | wxLC_SORT_ASCENDING
 
 
+static int FRAME_BORDER_WIDTH = 130;
+
 MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     wxListCtrl(parent, id, wxDefaultPosition, wxDefaultSize, LST_STYLE)
 {
@@ -61,6 +63,19 @@ void MyListCtrl::select_entry(int idx)
     this->SetItemState(idx,
                        wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED,
                        wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
+
+    wxPoint point;
+    int parent_height = GetParent()->GetSize().GetHeight();
+    GetItemPosition(idx, point);
+    if (point.y > parent_height - FRAME_BORDER_WIDTH) {
+        ScrollList(0, point.y + FRAME_BORDER_WIDTH - parent_height );
+    }
+    else if (point.y < 0){
+        ScrollList(0, point.y);
+    }
+    else { // Nothing to do.
+        ;
+    }
 }
 
 void MyListCtrl::deselect_entry(int idx)
