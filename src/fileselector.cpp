@@ -483,6 +483,8 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
     if (ret != -1)
         return ret;
 
+    path = _("\"") + path + _("\"");
+
     // Failed to open through plugins, try  other ways.
     wxString cmd;
     if (wxFileExists(PERL_PATH) && wxFileExists(MIME_OPEN_PATH)) {
