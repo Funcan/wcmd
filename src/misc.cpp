@@ -119,9 +119,10 @@ EVT_BUTTON(wxID_CANCEL, PrefDialog::OnCancel)
 END_EVENT_TABLE()
 
 
-CompressDlg::CompressDlg(wxWindow *parent, wxString name, wxString msg):   \
+CompressDlg::CompressDlg(wxWindow *parent, wxString name, wxString msg): \
 SimpleDialog(parent, name)
 {
+    this->fn = msg;
     draw();
     post_draw();
     txt->SetValue(msg);
@@ -140,7 +141,7 @@ void CompressDlg::draw()
     label = new wxStaticText(this, -1, _("Format"));
     grid->Add(label, wxGBPosition(0, 3), wxGBSpan(1,1), wxEXPAND|wxRIGHT, 10);
 
-    txt = new wxTextCtrl(this, -1, _(""), wxDefaultPosition, wxSize(260, -1));
+    txt = new wxTextCtrl(this, -1, fn, wxDefaultPosition, wxSize(260, -1));
     grid->Add(txt, wxGBPosition(1, 0), wxGBSpan(1,3),
               wxEXPAND|wxLEFT|wxTOP, 10);
 

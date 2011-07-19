@@ -185,6 +185,14 @@ void FSDisplayPane::restore_cwd()
     old_path = get_parent_dir(cwd);
 }
 
+/**
+ * Read current directory, fill items into listctr.
+ *
+ * @param selected_item - Number of selected item
+ *
+ * @param reload_dir - Flag reload dir
+ * @return void
+ */
 void FSDisplayPane::update_list(int selected_item, bool reload_dir)
 {
     if (reload_dir) {
@@ -289,7 +297,6 @@ void FSDisplayPane::update_dir_info()
         + _(",\tDisk Space:") + size_2_wxstr(WX_2_LL((disk_size))) +    \
         _(", Free space: ") + size_2_wxstr(WX_2_LL((free_size)));
     dirinfo->SetLabel(mmsg);
-    wxLogStatus(_("Active Directory:") + cwd);
 }
 
 
@@ -858,8 +865,10 @@ int FSDisplayPane::compress_files()
         show_err_dialog();
         return -1;
     }
+    wxString dest_name = list[0]->get_name();
     CompressDlg *dlg = \
-        new CompressDlg(this, _("Enter file name (without extension):"));
+        new CompressDlg(this, _("Enter file name (without extension):"),
+                        dest_name);
     int ret = dlg->ShowModal();
     if (ret == wxID_OK) {
         wxString path = dlg->fn;
