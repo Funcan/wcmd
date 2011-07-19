@@ -12,7 +12,14 @@
 #include <wx/log.h>
 
 
-
+/**
+ * Build main frame.
+ *
+ * @param title -  title to be displayed.
+ *
+ * @param args - Character args
+ * @return MainFrame  just created.
+ */
 MainFrame::MainFrame(const wxString& title, char ** args): \
     wxFrame( NULL, -1, title, wxDefaultPosition, wxSize(1200,850))
 {
@@ -35,6 +42,10 @@ MainFrame::MainFrame(const wxString& title, char ** args): \
     Centre();
 }
 
+/**
+ * Reads configuration about size of window, and restore it.
+ * @return void
+ */
 void MainFrame::read_set_size()
 {
     int x, y;
@@ -53,6 +64,10 @@ void MainFrame::read_set_size()
     SetSize(wxSize(x, y));
 }
 
+/**
+ * Creates toolbar.
+ * @return void
+ */
 void MainFrame::create_toolbar()
 {
     wxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -87,6 +102,12 @@ void MainFrame::create_toolbar()
 
 }
 
+/**
+ * Creates main window: the FileDisplayer.
+ *
+ * @param args - Character args
+ * @return void
+ */
 void MainFrame::create_displayer(char **args)
 {
     wxSplitterWindow *sp = new wxSplitterWindow(this, -1, wxDefaultPosition);
@@ -111,6 +132,10 @@ void MainFrame::create_displayer(char **args)
     sizer->Add(sp, 1, wxEXPAND|wxALL, 5);
 }
 
+/**
+ * Deconstructor.
+ * @return void
+ */
 MainFrame::~MainFrame()
 {
     wxSize size = GetSize();
@@ -139,7 +164,10 @@ void MainFrame::update_status()
     wxLogStatus(path);
 }
 
-
+/**
+ * Creates menubar.
+ * @return void
+ */
 void MainFrame::create_menubar()
 {
     wxMenu *menu = new wxMenu;
@@ -200,6 +228,10 @@ void MainFrame::create_menubar()
     SetMenuBar( menuBar );
 }
 
+/**
+ * Add bookmark into record.
+ * @return void
+ */
 void MainFrame::BookmarAdd()
 {
     Freeze();
@@ -328,8 +360,6 @@ void MainFrame::OnBookmarkEdit(wxCommandEvent &evt)
                 Append_Bookmark(ID_BookmarkAdd + i + 1, bookmarks[i]);
     }
 }
-
-
 
 void MainFrame::compare_items()
 {

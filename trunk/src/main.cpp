@@ -40,7 +40,10 @@ bool MyApp::OnInit()
 }
 
 /**
- * Hotkeys will be moved to here from fileselector.cpp.
+ * process some keyboard events before passing it to other widgets.
+ *
+ * @param event -  event to be processed.
+ * @return true if event should not be processed by other widgets.\n
  */
 int MyApp::FilterEvent(wxEvent& event)
 {
