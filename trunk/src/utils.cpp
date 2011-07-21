@@ -29,6 +29,8 @@ ItemEntry::ItemEntry(wxString path)
 {
     fn = new wxFileName(path);
     orig_id = 0;
+    my_size_str.Clear();
+    my_size = 0;
 }
 
 ItemEntry::ItemEntry(wxString dir_name, wxString file_name)
@@ -86,14 +88,15 @@ wxString ItemEntry::get_date()
 
 wxString ItemEntry::get_size_str()
 {
-    wxString size;
-    if (is_dir()) {
-        size = wxT("4KB");
+    if (my_size_str.Length() == 0) {
+        if (is_dir()) {
+            my_size_str = wxT("4KB");
+        }
+        else {
+            my_size_str = fn->GetHumanReadableSize();
+        }
     }
-    else {
-        size = fn->GetHumanReadableSize();
-    }
-    return size;
+    return my_size_str;
 }
 
 wxString ItemEntry::get_parent()
@@ -103,12 +106,13 @@ wxString ItemEntry::get_parent()
 
 wxULongLong ItemEntry::get_size()
 {
-    wxULongLong size;
-    if (is_dir())
-        size = wxDir::GetTotalSize(fn->GetFullPath());
-    else
-        size = fn->GetSize();
-    return size;
+    if (my_size == 0) {
+        if (is_dir())
+            my_size = wxDir::GetTotalSize(fn->GetFullPath());
+        else
+            my_size = fn->GetSize();
+    }
+    return my_size;
 }
 /**
  * Get file size (return 0 if item is a directory.)
