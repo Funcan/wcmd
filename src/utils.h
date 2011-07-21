@@ -81,6 +81,9 @@ public:
     wxFileName  *fn;
     int          orig_id;
 
+private:
+    wxString my_size_str;
+    wxULongLong my_size;
 };
 
 #ifdef DEBUG
