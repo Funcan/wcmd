@@ -1,5 +1,5 @@
 /* XPM */
-static char *wcmd[] = {
+static const char *wcmd[] = {
 /* columns rows colors chars-per-pixel */
 "22 22 216 2 ",
 "   c #0D090A",

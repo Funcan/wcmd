@@ -14,6 +14,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <wx/dnd.h>
+#include <wx/progdlg.h>
 #include "mainframe.h"
 
 const wxString PERL_PATH(_("/usr/bin/perl"));
@@ -22,18 +24,26 @@ const wxString MIME_OPEN_PATH(_("/usr/bin/mimeopen"));
 class MyProcess : public wxProcess
 {
 public:
-    MyProcess(FSDisplayPane *parent, const wxString& cmd, bool up_flag)
+    MyProcess(FSDisplayPane *parent, const wxString& cmd, bool up_flag,
+              bool quiet)
         : wxProcess(parent), m_cmd(cmd)
         {
             m_parent = parent;
             this->up_flag = up_flag;
+            this->quiet = quiet;
+            // int style =  wxPD_SMOOTH | wxPD_CAN_ABORT | wxPD_CAN_SKIP |\
+            //     wxPD_AUTO_HIDE | wxPD_APP_MODAL;
+            // dlg = new wxProgressDialog(_("Executing"), cmd, 100, parent,
+            //                            style);
+            // dlg->Update(20);
         }
     virtual void OnTerminate(int pid, int status);
 
 protected:
     FSDisplayPane *m_parent;
     wxString m_cmd;
-    bool up_flag, err_flag;
+    bool up_flag, err_flag, quiet;
+    wxProgressDialog *dlg;
 };
 
 void MyProcess::OnTerminate(int pid, int status)
@@ -46,7 +56,10 @@ void MyProcess::OnTerminate(int pid, int status)
     else
         err_flag = false;
 
-    m_parent->OnAsyncTermination(up_flag, err_flag, m_cmd);
+    // dlg->Update(100);
+    // dlg->Destroy();
+    // delete dlg;
+    m_parent->OnAsyncTermination(up_flag, err_flag, quiet, m_cmd);
 }
 
 wxWindowID active_id;
@@ -107,6 +120,7 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, wxString &path): \
     bg_def_col = wxColour(0xe7, 0xed, 0xf6);
     fg_def_col = wxColour(0,0,0);
 }
+
 /**
  * Get filelist of current dir.
  * @return int
@@ -381,6 +395,7 @@ void FSDisplayPane::OnItemSelected(wxListEvent &evt)
     evt.Skip();
 }
 
+
 void FSDisplayPane::item_activated(wxListEvent &evt)
 {
 
@@ -540,9 +555,10 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
     return ret;
 }
 
-int FSDisplayPane::do_async_execute(const wxString &cmd, bool up_flag)
+int FSDisplayPane::do_async_execute(const wxString &cmd, bool up_flag,
+                                    bool quiet)
 {
-    MyProcess * const process = new MyProcess(this, cmd, up_flag);
+    MyProcess * const process = new MyProcess(this, cmd, up_flag, quiet);
     long m_pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
     if ( !m_pidLast ) {
         wxLogError(wxT("Execution of '%s' failed."), cmd.c_str());
@@ -556,14 +572,14 @@ int FSDisplayPane::do_async_execute(const wxString &cmd, bool up_flag)
 }
 
 void FSDisplayPane::OnAsyncTermination(bool up_flag, bool err_flag,
-                                       wxString cmd)
+                                       bool quiet, wxString cmd)
 {
     if (up_flag) {
         ((MainFrame *)(GetParent())->GetParent())->update_fs();
     }
     else
         update_list(-1);
-    if (err_flag) {
+    if (err_flag && !quiet) {
         title = _("Operation Failed!");
         msg = _("Failed to execute command:\n") + cmd;
         show_err_dialog();
@@ -1328,6 +1344,56 @@ void FSDisplayPane::set_focus()
     lst->SetFocus();
 }
 
+void FSDisplayPane::OnDrag(wxListEvent &evt)
+{
+    wxFileDataObject dnd_data;
+    vector<ItemEntry *>lst;
+    vector<ItemEntry *>::iterator iter;
+    get_selected_files(lst);
+    for (iter = lst.begin(); iter < lst.end(); iter++)
+        dnd_data.AddFile((*iter)->get_fullpath());
+    wxDropSource source(dnd_data, this);
+    wxDragResult result = source.DoDragDrop(false);
+    switch (result) {
+    case wxDragError: {
+        fprintf(stderr, "ERROR: failed to drag\n");
+        break;
+    }
+    default:
+        wxArrayString array =dnd_data.GetFilenames();
+        size_t i;
+        wxString cmd;
+        int ret;
+        for (i = 0; i < array.Count(); i++) {
+            cmd = _("cp -aRf ") + array[i] + _(" ") +\
+                ((MainFrame *)(GetParent()->GetParent()))->get_o_wd();
+            ret = do_async_execute(cmd, true, true);
+            if (!ret) {
+                wxString msg = _("Failed to copy: ") + array[i];
+                wxMessageDialog *dlg;
+                if (i < array.Count() - 1) { // Tasks remained.
+                    msg += _("\nContinue?");
+                    dlg = new wxMessageDialog(this, msg, _("Copy Error"),
+                                              wxOK|wxCANCEL);
+                }
+                else
+                    dlg = new wxMessageDialog(this, msg, _("Copy Error"),
+                                              wxOK);
+                ret = dlg->ShowModal();
+
+                if (ret == wxOK)
+                    continue;
+                else
+                    break;
+            }
+        }
+
+        break;
+    }
+
+    evt.Skip();
+}
+
 
 BEGIN_EVENT_TABLE(FSDisplayPane, wxPanel)
 EVT_LIST_COL_CLICK(-1, FSDisplayPane::OnMySort)
@@ -1335,6 +1401,7 @@ EVT_LIST_COL_END_DRAG(-1, FSDisplayPane::OnColumbDrag)
 EVT_LIST_ITEM_ACTIVATED(-1, FSDisplayPane::item_activated)
 EVT_LIST_ITEM_SELECTED(-1, FSDisplayPane::OnItemSelected)
 EVT_LIST_KEY_DOWN(-1, FSDisplayPane::OnKeydown)
+EVT_LIST_BEGIN_DRAG(-1, FSDisplayPane::OnDrag)
 EVT_TEXT(-1, FSDisplayPane::OnTextChanged)
 EVT_TEXT_ENTER(-1, FSDisplayPane::OnTextEnter)
 EVT_RIGHT_DOWN(FSDisplayPane::process_right_click)

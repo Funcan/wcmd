@@ -402,6 +402,11 @@ FSDisplayPane *MainFrame::get_sp()
         return sp2;
 }
 
+wxString MainFrame::get_o_wd()
+{
+    return get_sp_o()->get_cwd();
+}
+
 void MainFrame::exchange_sp()
 {
     if (active_id == ID_Sp1) {
