@@ -56,9 +56,11 @@ public:
     void   create_dir();
     void   sort_and_show(int idx);
     void   activate_item(int idx);
-    void   OnAsyncTermination(bool up_flag, bool err_flag = false,
+    void   OnAsyncTermination(bool quiet, bool up_flag,
+                              bool err_flag = false,
                               wxString cmd=_(""));
-    int    do_async_execute(const wxString &cmd, bool up_flag = true);
+    int    do_async_execute(const wxString &cmd, bool up_flag = true,
+                            bool quiet = false);
     int    compress_files();
     int    decompress_files();
     void   update_dir_info();
@@ -90,6 +92,7 @@ private:
                         wxString &option, bool compress);
 
     wxString get_decompress_cmd(vector<ItemEntry *> &list);
+    void OnDrag(wxListEvent &evt);
 
     MyListCtrl     *lst;
     int             item_count;
@@ -109,7 +112,6 @@ private:
     wxColour        bg_hi_col;
     wxColour        bg_def_col;
     wxColour        fg_def_col;
-
     DECLARE_EVENT_TABLE()
 };
 

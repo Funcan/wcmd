@@ -10,7 +10,6 @@ public:
     MainFrame(const wxString& title, char **args);
     virtual ~MainFrame();
 
-
     // Handlers
     void ShowHidden();
     void BookmarAdd();
@@ -20,6 +19,7 @@ public:
     void set_active_sp(wxWindowID id);
     FSDisplayPane *get_sp_o();
     FSDisplayPane *get_sp();
+    wxString get_o_wd();
     void copy_or_move(bool copy=true);
     int copy_or_move_single(wxString &src, wxString &dest, bool copy);
     void exchange_sp();
