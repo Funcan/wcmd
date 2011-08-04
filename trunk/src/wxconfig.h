@@ -23,12 +23,17 @@ typedef enum _CONFIG_TYPE{
 } CONFIG_TYPE;
 
 
-typedef struct _config_entry {
+typedef struct _plain_config {
     string desc;
     string value;
     CONFIG_TYPE type;
-} config_entry;
+} plain_config;
 
+typedef struct _desktop_entry {
+    string name;
+    string icon;
+    string exec;
+} desktop_entry;
 
 class Config {
 public:
@@ -39,7 +44,11 @@ public:
     void   dump2file();
     void read_configs();
     void read_bookmarks();
-    vector<config_entry> entry_list;
+    void add_dentry(const string &name, const string &exec,
+                    const string &icon="");
+    void del_dentry(const string &name);
+    int get_dentry(desktop_entry *entry);
+    vector<plain_config> entry_list;
 private:
     int    splitstr(string &str, string &key, string &val);
     void   strip(string &str);
@@ -48,6 +57,13 @@ private:
     void dump_config();
     void dump_bookmarks();
     string bookmark_path, config_path;
+
+    vector<desktop_entry> dentry_list;
+
+    vector <desktop_entry>::iterator dentry_iter;
+
+    unsigned int dentry_pos;
+
 };
 
 extern Config config;

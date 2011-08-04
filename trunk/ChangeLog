@@ -1,3 +1,7 @@
+2011-07-05  Yang, Ying-chao  <yangyingchao@gmail.com>
+
+	* Update: Fill the default dest name when trying to compress files.
+
 2011-06-17  Yang, Ying-chao  <yangyingchao@gmail.com>
 
 	* Fixed: a bug when renaming files.
