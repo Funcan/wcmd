@@ -73,7 +73,7 @@ void PrefDialog:: draw()
     string key;
     wxStaticText *label;
     wxGridBagSizer *grid = new wxGridBagSizer(5, 5);
-    vector<config_entry>::iterator iter;
+    vector<plain_config>::iterator iter;
     int idx = 0;
     for (iter = config.entry_list.begin(); iter < config.entry_list.end();
          iter++) {

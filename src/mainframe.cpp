@@ -98,8 +98,19 @@ void MainFrame::create_toolbar()
     button = new wxBitmapButton(this, ID_Terminal, wxBitmap(btn_terminal));
     hbox->Add(button, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
 
-    sizer->Add(hbox, 0, wxEXPAND|wxTOP|wxBOTTOM, 2);
+    config.get_dentry(NULL);
+    desktop_entry entry;
+    long type;
+    while (config.get_dentry(&entry) != -1) {
+        type = string2type(entry.icon);
+        if (type != -1) {
+            ;
+        }
+        PDEBUG ("Buttons will be created! Exec: %s\n",
+            entry.name.c_str());
 
+    }
+    sizer->Add(hbox, 0, wxEXPAND|wxTOP|wxBOTTOM, 2);
 }
 
 /**

@@ -552,6 +552,31 @@ wxString array_2_string(wxArrayString &array, const int id)
     return str;
 }
 
+/**
+ * Return type of iamge.
+ *
+ * @param str -  path of image.
+ * @return type.
+ */
+long string2type(string &str)
+{
+    unsigned pos = str.rfind(".");
+    string ext = str.substr(pos+1);
+    long type;
+    if (ext == "png" || ext == "PNG")
+        type = wxBITMAP_TYPE_PNG;
+    else if (ext == "jpg" || ext == "jpeg" ||
+        ext == "JPG" || ext == "JPEG") {
+        type = wxBITMAP_TYPE_JPEG;
+    }
+    if (ext == "gif" || ext == "gif")
+        type = wxBITMAP_TYPE_GIF;
+    else
+        type = -1;
+
+    return type;
+}
+
 /*
  * Editor modelines
  *
