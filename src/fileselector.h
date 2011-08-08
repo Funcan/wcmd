@@ -112,6 +112,7 @@ private:
     wxColour        bg_hi_col;
     wxColour        bg_def_col;
     wxColour        fg_def_col;
+    wxWindowID base_id;
     DECLARE_EVENT_TABLE()
 };
 

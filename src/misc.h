@@ -44,6 +44,7 @@ public:
     wxString fn;
 private:
     wxTextCtrl *txt;
+    void OnTextEnter(wxCommandEvent &evt);
     DECLARE_EVENT_TABLE()
 };
 

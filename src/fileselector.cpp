@@ -67,6 +67,7 @@ wxWindowID active_id;
 FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, wxString &path): \
 	wxPanel(parent, id)
 {
+    base_id = id;
     font = wxFont(11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL,
                   wxFONTWEIGHT_NORMAL);
     SetFont(font);
@@ -108,7 +109,8 @@ FSDisplayPane::FSDisplayPane(wxWindow *parent, wxWindowID id, wxString &path): \
     point = GetPosition();
     height = (GetParent()->GetParent())->GetSize().GetHeight();
     point += wxPoint(0, height-140);
-    quick_search = new wxTextCtrl(this, id+2, _(""), point, wxDefaultSize,
+
+    quick_search = new wxTextCtrl(this, id+200, _(""), point, wxDefaultSize,
                                   wxTE_PROCESS_ENTER);
     quick_search->Show(false);
     this->Show(true);
@@ -1174,7 +1176,7 @@ ret:
  */
 void FSDisplayPane::OnTextEnter(wxCommandEvent &evt)
 {
-     quick_search->Clear();
+    quick_search->Clear();
     quick_search->Show(false);
     lst->select_entry(cur_idx);
     lst->SetFocus();

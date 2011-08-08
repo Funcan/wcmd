@@ -37,7 +37,8 @@ DirnameDlg::DirnameDlg(wxWindow *parent, wxString name, wxString msg):   \
 
 void DirnameDlg::draw()
 {
-    txt = new wxTextCtrl(this, -1, _(""));
+    txt = new wxTextCtrl(this, -1, _(""), wxDefaultPosition, wxDefaultSize,
+                         wxTE_PROCESS_ENTER);
     sizer->Add(txt, 1, wxEXPAND|wxALL, 6);
 }
 
@@ -52,11 +53,16 @@ void DirnameDlg::OnCancel(wxCommandEvent &evt)
     EndModal(wxID_CANCEL);
 }
 
-
+void DirnameDlg::OnTextEnter(wxCommandEvent &evt)
+{
+    fn = txt->GetValue();
+    EndModal(wxID_OK);
+}
 
 BEGIN_EVENT_TABLE(DirnameDlg, wxDialog)
 EVT_BUTTON(wxID_OK, DirnameDlg::OnOK)
 EVT_BUTTON(wxID_CANCEL, DirnameDlg::OnCancel)
+EVT_TEXT_ENTER(-1, DirnameDlg::OnTextEnter)
 END_EVENT_TABLE()
 
 
