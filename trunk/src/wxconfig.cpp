@@ -150,12 +150,16 @@ void Config::dump_config()
     }
 
     // write other sections
+    PDEBUG ("Other sections: %d\n", (int)dentry_list.size());
+
     for(dentry_iter=dentry_list.begin();
         dentry_iter < dentry_list.end(); dentry_iter ++) {
-        tmp = "[" + (*dentry_iter).name + "]\n" + \
-            "icon = " + (*dentry_iter).icon + "\n"\
-            "exec = " + (*dentry_iter).exec;
-        fout << tmp << endl;
+        if ((*dentry_iter).name.size()) {
+            tmp = "[" + (*dentry_iter).name + "]\n" + \
+                "icon = " + (*dentry_iter).icon + "\n"\
+                "exec = " + (*dentry_iter).exec;
+            fout << tmp << endl;
+        }
     }
     fout.close();
 }

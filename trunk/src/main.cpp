@@ -207,7 +207,7 @@ int MyApp::FilterEvent(wxEvent& event)
             }
             case 27: { // ESC
                 frame->get_sp()->toggle_search();
-                return true;
+                return false; // Leave this signal to other events.
             }
             default:
                 break;
