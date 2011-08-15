@@ -1,0 +1,3 @@
+install:
+	install -m 755 wcmd.desktop /usr/share/applications/
+	install -m 644 wcmd.svg  /usr/share/pixmaps/

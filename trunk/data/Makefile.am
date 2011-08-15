@@ -6,10 +6,11 @@
 # http://cedet.sourceforge.net/ede.shtml
 #
 
-top="$(CURDIR)"/
+top=../
 ede_FILES=Project.ede Makefile.am
 
-SUBDIRS= src/ data/
+SUBDIRS=
 EXTRA_DIST=Project.ede
+dentry_MISC=wcmd.desktop wcmd.svg Makefile.data
 
 # End of Makefile.am
