@@ -15,4 +15,4 @@ AM_CONFIG_HEADER(config.h)
 AC_PROG_CXX
 
 # End the configure script.
-AC_OUTPUT(Makefile src/Makefile src/plugins/Makefile, [date > stamp-h] )
+AC_OUTPUT(Makefile src/Makefile src/plugins/Makefile data/Makefile, [date > stamp-h] )

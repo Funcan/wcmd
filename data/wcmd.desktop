@@ -1,0 +1,14 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Wcmd
+Comment=Simple Filemanager
+Exec=wcmd
+Icon=wcmd
+Terminal=false
+Categories=System
+Type=Application
+Categories=System;Utility;
+
+
+
+

@@ -1,0 +1,15 @@
+;; Object data
+;; EDE project file.
+(ede-proj-project "data"
+  :name "data"
+  :file "Project.ede"
+  :targets (list
+   (ede-proj-target-makefile-miscelaneous "dentry"
+    :name "dentry"
+    :path ""
+    :source '("wcmd.desktop" "wcmd.svg" "Makefile.data")
+    :submakefile "Makefile.data"
+    )
+   )
+  :makefile-type 'Makefile.am
+  )
