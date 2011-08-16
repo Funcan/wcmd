@@ -11,7 +11,6 @@
     :configuration-variables 'nil
     :rules (list
      (ede-makefile-rule "Custom-new"
-      :target ""
       :rules '("cd plugins && make install -f Makefile.plugins" "cd ../data && make install -f Makefile.data")
       )
      )
@@ -19,5 +18,5 @@
    )
   :makefile-type 'Makefile.am
   :variables '(("AM_CXXFLAGS" . "`wx-config --cxxflags` -Wall") ("LIBS" . "`wx-config --libs` -ldl"))
-  :configuration-variables '(("debug" ("AM_CXXFLAGS" . "-DDEBUG -g -pg")))
+  :configuration-variables '(("debug" ("AM_CXXFLAGS" . "-DDEBUG -g")))
   )
