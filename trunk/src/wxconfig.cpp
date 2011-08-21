@@ -6,6 +6,8 @@ vector<string> bookmarks;
 
 const string sections[] = {
     "plain",
+    "ssh_server",
+    "sftp_server",
     "buttons",
 };
 
@@ -226,6 +228,10 @@ void Config::read_configs()
                     }
                 }
             }
+            else if (section == sections[1]){ // SSH_SERVER
+                ;
+            }
+
             else {
                 found = false;
                 for(dentry_iter=dentry_list.begin();

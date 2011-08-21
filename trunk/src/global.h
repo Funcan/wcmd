@@ -24,6 +24,11 @@ enum{
     ID_Compress,
     ID_Decompress,
 
+    ID_Conn_FTP,
+    ID_Conn_SSH,
+    ID_Conn_SFTP,
+    ID_Conn_SMB,
+
     ID_Delete,
     ID_SplitWindow = 101,
     ID_Sp1,
