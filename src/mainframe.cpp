@@ -231,6 +231,35 @@ void MainFrame::create_menubar()
     menu->Append(menuitem);
     menuBar->Append(menu, _("&Actions"));
 
+    menu = new wxMenu;
+    menuitem = new wxMenuItem(menu, ID_Conn_FTP,
+                              _("FTP Server"));
+    menuitem->SetBitmap(wxBitmap(arch_add));
+    menu->Append(menuitem);
+
+    menuitem = new wxMenuItem(menu, ID_Conn_SFTP,
+                              _("SFTP Server"));
+    menuitem->SetBitmap(wxBitmap(arch_add));
+    menu->Append(menuitem);
+
+    // menuitem = new wxMenuItem(menu, ID_Conn_SSH,
+    //                           _("SSH Server"));
+    // menuitem->SetBitmap(wxBitmap(arch_add));
+    // menu->Append(menuitem);
+    wxMenu *submenu = new wxMenu();
+    menuitem = new wxMenuItem(submenu, -1, _("test"));
+    submenu->Append(menuitem);
+    menuitem = new wxMenuItem(submenu, -1, _("test1"));
+    submenu->Append(menuitem);
+    menu->AppendSubMenu(submenu, _("SSH Server"));
+
+    menuitem = new wxMenuItem(menu, ID_Conn_SMB,
+                              _("SMB Server"));
+    menuitem->SetBitmap(wxBitmap(arch_add));
+    menu->Append(menuitem);
+
+    menuBar->Append(menu, _("&Net"));
+
 
     // Help
     menu = new wxMenu;
