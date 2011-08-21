@@ -35,6 +35,21 @@ typedef struct _desktop_entry {
     string exec;
 } desktop_entry;
 
+typedef enum _SERVER_TYPE{
+    SSH = 0,
+    SFTP,
+    FTP,
+    SMB,
+} SERVER_TYPE;
+
+typedef struct _server_entry {
+    SERVER_TYPE type;
+    string name;
+    string ip;
+    string user;
+    string passwd;
+} server_entry;
+
 class Config {
 public:
     Config();
@@ -59,8 +74,10 @@ private:
     string bookmark_path, config_path;
 
     vector<desktop_entry> dentry_list;
+    vector<server_entry> server_list;
 
     vector <desktop_entry>::iterator dentry_iter;
+    vector <server_entry>::iterator server_iter;
 
     unsigned int dentry_pos;
 

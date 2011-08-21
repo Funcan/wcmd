@@ -393,17 +393,25 @@ int strsplit(const string str, const string sip, vector<string> &item_list)
 {
     int startpos=0;
     int endpos=0;
+    string tmp;
+    PDEBUG ("Item: %s, sip: %s\n", str.c_str(), sip.c_str());
+
     endpos = str.find_first_of(sip, startpos);
     while (endpos != -1) {
-        if (endpos != 0) // If str begins with sip, skip the first one.
-            item_list.push_back(str.substr(startpos, endpos-startpos));
+        if (endpos != 0) { // If str begins with sip, skip the first one.
+            tmp = str.substr(startpos, endpos-startpos);
+            PDEBUG ("sub: %s\n", tmp.c_str());
+            item_list.push_back(tmp);
+        }
         startpos = endpos+1; //jump past sep
-        endpos = str.find_first_of("|", startpos); // find next
+        endpos = str.find_first_of(sip, startpos); // find next
         if(endpos == -1){
-            item_list.push_back(str.substr(startpos));
+            tmp = str.substr(startpos);
+            PDEBUG ("sub: %s\n", tmp.c_str());
+            item_list.push_back(tmp);
         }
     }
-    stable_sort(item_list.begin(), item_list.end(), sort_length);
+    // stable_sort(item_list.begin(), item_list.end(), sort_length);
     return item_list.size();
 }
 
@@ -575,6 +583,23 @@ long string2type(string &str)
         type = -1;
 
     return type;
+}
+
+int string2num(const string &str)
+{
+    stringstream ss(str);
+    int ret;
+    ss >> ret;
+    return ret;
+}
+
+string num2string(const int &num)
+{
+    stringstream ss;
+    ss << num;
+    string str;
+    ss >> str;
+    return str;
 }
 
 /*

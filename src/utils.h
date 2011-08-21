@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <string.h>
+#include <sstream>
 #include <syslog.h>
 #include <wx/wx.h>
 #include <wx/dir.h>
@@ -127,6 +128,8 @@ unsigned long long WX_2_LL(wxULongLong n);
 void string_split(wxString &str, wxArrayString &array, const wxString &sip=_("/"));
 wxString array_2_string(wxArrayString &array, const int id);
 long string2type(string &str);
+int string2num(const string &str);
+string num2string(const int &num);
 #endif /* _UTILS_H_ */
 /*
  * Editor modelines
