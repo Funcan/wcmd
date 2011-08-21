@@ -6,8 +6,7 @@ vector<string> bookmarks;
 
 const string sections[] = {
     "plain",
-    "ssh_server",
-    "sftp_server",
+    "server",
     "buttons",
 };
 
@@ -154,6 +153,20 @@ void Config::dump_config()
     // write other sections
     PDEBUG ("Other sections: %d\n", (int)dentry_list.size());
 
+    tmp = "[server]\n" ;
+    fout << tmp << endl;
+    for(server_iter=server_list.begin();
+        server_iter < server_list.end(); server_iter ++) {
+        if ((*server_iter).name.size()) {
+            tmp = (*server_iter).name + "=" + \
+                num2string((int)((*server_iter).type)) + ":"   +     \
+                (*server_iter).ip + ":" +     \
+                (*server_iter).user + ":" +   \
+                (*server_iter).passwd;
+            fout << tmp << endl;
+        }
+    }
+
     for(dentry_iter=dentry_list.begin();
         dentry_iter < dentry_list.end(); dentry_iter ++) {
         if ((*dentry_iter).name.size()) {
@@ -203,6 +216,7 @@ void Config::read_configs()
         vector<plain_config>::iterator iter;
         bool found;
         desktop_entry dentry;
+        server_entry s_entry;
 
         while (getline(fin, str) != NULL) {
             if (str == "[" + sections[0] + "]") {
@@ -229,10 +243,19 @@ void Config::read_configs()
                 }
             }
             else if (section == sections[1]){ // SSH_SERVER
-                ;
+                s_entry.name = key;
+                vector<string> str_list;
+                // type:ip:user:passwd
+                if (strsplit(val, ":", str_list)) {
+                    s_entry.type = (SERVER_TYPE)string2num(str_list[0]);
+                    s_entry.ip = str_list[1];
+                    s_entry.user = str_list[2];
+                    s_entry.passwd = str_list[3];
+                    server_list.push_back(s_entry);
+                }
             }
 
-            else {
+            else { // buttons.
                 found = false;
                 for(dentry_iter=dentry_list.begin();
                     dentry_iter < dentry_list.end(); dentry_iter ++) {
@@ -278,6 +301,14 @@ void Config::read_configs()
             cout << "Icon: " << (*dentry_iter).icon << endl;
             cout << "Exec: " << (*dentry_iter).exec << endl;
         }
+
+        for (server_iter = server_list.begin(); server_iter < server_list.end(); server_iter++) {
+            cout << "Name = " << (*server_iter).name << endl;
+            cout << "IP = " << (*server_iter).ip << endl;
+            cout << endl;
+
+        }
+
 #endif
     }
 }
