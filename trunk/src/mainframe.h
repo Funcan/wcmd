@@ -56,12 +56,18 @@ private:
     void create_displayer(char **args);
     void create_toolbar();
     void read_set_size();
+    void Append_Servers();
+    void OnServerActivated(wxCommandEvent &evt);
     vector<string> bookmark_list;
     wxMenu *bookmark_menu;
     wxMenuBar *menuBar;
     wxMenuItem *menu_item_view_hidden;
     wxMenuItem *menu_item_view_debug;
     wxMenuItem *menuitem;
+    wxMenu *submenu_ssh;
+    wxMenu *submenu_sftp;
+    wxMenu *submenu_ftp;
+    wxMenu *submenu_smb;
     DECLARE_EVENT_TABLE()
 };
 

@@ -27,6 +27,7 @@ Config::Config()
         read_bookmarks();
     }
     dentry_pos = 0;
+    sentry_pos = 0;
 }
 
 
@@ -158,7 +159,9 @@ void Config::dump_config()
     for(server_iter=server_list.begin();
         server_iter < server_list.end(); server_iter ++) {
         if ((*server_iter).name.size()) {
-            tmp = (*server_iter).name + "=" + \
+            PDEBUG ("Dumping: %s\n", (*server_iter).name.c_str());
+
+            tmp = (*server_iter).name + " = " + \
                 num2string((int)((*server_iter).type)) + ":"   +     \
                 (*server_iter).ip + ":" +     \
                 (*server_iter).user + ":" +   \
@@ -243,6 +246,8 @@ void Config::read_configs()
                 }
             }
             else if (section == sections[1]){ // SSH_SERVER
+                PDEBUG ("Reading Config: Name = %s\n", key.c_str());
+
                 s_entry.name = key;
                 vector<string> str_list;
                 // type:ip:user:passwd
@@ -415,33 +420,68 @@ void Config::del_dentry(const string &name)
     }
 }
 
+server_entry *Config::get_sentry(int id)
+{
+    if ((id > (int)server_list.size() - 1) || (id < 0)) {
+        fprintf(stderr, "ERROR: index exceeded range: %d, %d\n",
+                id, (int)server_list.size() - 1);
+        return NULL;
+    }
+    return &server_list[id];
+}
+
 /**
  * Get next desktop entry stored in this module.
  *
- * @param entry -  pointer to be filled.
- * @note if entry is set to NULL, internal dentry_pos will be reset,
- *       so that next call of get_dentry() will return dentry from the list
- *       head.
- * @return 0 on success, or -1 otherwise.
+ * @param type - server_entry or desktop_entry;
+ *
+ * @param reset - whether to reset
+ *
+ * @return void*
  */
-int Config::get_dentry(desktop_entry *entry)
+
+void  *Config::get_dentry(int type, bool reset)
 {
-    int ret = 0;
-    if (entry == NULL) {
-        dentry_pos = 0;
+    PDEBUG ("enter, type: %d\n", (int)type);
+
+    unsigned int *idx = NULL;
+    void *ret = NULL;
+    switch (type) {
+    case 0: {
+        idx = &sentry_pos;
+        break;
+    }
+    case 1: {
+        idx = &dentry_pos;
+        break;
+    }
+    default:
+        goto end;
+    }
+
+    if (reset ) {
+        *idx = 0;
+        goto end;
     }
     else {
-        if (dentry_pos < dentry_list.size()) {
-            entry->name = dentry_list[dentry_pos].name;
-            entry->icon = dentry_list[dentry_pos].icon;
-            entry->exec = dentry_list[dentry_pos].exec;
-            dentry_pos ++;
+        if (type == 0) {
+            if (*idx == server_list.size()) {
+                goto end;
+            }
+            ret =  &server_list[*idx];
         }
         else {
-            ret = -1;
+            if (*idx == dentry_list.size()) {
+                goto end;
+            }
+            ret = &dentry_list[*idx];
         }
+        (*idx) ++;
     }
+end:
+    PDEBUG ("leave: %p\n", ret);
     return ret;
 }
+
 
 Config config;

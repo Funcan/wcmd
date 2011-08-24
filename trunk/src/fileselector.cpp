@@ -813,12 +813,8 @@ end:
  */
 int FSDisplayPane::edit_file(bool create)
 {
-    if (cur_idx == 0) {
-        return -1;
-    }
-
     wxString path;
-    title = _("Error!");
+    title = _("Error");
     if (create) {
         DirnameDlg *dlg = \
             new DirnameDlg(this, _("Enter new file name:"));
@@ -851,12 +847,23 @@ int FSDisplayPane::edit_file(bool create)
         path =  entry->get_fullpath();
         if ((entry->is_file_exist() == false) && !create) {
             msg = _("File does not exist!");
-            title = _("Error");
             show_err_dialog();
             return -1;
         }
     }
-    cmd = str2wxstr(config.get_config("editor")) + _(" \"") + path + _("\"");
+
+    cmd = str2wxstr(config.get_config("editor"));
+    wxString ext = path.AfterLast(wxT('.'));
+    if (ext.Len()) {
+        wxFileType *ft = \
+            wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
+        wxString mt; // Special apps.
+        if (ft->GetMimeType(&mt)) {
+            if (mt.Find(_("image")) != wxNOT_FOUND) // Image editor.
+                cmd = str2wxstr(config.get_config("img_editor"));
+        }
+    }
+    cmd += _(" \"") + path + _("\"");
     return do_async_execute(cmd);
 }
 

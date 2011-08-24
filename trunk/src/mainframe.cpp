@@ -98,16 +98,16 @@ void MainFrame::create_toolbar()
     button = new wxBitmapButton(this, ID_Terminal, wxBitmap(btn_terminal));
     hbox->Add(button, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
 
-    config.get_dentry(NULL);
-    desktop_entry entry;
+    config.get_dentry(DENTRY, true);
+    desktop_entry *entry;
     long type;
-    while (config.get_dentry(&entry) != -1) {
-        type = string2type(entry.icon);
+    while ((entry = (desktop_entry *)config.get_dentry(DENTRY, false)) != NULL) {
+        type = string2type(entry->icon);
         if (type != -1) {
             ;
         }
         PDEBUG ("Buttons will be created! Exec: %s\n",
-            entry.name.c_str());
+            entry->name.c_str());
 
     }
     sizer->Add(hbox, 0, wxEXPAND|wxTOP|wxBOTTOM, 2);
@@ -242,16 +242,12 @@ void MainFrame::create_menubar()
     menuitem->SetBitmap(wxBitmap(arch_add));
     menu->Append(menuitem);
 
-    // menuitem = new wxMenuItem(menu, ID_Conn_SSH,
-    //                           _("SSH Server"));
-    // menuitem->SetBitmap(wxBitmap(arch_add));
-    // menu->Append(menuitem);
-    wxMenu *submenu = new wxMenu();
-    menuitem = new wxMenuItem(submenu, -1, _("test"));
-    submenu->Append(menuitem);
-    menuitem = new wxMenuItem(submenu, -1, _("test1"));
-    submenu->Append(menuitem);
-    menu->AppendSubMenu(submenu, _("SSH Server"));
+    submenu_ssh = new wxMenu();
+    // menuitem = new wxMenuItem(submenu, -1, _("test"));
+    // submenu->Append(menuitem);
+    // menuitem = new wxMenuItem(submenu, -1, _("test1"));
+    // submenu->Append(menuitem);
+    menu->AppendSubMenu(submenu_ssh, _("SSH Server"));
 
     menuitem = new wxMenuItem(menu, ID_Conn_SMB,
                               _("SMB Server"));
@@ -260,6 +256,7 @@ void MainFrame::create_menubar()
 
     menuBar->Append(menu, _("&Net"));
 
+    Append_Servers();
 
     // Help
     menu = new wxMenu;
@@ -279,6 +276,87 @@ void MainFrame::BookmarAdd()
     bookmarks.push_back(path);
     Append_Bookmark(bookmarks.size() + ID_BookmarkAdd + 1, path);
     Thaw();
+}
+
+void MainFrame::Append_Servers()
+{
+    PDEBUG ("enter\n");
+
+    int i = ID_Server_Start;
+    server_entry *entry = NULL;
+    wxMenu *submenu = NULL;
+    wxMenuItem *menu_item = NULL;
+    config.get_dentry(SENTRY, true);
+    while ((entry = (server_entry *)config.get_dentry(SENTRY, false)) != NULL) {
+        switch (entry->type) {
+            PDEBUG ("ip: %s, type: %d\n", entry->ip.c_str(),
+                    (int)entry->type);
+        case SSH: {
+            submenu = submenu_ssh;
+            break;
+        }
+        case SFTP: {
+            submenu = submenu_sftp;
+            break;
+        }
+        case FTP: {
+            submenu = submenu_ftp;
+            break;
+        }
+        case SMB: {
+            submenu = submenu_smb;
+            break;
+        }
+        default:
+            fprintf(stderr, "ERROR: Unkonwn type: %d\n",
+                    (int)entry->type);
+            continue;
+            break;
+        }
+        menu_item = new wxMenuItem(submenu, i, str2wxstr(entry->name));
+        submenu->Append(menu_item);
+        Connect(i, wxEVT_COMMAND_MENU_SELECTED,
+                wxCommandEventHandler( MainFrame::OnServerActivated));
+
+        i++;
+    }
+    menuBar->Refresh();
+    PDEBUG ("leave.\n");
+
+    return;
+}
+
+void MainFrame::OnServerActivated(wxCommandEvent &evt)
+{
+    PDEBUG ("enter\n");
+
+    int idx =  evt.GetId() - ID_Server_Start;
+    PDEBUG ("idx: %d\n", idx);
+
+    server_entry *entry = config.get_sentry(idx);
+    PDEBUG ("A: %p\n", entry);
+    PDEBUG ("ip: %d\n",  (int)entry->type);
+    // PDEBUG ("ip: %s\n",  entry->ip.c_str());
+
+    if (entry && !entry->ip.empty()) {
+        switch (entry->type) {
+        case SSH: {
+            string cmd = "xterm -e ssh " + entry->ip ;
+            if (!entry->user.empty()) {
+                cmd + " -l " + entry->user;
+            }
+            PDEBUG ("cmd: %s\n", cmd.c_str());
+
+            get_sp()->do_async_execute(str2wxstr(cmd));
+            break;
+        }
+
+        default:
+            break;
+        }
+    }
+    PDEBUG ("leave\n");
+
 }
 
 void MainFrame::Append_Bookmark(int id, string item)
