@@ -62,6 +62,7 @@ enum{
     ID_PopupMenu_Open = 20500,
     ID_PopupMenu_Compress,
 
+    ID_Server_Start = 21000,
 };
 
 enum {

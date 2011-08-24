@@ -15,6 +15,9 @@
 
 using namespace std;
 
+const int SENTRY = 0;
+const int DENTRY = 1;
+
 typedef enum _CONFIG_TYPE{
     TYPE_STR = 0,
     TYPE_INT,
@@ -55,22 +58,23 @@ public:
     Config();
     virtual ~Config();
     void   set_config(const string key, const string val);
+    void  *get_dentry(int type, bool reset=true);
     string get_config(const string key);
     void   dump2file();
-    void read_configs();
-    void read_bookmarks();
+    void   read_configs();
+    void   read_bookmarks();
     void add_dentry(const string &name, const string &exec,
                     const string &icon="");
     void del_dentry(const string &name);
-    int get_dentry(desktop_entry *entry);
     vector<plain_config> entry_list;
+    server_entry *get_sentry(int id);
 private:
     int    splitstr(string &str, string &key, string &val);
     void   strip(string &str);
     int    checkpath(const string &path);
-    void build_config_list(string &home);
-    void dump_config();
-    void dump_bookmarks();
+    void   build_config_list(string &home);
+    void   dump_config();
+    void   dump_bookmarks();
     string bookmark_path, config_path;
 
     vector<desktop_entry> dentry_list;
@@ -80,6 +84,7 @@ private:
     vector <server_entry>::iterator server_iter;
 
     unsigned int dentry_pos;
+    unsigned int sentry_pos;
 
 };
 
