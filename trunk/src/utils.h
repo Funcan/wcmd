@@ -130,6 +130,7 @@ wxString array_2_string(wxArrayString &array, const int id);
 long string2type(string &str);
 int string2num(const string &str);
 string num2string(const int &num);
+wxString  get_extname(const wxString name);
 #endif /* _UTILS_H_ */
 /*
  * Editor modelines
