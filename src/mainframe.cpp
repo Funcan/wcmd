@@ -217,7 +217,7 @@ void MainFrame::create_menubar()
             Append_Bookmark(ID_BookmarkAdd + i + 1, bookmarks[i]);
         }
     }
-    menuBar->Append(bookmark_menu, _("Bookmarks"));
+    menuBar->Append(bookmark_menu, _("&Bookmarks"));
 
     menu = new wxMenu;
     menuitem = new wxMenuItem(menu, ID_Compress,

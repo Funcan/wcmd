@@ -516,7 +516,7 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
         ret = do_async_execute(cmd);
         return ret;
     }
-    wxString ext = path.AfterLast(wxT('.'));
+    wxString ext = get_extname(path);
     wxFileType *ft = \
         wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
 
@@ -560,6 +560,7 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
 int FSDisplayPane::do_async_execute(const wxString &cmd, bool up_flag,
                                     bool quiet)
 {
+    PDEBUG ("enter.\n");
     MyProcess * const process = new MyProcess(this, cmd, up_flag, quiet);
     long m_pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
     if ( !m_pidLast ) {
@@ -852,9 +853,13 @@ int FSDisplayPane::edit_file(bool create)
         }
     }
 
+    PDEBUG ("Tring to execute:\n");
     cmd = str2wxstr(config.get_config("editor"));
-    wxString ext = path.AfterLast(wxT('.'));
-    if (ext.Len()) {
+    PDEBUG ("editor: %s\n", config.get_config("editor").c_str());
+    wxString ext = get_extname(path);
+    cout << " Length: = " << ext.Len() << endl;
+
+    if (ext.Len() != 0) {
         wxFileType *ft = \
             wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
         wxString mt; // Special apps.
@@ -863,7 +868,10 @@ int FSDisplayPane::edit_file(bool create)
                 cmd = str2wxstr(config.get_config("img_editor"));
         }
     }
+    PDEBUG ("Composing commands ... \n");
+
     cmd += _(" \"") + path + _("\"");
+
     return do_async_execute(cmd);
 }
 

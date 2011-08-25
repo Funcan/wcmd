@@ -283,6 +283,16 @@ string  get_extname(const char *name)
     return extname;
 }
 
+wxString  get_extname(const wxString name)
+{
+    wxString str;
+    int pos = name.Find(_("."));
+    if (pos != wxNOT_FOUND) {
+        str = name.AfterLast(wxT('.'));
+    }
+    return str;
+}
+
 void format_time(const time_t *mytime, char *tmp)
 {
     struct tm *mytm = gmtime(mytime);
