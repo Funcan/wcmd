@@ -857,17 +857,16 @@ int FSDisplayPane::edit_file(bool create)
     cmd = str2wxstr(config.get_config("editor"));
     PDEBUG ("editor: %s\n", config.get_config("editor").c_str());
     wxString ext = get_extname(path);
-    cout << " Length: = " << ext.Len() << endl;
-
     if (ext.Len() != 0) {
         wxFileType *ft = \
             wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
-        wxString mt; // Special apps.
-        if (ft->GetMimeType(&mt)) {
+        wxString mt;
+        if (ft && ft->GetMimeType(&mt)) {
             if (mt.Find(_("image")) != wxNOT_FOUND) // Image editor.
                 cmd = str2wxstr(config.get_config("img_editor"));
         }
     }
+
     PDEBUG ("Composing commands ... \n");
 
     cmd += _(" \"") + path + _("\"");
