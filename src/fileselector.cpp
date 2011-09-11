@@ -16,10 +16,11 @@
 #include <stdlib.h>
 #include <wx/dnd.h>
 #include <wx/progdlg.h>
+#include <wx/regex.h>
 #include "mainframe.h"
 
 const wxString PERL_PATH(_("/usr/bin/perl"));
-const wxString MIME_OPEN_PATH(_("/usr/bin/mimeopen"));
+const wxString MIME_OPEN_PATH(_("/usr/bin/xdg-open"));
 
 class MyProcess : public wxProcess
 {
@@ -31,11 +32,6 @@ public:
             m_parent = parent;
             this->up_flag = up_flag;
             this->quiet = quiet;
-            // int style =  wxPD_SMOOTH | wxPD_CAN_ABORT | wxPD_CAN_SKIP |\
-            //     wxPD_AUTO_HIDE | wxPD_APP_MODAL;
-            // dlg = new wxProgressDialog(_("Executing"), cmd, 100, parent,
-            //                            style);
-            // dlg->Update(20);
         }
     virtual void OnTerminate(int pid, int status);
 
@@ -467,6 +463,8 @@ int FSDisplayPane::open_with_plugin(const char *file_name)
         return -1;
     }
     else {
+        PDEBUG ("Openging using %s\n", plugin_path);
+
         MyThreadFunc *func = new MyThreadFunc(file_name, plugin_path);
         if ( func->Create() != wxTHREAD_NO_ERROR )
         {
@@ -511,8 +509,8 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
 
     // Failed to open through plugins, try  other ways.
     wxString cmd;
-    if (wxFileExists(PERL_PATH) && wxFileExists(MIME_OPEN_PATH)) {
-        cmd = PERL_PATH + _(" ") + MIME_OPEN_PATH + _(" -n ") + path;
+    if (wxFileExists(MIME_OPEN_PATH)) {
+        cmd =  MIME_OPEN_PATH + _(" ") + path;
         ret = do_async_execute(cmd);
         return ret;
     }
@@ -1141,6 +1139,9 @@ void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
     wxString name;
     unsigned int idx;
 
+    wxString reg_str;
+    wxRegEx re_search;
+
     lst->deselect_entry(cur_idx);
 
     if (!quick_search->IsShown()) {
@@ -1158,6 +1159,8 @@ void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
         goto ret;
     }
 
+    reg_str = _T(".*") + cur_target;
+    re_search.Compile(reg_str, wxRE_ICASE);
     // Use orignal file_list for search, if:
     //  1. This is a new search.
     //  2. User stroked Backspace.
@@ -1170,9 +1173,17 @@ void FSDisplayPane::OnTextChanged(wxCommandEvent &evt)
 
     for (idx = 0; idx < tmp_list.size(); idx++) {
         name = (tmp_list[idx])->fn->GetFullName();
-        if (name.Lower().Find(cur_target.Lower()) !=  wxNOT_FOUND) {
-            cur_list.push_back(tmp_list[idx]);
+        if (re_search.IsValid()) {
+            if (re_search.Matches(name)) {
+                cur_list.push_back(tmp_list[idx]);
+            }
         }
+        else {
+            if (name.Lower().Find(cur_target.Lower()) !=  wxNOT_FOUND) {
+                cur_list.push_back(tmp_list[idx]);
+            }
+        }
+
     }
 
 ret:
