@@ -10,9 +10,9 @@ CC=gcc
 CPPFLAGS=-Wall -O2 -g -DDEBUG -fPIC -shared
 LDFLAGS=
 
-OBJS=html.o mht.o iso.o
+OBJS=html.o mht.o iso.o mp3.o
 
-TARGET=html.so mht.so iso.so
+TARGET=html.so mht.so iso.so mp3.so
 DESTDIR=~/.config/wcmd/plugins
 
 %.d: %.c
