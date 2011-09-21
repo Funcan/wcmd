@@ -8,6 +8,7 @@
 #include <wx/splitter.h>
 #include <wx/wx.h>
 #include <wx/iconloc.h>
+#include <wx/tooltip.h>
 
 #include "utils.h"
 #include "global.h"
@@ -25,6 +26,9 @@ public:
 private:
     void OnPopupClick(wxCommandEvent &evt);
     void process_right_click(wxMouseEvent &evt);
+    void test_motion(wxMouseEvent &evt);
+    wxString tip;
+    wxToolTip *tooltip;
     DECLARE_EVENT_TABLE()
 };
 

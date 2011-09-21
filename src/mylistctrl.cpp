@@ -1,6 +1,7 @@
 #include "mylistctrl.h"
 #include "fileselector.h"
 
+
 #include "resources/mimetype/folder.xpm"
 #include "resources/mimetype/generic.xpm"
 
@@ -17,6 +18,10 @@ MyListCtrl::MyListCtrl(wxWindow * parent, wxWindowID id):\
     wxString mime_plain(_("txt"));
     wxIconLocation icon_path;
     wxString mimetype;
+    tooltip = new wxToolTip(_(""));
+    tooltip->SetDelay(1000);
+    tooltip->Enable(true);
+    this->SetToolTip(tooltip);
     imageList = new wxImageList(22, 22);
 
     imageList->Add(wxIcon(folder, wxBITMAP_TYPE_XPM));  // 0
@@ -50,9 +55,10 @@ void MyListCtrl::append_item(int idx, ItemEntry *entry)
     else
         this->InsertItem(idx, 0);
 
+    msg = entry->get_fullname();
     this->SetItemData(idx, idx);
-
-    this->SetItem(idx, 1, entry->get_fullname());
+    this->SetItemText(idx, msg);
+    this->SetItem(idx, 1, msg);
     this->SetItem(idx, 3, entry->get_size_str());
     this->SetItem(idx, 4, entry->get_date());
 }
@@ -168,8 +174,22 @@ void MyListCtrl::process_right_click(wxMouseEvent &evt)
 	PopupMenu(menu);
 }
 
+void MyListCtrl::test_motion(wxMouseEvent &evt)
+{
+    tooltip->SetTip(_T(""));
+    int flags = 0;
+    long item = HitTest(evt.GetPosition(), flags);
+    if (item != wxNOT_FOUND) {
+        tip = GetItemText(item);
+        if (tip.Length() >= 40) {
+            tooltip->SetTip(tip);
+        }
+    }
+}
+
 BEGIN_EVENT_TABLE(MyListCtrl, wxListCtrl)
 EVT_RIGHT_DOWN(MyListCtrl::process_right_click)
+EVT_MOTION(MyListCtrl::test_motion)
 END_EVENT_TABLE()
 
 
