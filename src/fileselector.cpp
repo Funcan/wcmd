@@ -501,9 +501,34 @@ int FSDisplayPane::wrap_open(wxString &path, bool create)
         return -1;
     }
 
-    ret = open_with_plugin(strdup(((const char *)path.mb_str(wxConvUTF8))));
-    if (ret != -1)
+    // If file is executable, execute it.
+    char *fn = strdup(((const char *)path.mb_str(wxConvUTF8)));
+    struct stat sb;
+    ret = stat(fn, &sb);
+    PDEBUG ("ret = %d\n", ret);
+
+    if (ret == 0) {
+        if (sb.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) {
+            wxWindowID id;
+            msg = _("File is executable, execute it?");
+            dlg = new wxMessageDialog(this, msg, _("Execute?"),
+                                      wxOK|wxCANCEL);
+            id = dlg->ShowModal();
+            if (id == wxID_OK) {
+                ret = do_async_execute(path);
+                PDEBUG ("Executable file %s returned: %d\n", fn, ret);
+                if (ret > 0) {
+                    return 0;
+                }
+            }
+        }
+    }
+
+    ret = open_with_plugin(fn);
+    free(fn);
+    if (ret != -1) {
         return ret;
+    }
 
     path = _("\"") + path + _("\"");
 
