@@ -1,0 +1,1 @@
+It's a simple file manager using wxwidget. Yes, there are several such kind of tools, such as gnome-commander, or elefm2. But they are not simple enough.
